@@ -1,0 +1,11 @@
+{
+	"name": "KeyVaultProd",
+	"properties": {
+		"description": "Azure KeyVault containing prod database credentials",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://bink-uksouth-prod-inf.vault.azure.net/"
+		}
+	}
+}
