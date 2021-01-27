@@ -1,8 +1,0 @@
-{
-	"name": "AzurePostgreSqlTable1",
-	"properties": {
-		"annotations": [],
-		"type": "AzurePostgreSqlTable",
-		"schema": []
-	}
-}
