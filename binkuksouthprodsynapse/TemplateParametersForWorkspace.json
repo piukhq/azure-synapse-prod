@@ -8,6 +8,9 @@
 		"binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString": {
 			"value": ""
 		},
+		"Harmonia_connectionString": {
+			"value": ""
+		},
 		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://binkuksouthproddwh.dfs.core.windows.net"
 		},
