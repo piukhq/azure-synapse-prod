@@ -10,6 +10,9 @@
 		},
 		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://binkuksouthproddwh.dfs.core.windows.net"
+		},
+		"KeyVaultProd_properties_typeProperties_baseUrl": {
+			"value": "https://bink-uksouth-prod-inf.vault.azure.net/"
 		}
 	}
 }
