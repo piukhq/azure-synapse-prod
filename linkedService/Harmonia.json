@@ -1,0 +1,24 @@
+{
+	"name": "Harmonia",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"description": "Harmonia Azure Postgres Database",
+		"annotations": [],
+		"type": "AzurePostgreSql",
+		"typeProperties": {
+			"connectionString": "Host=bink-uksouth-prod-harmonia.postgres.database.azure.com;Port=5432;Database=harmonia;UID=harmonia@bink-uksouth-prod-harmonia;EncryptionMethod=1;ValidateServerCertificate=1",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "KeyVaultProd",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "synapse-postgres-harmonia"
+			}
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
