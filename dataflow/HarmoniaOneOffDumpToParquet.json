@@ -1,0 +1,28 @@
+{
+	"name": "HarmoniaOneOffDumpToParquet",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "harmonia__import_transaction",
+						"type": "DatasetReference"
+					},
+					"name": "Harmonia"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "HarmoniaOneOffExport",
+						"type": "DatasetReference"
+					},
+					"name": "HarmoniaDataLakeParquet"
+				}
+			],
+			"transformations": [],
+			"script": "parameters{\n\trecordsBefore as date\n}\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: 'SELECT * FROM import_transaction WHERE created_at < $recordsBefore LIMIT 10',\n\tformat: 'query') ~> Harmonia\nHarmonia sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> HarmoniaDataLakeParquet"
+		}
+	}
+}

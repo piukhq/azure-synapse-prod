@@ -1,0 +1,20 @@
+{
+	"name": "HarmoniaOneOffExport",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DataLakeProd",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "temp/harmonia/oneoffexport/",
+				"fileSystem": "binkuksouthprod-datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
