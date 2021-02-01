@@ -33,7 +33,7 @@
 				}
 			},
 			{
-				"name": "Dataflow1",
+				"name": "HarmoniaDailyImport",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
@@ -55,6 +55,13 @@
 					"dataflow": {
 						"referenceName": "LoadDailyHarmoniaImportTransactionToDWH",
 						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "DataLakeProd",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "binkuksouthprod-datalake/temp/synapse/harmoniaimport"
 					},
 					"compute": {
 						"coreCount": 8,
