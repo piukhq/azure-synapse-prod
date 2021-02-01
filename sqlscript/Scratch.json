@@ -2,7 +2,7 @@
 	"name": "Scratch",
 	"properties": {
 		"content": {
-			"query": "GRANT CONTROL ON SCHEMA :: harmonia TO binkuksouthprodsynapse",
+			"query": "SELECT * FROM harmonia.import_transaction",
 			"metadata": {
 				"language": "sql"
 			},
