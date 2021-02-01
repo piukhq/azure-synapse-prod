@@ -76,6 +76,49 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "HarmoniaDailyImport",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "HarmoniaDailyExport",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "LoadDailyHarmoniaImportTransactionToDWH",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ParquetImportTransaction": {},
+									"ImportTransactionSink": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "DataLakeProd",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "binkuksouthprod-datalake/temp/synapse/harmoniaimport"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"folder": {
@@ -85,7 +128,9 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/HarmoniaDailyDumpToParquet')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/LoadDailyHarmoniaImportTransactionToDWH')]",
+				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
 			]
 		},
 		{
@@ -428,6 +473,102 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/harmonia_daily_dump_parquet')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dwhpool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/stagingpool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Scratch')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LoadDailyHarmoniaImportTransactionToDWH')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "HarmoniaDailyImportTransactionParquet",
+								"type": "DatasetReference"
+							},
+							"name": "ParquetImportTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DWHHarmoniaImportTransaction",
+								"type": "DatasetReference"
+							},
+							"name": "ImportTransactionSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AlterRow1"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> ParquetImportTransaction\nParquetImportTransaction alterRow(updateIf(not(isNull(updated_at)))) ~> AlterRow1\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ImportTransactionSink"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/HarmoniaDailyImportTransactionParquet')]",
+				"[concat(variables('workspaceId'), '/datasets/DWHHarmoniaImportTransaction')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DWHHarmoniaImportTransaction')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWHSQLPool",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "harmonia",
+					"table": "import_transaction"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
 			]
 		}
 	]
