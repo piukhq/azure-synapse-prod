@@ -7,21 +7,29 @@
 			"metadata": "Workspace name",
 			"defaultValue": "binkuksouthprodsynapse"
 		},
-		"binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString": {
+		"DWHSQLPool_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'binkuksouthprodsynapse-WorkspaceDefaultSqlServer'"
+			"metadata": "Secure string for 'connectionString' of 'DWHSQLPool'"
 		},
 		"Harmonia_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'Harmonia'"
 		},
-		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+		"binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'binkuksouthprodsynapse-WorkspaceDefaultSqlServer'"
+		},
+		"DataLakeProd_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://binkuksouthproddwh.dfs.core.windows.net"
 		},
 		"KeyVaultProd_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://bink-uksouth-prod-inf.vault.azure.net/"
+		},
+		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://binkuksouthproddwh.dfs.core.windows.net"
 		}
 	},
 	"variables": {
@@ -29,137 +37,84 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/binkuksouthprodsynapse-WorkspaceDefaultSqlServer')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"name": "[concat(parameters('workspaceName'), '/harmonia_daily_dump_parquet')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"parameters": {
-					"DBName": {
-						"type": "String"
-					}
-				},
-				"annotations": [],
-				"type": "AzureSqlDW",
-				"typeProperties": {
-					"connectionString": "[parameters('binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/binkuksouthprodsynapse-WorkspaceDefaultStorage')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url')]"
-				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
-			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"type": "Managed",
-				"typeProperties": {
-					"computeProperties": {
-						"location": "AutoResolve",
-						"dataFlowProperties": {
-							"computeType": "General",
-							"coreCount": 8,
-							"timeToLive": 0
+				"activities": [
+					{
+						"name": "HarmoniaDailyExport",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "HarmoniaDailyDumpToParquet",
+								"type": "DataFlowReference",
+								"parameters": {
+									"recordsBefore": {
+										"value": "'20210127'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"HarmoniaImportTransaction": {},
+									"HarmoniaImportTransactionExport": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
 						}
 					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
-			"type": "Microsoft.Synapse/workspaces/credentials",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"type": "ManagedIdentity",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Notebook 1')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2"
-					}
+				],
+				"folder": {
+					"name": "Harmonia"
 				},
-				"metadata": {
-					"saveOutput": true,
-					"language_info": {
-						"name": "python"
-					}
-				},
-				"cells": []
+				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/HarmoniaDailyDumpToParquet')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/KeyVaultProd')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"name": "[concat(parameters('workspaceName'), '/HarmoniaDailyImportTransactionParquet')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"description": "Azure KeyVault containing prod database credentials",
+				"linkedServiceName": {
+					"referenceName": "DataLakeProd",
+					"type": "LinkedServiceReference"
+				},
 				"annotations": [],
-				"type": "AzureKeyVault",
+				"type": "Parquet",
 				"typeProperties": {
-					"baseUrl": "[parameters('KeyVaultProd_properties_typeProperties_baseUrl')]"
-				}
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@concat('temp/harmonia/import_transaction/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
+							"type": "Expression"
+						},
+						"fileSystem": "binkuksouthprod-datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/dwhpool')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/stagingpool')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": []
-			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/harmonia__import_transaction')]",
@@ -238,6 +193,44 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/DWHSQLPool')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('DWHSQLPool_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DataLakeProd')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('DataLakeProd_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Harmonia')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -265,6 +258,145 @@
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/linkedServices/KeyVaultProd')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/KeyVaultProd')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Azure KeyVault containing prod database credentials",
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('KeyVaultProd_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/binkuksouthprodsynapse-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/binkuksouthprodsynapse-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/HarmoniaDailyDumpToParquet')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "harmonia__import_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "HarmoniaImportTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "HarmoniaDailyImportTransactionParquet",
+								"type": "DatasetReference"
+							},
+							"name": "HarmoniaImportTransactionExport"
+						}
+					],
+					"transformations": [],
+					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> HarmoniaImportTransaction\nHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> HarmoniaImportTransactionExport"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/harmonia__import_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/HarmoniaDailyImportTransactionParquet')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/harmonia_parquet_inspect')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- SELECT\n--     TOP 100 *\n-- FROM\n--     OPENROWSET(\n--         BULK 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/part-00000-931e9f73-f3b2-462a-a203-358cfd48c033-c000.snappy.parquet',\n--         FORMAT='PARQUET'\n--     ) AS [result]\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'test1234!atasergr'\n-- GO\n-- CREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\n-- WITH IDENTITY = 'Managed Identity'\n-- CREATE EXTERNAL DATA SOURCE harmonia_test\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/', CREDENTIAL = WorkspaceIdentity)\n\n-- SELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'harmonia_test', FORMAT='PARQUET') as rows;\n-- CREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] WITH ( FORMAT_TYPE = PARQUET)\n-- CREATE EXTERNAL TABLE dbo.harmonia_import_transaction_test (\n--     [id] int, \n--     [created_at] datetime, \n--     [updated_at] datetime, \n--     [transaction_id] varchar(8000), \n--     [provider_slug] varchar(8000), \n--     [identified] bit, \n--     [source] varchar(8000), \n--     [data] varchar(8000), \n--     [match_group] VARCHAR(8000)\n-- ) WITH (LOCATION = '*.parquet', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test;\n-- SELECT TOP 10 * FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NOT NULL;\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NULL;\n\n-- CREATE EXTERNAL TABLE dbo.tharmonia_import_transaction_testout WITH (\n--     LOCATION = 'new_data/', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]\n-- ) AS SELECT id, JSON_VALUE(data, '$.TransactionCardFirst6') AS first6, data FROM dbo.harmonia_import_transaction_test WHERE id = 49094976;\n\n\n\n-- CREATE USER [binkuksouthprodsynapse] FROM EXTERNAL PROVIDER;\n-- ALTER ROLE db_owner ADD MEMBER [binkuksouthprodsynapse];\n-- GRANT CONTROL ON SCHEMA :: dbo TO binkuksouthprodsynapse;\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "temp"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }

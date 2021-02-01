@@ -5,17 +5,23 @@
 		"workspaceName": {
 			"value": "binkuksouthprodsynapse"
 		},
-		"binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString": {
+		"DWHSQLPool_connectionString": {
 			"value": ""
 		},
 		"Harmonia_connectionString": {
 			"value": ""
 		},
-		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+		"binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"DataLakeProd_properties_typeProperties_url": {
 			"value": "https://binkuksouthproddwh.dfs.core.windows.net"
 		},
 		"KeyVaultProd_properties_typeProperties_baseUrl": {
 			"value": "https://bink-uksouth-prod-inf.vault.azure.net/"
+		},
+		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://binkuksouthproddwh.dfs.core.windows.net"
 		}
 	}
 }
