@@ -1,0 +1,25 @@
+{
+	"name": "HarmoniaDailyDump",
+	"properties": {
+		"description": "Dump Harmonia daily",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "harmonia_daily_dump_parquet",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2021-02-02T01:00:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}
