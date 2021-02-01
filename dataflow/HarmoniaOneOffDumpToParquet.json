@@ -9,20 +9,20 @@
 						"referenceName": "harmonia__import_transaction",
 						"type": "DatasetReference"
 					},
-					"name": "Harmonia"
+					"name": "HarmoniaImportTransaction"
 				}
 			],
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "HarmoniaOneOffExport",
+						"referenceName": "HarmoniaDailyImportTransactionParquet",
 						"type": "DatasetReference"
 					},
-					"name": "HarmoniaDataLakeParquet"
+					"name": "HarmoniaImportTransACTIONDataLakeParquet"
 				}
 			],
 			"transformations": [],
-			"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> Harmonia\nHarmonia sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> HarmoniaDataLakeParquet"
+			"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> HarmoniaImportTransaction\nHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> HarmoniaImportTransACTIONDataLakeParquet"
 		}
 	}
 }

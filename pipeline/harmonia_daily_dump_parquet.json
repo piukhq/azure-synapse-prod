@@ -1,9 +1,9 @@
 {
-	"name": "harmonia_oneoff_dump_parquet",
+	"name": "harmonia_daily_dump_parquet",
 	"properties": {
 		"activities": [
 			{
-				"name": "HarmoniaOneOffExport",
+				"name": "HarmoniaDailyExport",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {

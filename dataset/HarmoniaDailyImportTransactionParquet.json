@@ -1,16 +1,24 @@
 {
-	"name": "HarmoniaOneOffExport",
+	"name": "HarmoniaDailyImportTransactionParquet",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "DataLakeProd",
 			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"date_partition": {
+				"type": "string"
+			}
 		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": "temp/harmonia/oneoffexport/",
+				"folderPath": {
+					"value": "@concat('temp/harmonia/import_transaction/date=', dataset().date_partition, '/')",
+					"type": "Expression"
+				},
 				"fileSystem": "binkuksouthprod-datalake"
 			},
 			"compressionCodec": "snappy"
