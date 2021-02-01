@@ -16,7 +16,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@concat('temp/harmonia/import_transaction/date=', dataset().date_partition, '/')",
+					"value": "@concat('temp/harmonia/import_transaction/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
 					"type": "Expression"
 				},
 				"fileSystem": "binkuksouthprod-datalake"

@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "HarmoniaOneOffDumpToParquet",
+						"referenceName": "HarmoniaDailyDumpToParquet",
 						"type": "DataFlowReference",
 						"parameters": {
 							"recordsBefore": {
