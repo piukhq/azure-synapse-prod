@@ -48,7 +48,7 @@
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
-							"retry": 0,
+							"retry": 3,
 							"retryIntervalInSeconds": 30,
 							"secureOutput": false,
 							"secureInput": false
@@ -119,6 +119,43 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "WebHook1",
+						"type": "WebHook",
+						"dependsOn": [
+							{
+								"activity": "HarmoniaDailyExport",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "HarmoniaDailyImport",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/5284ca0f02cc40de8b85ecd18bf0ec55/f7c46488-2054-46de-9673-e0c6e94b232c",
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@type": "MessageCard",
+								"@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Harmonia import transactions"
+									}
+								]
+							},
+							"timeout": "00:10:00"
+						}
 					}
 				],
 				"folder": {
@@ -131,6 +168,27 @@
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/LoadDailyHarmoniaImportTransactionToDWH')]",
 				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DWHHarmoniaImportTransaction')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWHSQLPool",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "harmonia",
+					"table": "import_transaction"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
 			]
 		},
 		{
@@ -362,6 +420,37 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/HarmoniaDailyDump')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Dump Harmonia daily",
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "harmonia_daily_dump_parquet",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2021-02-02T01:00:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/harmonia_daily_dump_parquet')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
 			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
 			"apiVersion": "2019-06-01-preview",
@@ -415,104 +504,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
-			"type": "Microsoft.Synapse/workspaces/credentials",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"type": "ManagedIdentity",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/harmonia_parquet_inspect')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "-- SELECT\n--     TOP 100 *\n-- FROM\n--     OPENROWSET(\n--         BULK 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/part-00000-931e9f73-f3b2-462a-a203-358cfd48c033-c000.snappy.parquet',\n--         FORMAT='PARQUET'\n--     ) AS [result]\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'test1234!atasergr'\n-- GO\n-- CREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\n-- WITH IDENTITY = 'Managed Identity'\n-- CREATE EXTERNAL DATA SOURCE harmonia_test\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/', CREDENTIAL = WorkspaceIdentity)\n\n-- SELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'harmonia_test', FORMAT='PARQUET') as rows;\n-- CREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] WITH ( FORMAT_TYPE = PARQUET)\n-- CREATE EXTERNAL TABLE dbo.harmonia_import_transaction_test (\n--     [id] int, \n--     [created_at] datetime, \n--     [updated_at] datetime, \n--     [transaction_id] varchar(8000), \n--     [provider_slug] varchar(8000), \n--     [identified] bit, \n--     [source] varchar(8000), \n--     [data] varchar(8000), \n--     [match_group] VARCHAR(8000)\n-- ) WITH (LOCATION = '*.parquet', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test;\n-- SELECT TOP 10 * FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NOT NULL;\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NULL;\n\n-- CREATE EXTERNAL TABLE dbo.tharmonia_import_transaction_testout WITH (\n--     LOCATION = 'new_data/', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]\n-- ) AS SELECT id, JSON_VALUE(data, '$.TransactionCardFirst6') AS first6, data FROM dbo.harmonia_import_transaction_test WHERE id = 49094976;\n\n\n\n-- CREATE USER [binkuksouthprodsynapse] FROM EXTERNAL PROVIDER;\n-- ALTER ROLE db_owner ADD MEMBER [binkuksouthprodsynapse];\n-- GRANT CONTROL ON SCHEMA :: dbo TO binkuksouthprodsynapse;\n",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "temp"
-					}
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/HarmoniaDailyDump')]",
-			"type": "Microsoft.Synapse/workspaces/triggers",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"description": "Dump Harmonia daily",
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "harmonia_daily_dump_parquet",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2021-02-02T01:00:00Z",
-						"timeZone": "UTC",
-						"schedule": {}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/harmonia_daily_dump_parquet')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/dwhpool')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/stagingpool')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Scratch')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "SELECT * FROM harmonia.import_transaction",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
-					}
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/LoadDailyHarmoniaImportTransactionToDWH')]",
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
@@ -551,25 +542,52 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/DWHHarmoniaImportTransaction')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DWHSQLPool",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "harmonia",
-					"table": "import_transaction"
-				}
+				"type": "ManagedIdentity",
+				"typeProperties": {}
 			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
-			]
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Scratch')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT * FROM harmonia.import_transaction",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/harmonia_parquet_inspect')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- SELECT\n--     TOP 100 *\n-- FROM\n--     OPENROWSET(\n--         BULK 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/part-00000-931e9f73-f3b2-462a-a203-358cfd48c033-c000.snappy.parquet',\n--         FORMAT='PARQUET'\n--     ) AS [result]\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'test1234!atasergr'\n-- GO\n-- CREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\n-- WITH IDENTITY = 'Managed Identity'\n-- CREATE EXTERNAL DATA SOURCE harmonia_test\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/', CREDENTIAL = WorkspaceIdentity)\n\n-- SELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'harmonia_test', FORMAT='PARQUET') as rows;\n-- CREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] WITH ( FORMAT_TYPE = PARQUET)\n-- CREATE EXTERNAL TABLE dbo.harmonia_import_transaction_test (\n--     [id] int, \n--     [created_at] datetime, \n--     [updated_at] datetime, \n--     [transaction_id] varchar(8000), \n--     [provider_slug] varchar(8000), \n--     [identified] bit, \n--     [source] varchar(8000), \n--     [data] varchar(8000), \n--     [match_group] VARCHAR(8000)\n-- ) WITH (LOCATION = '*.parquet', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test;\n-- SELECT TOP 10 * FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NOT NULL;\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NULL;\n\n-- CREATE EXTERNAL TABLE dbo.tharmonia_import_transaction_testout WITH (\n--     LOCATION = 'new_data/', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]\n-- ) AS SELECT id, JSON_VALUE(data, '$.TransactionCardFirst6') AS first6, data FROM dbo.harmonia_import_transaction_test WHERE id = 49094976;\n\n\n\n-- CREATE USER [binkuksouthprodsynapse] FROM EXTERNAL PROVIDER;\n-- ALTER ROLE db_owner ADD MEMBER [binkuksouthprodsynapse];\n-- GRANT CONTROL ON SCHEMA :: dbo TO binkuksouthprodsynapse;\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "temp"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
