@@ -71,7 +71,7 @@
 				}
 			},
 			{
-				"name": "WebHook1",
+				"name": "Teams message",
 				"type": "WebHook",
 				"dependsOn": [
 					{
