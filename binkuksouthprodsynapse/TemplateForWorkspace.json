@@ -121,7 +121,7 @@
 						}
 					},
 					{
-						"name": "Teams message",
+						"name": "Teams failure message",
 						"type": "WebHook",
 						"dependsOn": [
 							{
@@ -150,6 +150,37 @@
 								"sections": [
 									{
 										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Harmonia import transactions"
+									}
+								]
+							},
+							"timeout": "00:10:00"
+						}
+					},
+					{
+						"name": "Teams success message",
+						"type": "WebHook",
+						"dependsOn": [
+							{
+								"activity": "HarmoniaDailyImport",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/5284ca0f02cc40de8b85ecd18bf0ec55/f7c46488-2054-46de-9673-e0c6e94b232c",
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@type": "MessageCard",
+								"@context": "http://schema.org/extensions",
+								"themeColor": "00ff00",
+								"summary": "Pipeline success",
+								"sections": [
+									{
+										"activityTitle": "Pipeline success",
 										"activitySubtitle": "Harmonia import transactions"
 									}
 								]
