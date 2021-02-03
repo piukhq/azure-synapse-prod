@@ -71,25 +71,36 @@
 				}
 			},
 			{
-				"name": "Teams failure message",
-				"type": "WebHook",
+				"name": "TeamsFailure",
+				"type": "WebActivity",
 				"dependsOn": [
-					{
-						"activity": "HarmoniaDailyExport",
-						"dependencyConditions": [
-							"Failed"
-						]
-					},
 					{
 						"activity": "HarmoniaDailyImport",
 						"dependencyConditions": [
 							"Failed"
 						]
+					},
+					{
+						"activity": "HarmoniaDailyExport",
+						"dependencyConditions": [
+							"Failed"
+						]
 					}
 				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
 					"url": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/5284ca0f02cc40de8b85ecd18bf0ec55/f7c46488-2054-46de-9673-e0c6e94b232c",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
 					"method": "POST",
 					"body": {
 						"@@type": "MessageCard",
@@ -102,13 +113,12 @@
 								"activitySubtitle": "Harmonia import transactions"
 							}
 						]
-					},
-					"timeout": "00:10:00"
+					}
 				}
 			},
 			{
-				"name": "Teams success message",
-				"type": "WebHook",
+				"name": "TeamsSuccess",
+				"type": "WebActivity",
 				"dependsOn": [
 					{
 						"activity": "HarmoniaDailyImport",
@@ -117,9 +127,20 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
 					"url": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/5284ca0f02cc40de8b85ecd18bf0ec55/f7c46488-2054-46de-9673-e0c6e94b232c",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
 					"method": "POST",
 					"body": {
 						"@@type": "MessageCard",
@@ -132,8 +153,7 @@
 								"activitySubtitle": "Harmonia import transactions"
 							}
 						]
-					},
-					"timeout": "00:10:00"
+					}
 				}
 			}
 		],
