@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "HarmoniaDailyImportTransactionParquet",
+						"referenceName": "dl_harmonia__daily__import_transaction",
 						"type": "DatasetReference"
 					},
 					"name": "ParquetImportTransaction"
@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "DWHHarmoniaImportTransaction",
+						"referenceName": "dwlsql_harmonia__import_transaction",
 						"type": "DatasetReference"
 					},
 					"name": "ImportTransactionSink"

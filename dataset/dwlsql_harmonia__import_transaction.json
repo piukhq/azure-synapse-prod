@@ -1,5 +1,5 @@
 {
-	"name": "DWHHarmoniaImportTransaction",
+	"name": "dwlsql_harmonia__import_transaction",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "DWHSQLPool",

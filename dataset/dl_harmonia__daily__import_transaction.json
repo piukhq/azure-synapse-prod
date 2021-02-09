@@ -1,5 +1,5 @@
 {
-	"name": "HarmoniaDailyImportTransactionParquet",
+	"name": "dl_harmonia__daily__import_transaction",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "DataLakeProd",

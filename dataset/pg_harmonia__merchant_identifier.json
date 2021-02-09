@@ -1,5 +1,5 @@
 {
-	"name": "pg_harmonia__import_transaction",
+	"name": "pg_harmonia__merchant_identifier",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "Harmonia",
@@ -27,37 +27,37 @@
 				"scale": 0
 			},
 			{
-				"name": "transaction_id",
+				"name": "mid",
 				"type": "character varying",
 				"precision": 0,
 				"scale": 0
 			},
 			{
-				"name": "provider_slug",
+				"name": "loyalty_scheme_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "payment_provider_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "location",
 				"type": "character varying",
 				"precision": 0,
 				"scale": 0
 			},
 			{
-				"name": "identified",
-				"type": "boolean",
-				"precision": 0,
-				"scale": 0
-			},
-			{
-				"name": "source",
+				"name": "postcode",
 				"type": "character varying",
 				"precision": 0,
 				"scale": 0
 			},
 			{
-				"name": "data",
-				"type": "json",
-				"precision": 0,
-				"scale": 0
-			},
-			{
-				"name": "match_group",
+				"name": "store_id",
 				"type": "character varying",
 				"precision": 0,
 				"scale": 0
@@ -65,7 +65,7 @@
 		],
 		"typeProperties": {
 			"schema": "public",
-			"table": "import_transaction"
+			"table": "merchant_identifier"
 		}
 	}
 }

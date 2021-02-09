@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "harmonia__import_transaction",
+						"referenceName": "pg_harmonia__import_transaction",
 						"type": "DatasetReference"
 					},
 					"name": "HarmoniaImportTransaction"
@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "HarmoniaDailyImportTransactionParquet",
+						"referenceName": "dl_harmonia__daily__import_transaction",
 						"type": "DatasetReference"
 					},
 					"name": "HarmoniaImportTransactionExport"
