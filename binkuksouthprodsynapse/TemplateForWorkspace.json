@@ -65,8 +65,10 @@
 									}
 								},
 								"datasetParameters": {
-									"HarmoniaImportTransaction": {},
-									"HarmoniaImportTransactionExport": {}
+									"PGHarmoniaImportTransaction": {},
+									"PGHarmoniaMerchantIdentifier": {},
+									"DLHarmoniaDailyImportTransaction": {},
+									"DLHarmoniaDailyMerchantIdentifier": {}
 								}
 							},
 							"staging": {},
@@ -102,8 +104,8 @@
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"ParquetImportTransaction": {},
-									"ImportTransactionSink": {}
+									"DLHarmoniaImportTransaction": {},
+									"DWHImportTransaction": {}
 								}
 							},
 							"staging": {
@@ -222,7 +224,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/DWHHarmoniaImportTransaction')]",
+			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__import_transaction')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -243,7 +245,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/HarmoniaDailyImportTransactionParquet')]",
+			"name": "[concat(parameters('workspaceName'), '/dl_harmonia__daily__import_transaction')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -271,7 +273,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/harmonia__import_transaction')]",
+			"name": "[concat(parameters('workspaceName'), '/pg_harmonia__import_transaction')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -530,28 +532,44 @@
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "harmonia__import_transaction",
+								"referenceName": "pg_harmonia__import_transaction",
 								"type": "DatasetReference"
 							},
-							"name": "HarmoniaImportTransaction"
+							"name": "PGHarmoniaImportTransaction"
+						},
+						{
+							"dataset": {
+								"referenceName": "pg_harmonia__merchant_identifier",
+								"type": "DatasetReference"
+							},
+							"name": "PGHarmoniaMerchantIdentifier"
 						}
 					],
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "HarmoniaDailyImportTransactionParquet",
+								"referenceName": "dl_harmonia__daily__import_transaction",
 								"type": "DatasetReference"
 							},
-							"name": "HarmoniaImportTransactionExport"
+							"name": "DLHarmoniaDailyImportTransaction"
+						},
+						{
+							"dataset": {
+								"referenceName": "dl_harmonia__daily__merchant_identifier",
+								"type": "DatasetReference"
+							},
+							"name": "DLHarmoniaDailyMerchantIdentifier"
 						}
 					],
 					"transformations": [],
-					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> HarmoniaImportTransaction\nHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> HarmoniaImportTransactionExport"
+					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> PGHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 5000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaMerchantIdentifier\nPGHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyImportTransaction\nPGHarmoniaMerchantIdentifier sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyMerchantIdentifier"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/harmonia__import_transaction')]",
-				"[concat(variables('workspaceId'), '/datasets/HarmoniaDailyImportTransactionParquet')]"
+				"[concat(variables('workspaceId'), '/datasets/pg_harmonia__import_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/pg_harmonia__merchant_identifier')]",
+				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__import_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__merchant_identifier')]"
 			]
 		},
 		{
@@ -564,19 +582,19 @@
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "HarmoniaDailyImportTransactionParquet",
+								"referenceName": "dl_harmonia__daily__import_transaction",
 								"type": "DatasetReference"
 							},
-							"name": "ParquetImportTransaction"
+							"name": "DLHarmoniaImportTransaction"
 						}
 					],
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "DWHHarmoniaImportTransaction",
+								"referenceName": "dwhsql_harmonia__import_transaction",
 								"type": "DatasetReference"
 							},
-							"name": "ImportTransactionSink"
+							"name": "DWHImportTransaction"
 						}
 					],
 					"transformations": [
@@ -584,12 +602,12 @@
 							"name": "AlterRow1"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> ParquetImportTransaction\nParquetImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ImportTransactionSink"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHImportTransaction"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/HarmoniaDailyImportTransactionParquet')]",
-				"[concat(variables('workspaceId'), '/datasets/DWHHarmoniaImportTransaction')]"
+				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__import_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__import_transaction')]"
 			]
 		},
 		{
@@ -639,6 +657,131 @@
 				"type": "SqlQuery"
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pg_harmonia__merchant_identifier')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "mid",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "loyalty_scheme_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "payment_provider_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "location",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "postcode",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "store_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "merchant_identifier"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/Harmonia')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dl_harmonia__daily__merchant_identifier')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLakeProd",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@concat('temp/harmonia/merchant_identifier/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
+							"type": "Expression"
+						},
+						"fileSystem": "binkuksouthprod-datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__merchant_identifier')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWHSQLPool",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "harmonia",
+					"table": "merchant_identifier"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
+			]
 		}
 	]
 }
