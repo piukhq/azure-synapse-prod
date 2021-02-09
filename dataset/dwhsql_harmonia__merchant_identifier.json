@@ -1,5 +1,5 @@
 {
-	"name": "dwhsql_harmonia__import_transaction",
+	"name": "dwhsql_harmonia__merchant_identifier",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "DWHSQLPool",
@@ -10,7 +10,7 @@
 		"schema": [],
 		"typeProperties": {
 			"schema": "harmonia",
-			"table": "import_transaction"
+			"table": "merchant_identifier"
 		}
 	}
 }
