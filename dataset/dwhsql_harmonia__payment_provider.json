@@ -1,0 +1,16 @@
+{
+	"name": "dwhsql_harmonia__payment_provider",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DWHSQLPool",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "harmonia",
+			"table": "payment_provider"
+		}
+	}
+}

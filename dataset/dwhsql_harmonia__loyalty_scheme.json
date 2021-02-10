@@ -1,0 +1,16 @@
+{
+	"name": "dwhsql_harmonia__loyalty_scheme",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DWHSQLPool",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "harmonia",
+			"table": "loyalty_scheme"
+		}
+	}
+}
