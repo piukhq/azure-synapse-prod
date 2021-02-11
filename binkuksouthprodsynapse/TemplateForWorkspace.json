@@ -110,8 +110,12 @@
 								"datasetParameters": {
 									"DLHarmoniaImportTransaction": {},
 									"DLHarmoniaMerchantIdentifier": {},
+									"DLHarmoniaLoyaltyScheme": {},
+									"DLHarmoniaPaymentProvider": {},
 									"DWHImportTransaction": {},
-									"DWHMerchantIdentifier": {}
+									"DWHMerchantIdentifier": {},
+									"DWHLoyaltyScheme": {},
+									"DWHPaymentProvider": {}
 								}
 							},
 							"staging": {
@@ -125,7 +129,8 @@
 								"coreCount": 8,
 								"computeType": "General"
 							},
-							"traceLevel": "Fine"
+							"traceLevel": "Fine",
+							"continueOnError": true
 						}
 					},
 					{
@@ -224,9 +229,9 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/HarmoniaDailyDumpToParquet')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/LoadDailyHarmoniaImportTransactionToDWH')]",
-				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
 			]
 		},
 		{
@@ -245,6 +250,34 @@
 						"type": "AzureBlobFSLocation",
 						"folderPath": {
 							"value": "@concat('temp/harmonia/import_transaction/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
+							"type": "Expression"
+						},
+						"fileSystem": "binkuksouthprod-datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dl_harmonia__daily__loyalty_scheme')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLakeProd",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@concat('temp/harmonia/loyalty_scheme/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
 							"type": "Expression"
 						},
 						"fileSystem": "binkuksouthprod-datalake"
@@ -286,6 +319,34 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/dl_harmonia__daily__payment_provider')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLakeProd",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@concat('temp/harmonia/payment_provider/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
+							"type": "Expression"
+						},
+						"fileSystem": "binkuksouthprod-datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__import_transaction')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -307,6 +368,27 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__loyalty_scheme')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWHSQLPool",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "harmonia",
+					"table": "loyalty_scheme"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__merchant_identifier')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -321,6 +403,27 @@
 				"typeProperties": {
 					"schema": "harmonia",
 					"table": "merchant_identifier"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__payment_provider')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWHSQLPool",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "harmonia",
+					"table": "payment_provider"
 				}
 			},
 			"dependsOn": [
@@ -404,6 +507,52 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/pg_harmonia__loyalty_scheme')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "slug",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "loyalty_scheme"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/Harmonia')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/pg_harmonia__merchant_identifier')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -473,6 +622,52 @@
 				"typeProperties": {
 					"schema": "public",
 					"table": "merchant_identifier"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/Harmonia')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pg_harmonia__payment_provider')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "slug",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "payment_provider"
 				}
 			},
 			"dependsOn": [
@@ -721,7 +916,7 @@
 						}
 					],
 					"transformations": [],
-					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> PGHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 5000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaPaymentProvider\nPGHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyImportTransaction\nPGHarmoniaMerchantIdentifier sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyMerchantIdentifier\nPGHarmoniaLoyaltyScheme sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyLoyaltyScheme\nPGHarmoniaPaymentProvider sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyPaymentProvider"
+					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> PGHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 5000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaPaymentProvider\nPGHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyImportTransaction\nPGHarmoniaMerchantIdentifier sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyMerchantIdentifier\nPGHarmoniaLoyaltyScheme sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyLoyaltyScheme\nPGHarmoniaPaymentProvider sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyPaymentProvider"
 				}
 			},
 			"dependsOn": [
@@ -756,6 +951,20 @@
 								"type": "DatasetReference"
 							},
 							"name": "DLHarmoniaMerchantIdentifier"
+						},
+						{
+							"dataset": {
+								"referenceName": "dl_harmonia__daily__loyalty_scheme",
+								"type": "DatasetReference"
+							},
+							"name": "DLHarmoniaLoyaltyScheme"
+						},
+						{
+							"dataset": {
+								"referenceName": "dl_harmonia__daily__payment_provider",
+								"type": "DatasetReference"
+							},
+							"name": "DLHarmoniaPaymentProvider"
 						}
 					],
 					"sinks": [
@@ -772,6 +981,20 @@
 								"type": "DatasetReference"
 							},
 							"name": "DWHMerchantIdentifier"
+						},
+						{
+							"dataset": {
+								"referenceName": "dwhsql_harmonia__loyalty_scheme",
+								"type": "DatasetReference"
+							},
+							"name": "DWHLoyaltyScheme"
+						},
+						{
+							"dataset": {
+								"referenceName": "dwhsql_harmonia__payment_provider",
+								"type": "DatasetReference"
+							},
+							"name": "DWHPaymentProvider"
 						}
 					],
 					"transformations": [
@@ -780,16 +1003,26 @@
 						},
 						{
 							"name": "AlterRow2"
+						},
+						{
+							"name": "AlterRow3"
+						},
+						{
+							"name": "AlterRow4"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tallowCopyCommand: true) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\tmid,\n\t\tloyalty_scheme_id,\n\t\tpayment_provider_id,\n\t\tlocation,\n\t\tpostcode,\n\t\tstore_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHMerchantIdentifier"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaPaymentProvider\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nDLHarmoniaLoyaltyScheme alterRow(upsertIf(true())) ~> AlterRow3\nDLHarmoniaPaymentProvider alterRow(upsertIf(true())) ~> AlterRow4\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tallowCopyCommand: true) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHMerchantIdentifier\nAlterRow3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHLoyaltyScheme\nAlterRow4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHPaymentProvider"
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__import_transaction')]",
 				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__merchant_identifier')]",
+				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__loyalty_scheme')]",
+				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__payment_provider')]",
 				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__import_transaction')]",
-				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__merchant_identifier')]"
+				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__merchant_identifier')]",
+				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__loyalty_scheme')]",
+				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__payment_provider')]"
 			]
 		},
 		{
@@ -808,7 +1041,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "SELECT * FROM harmonia.import_transaction",
+					"query": "-- GRANT CONTROL ON SCHEMA ::harmonia TO binkuksouthprodsynapse;\n\nSELECT * FROM harmonia.import_transaction",
 					"metadata": {
 						"language": "sql"
 					},
@@ -857,196 +1090,6 @@
 				"annotations": []
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__payment_provider')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DWHSQLPool",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "harmonia",
-					"table": "payment_provider"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/dwhsql_harmonia__loyalty_scheme')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DWHSQLPool",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "harmonia",
-					"table": "loyalty_scheme"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/DWHSQLPool')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/pg_harmonia__loyalty_scheme')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "Harmonia",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzurePostgreSqlTable",
-				"schema": [
-					{
-						"name": "id",
-						"type": "integer",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "created_at",
-						"type": "timestamp without time zone",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "updated_at",
-						"type": "timestamp without time zone",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "slug",
-						"type": "character varying",
-						"precision": 0,
-						"scale": 0
-					}
-				],
-				"typeProperties": {
-					"schema": "public",
-					"table": "loyalty_scheme"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/Harmonia')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/pg_harmonia__payment_provider')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "Harmonia",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzurePostgreSqlTable",
-				"schema": [
-					{
-						"name": "id",
-						"type": "integer",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "created_at",
-						"type": "timestamp without time zone",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "updated_at",
-						"type": "timestamp without time zone",
-						"precision": 0,
-						"scale": 0
-					},
-					{
-						"name": "slug",
-						"type": "character varying",
-						"precision": 0,
-						"scale": 0
-					}
-				],
-				"typeProperties": {
-					"schema": "public",
-					"table": "payment_provider"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/Harmonia')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/dl_harmonia__daily__payment_provider')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DataLakeProd",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": {
-							"value": "@concat('temp/harmonia/payment_provider/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
-							"type": "Expression"
-						},
-						"fileSystem": "binkuksouthprod-datalake"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/dl_harmonia__daily__loyalty_scheme')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DataLakeProd",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": {
-							"value": "@concat('temp/harmonia/loyalty_scheme/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
-							"type": "Expression"
-						},
-						"fileSystem": "binkuksouthprod-datalake"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
-			]
 		}
 	]
 }
