@@ -7,7 +7,27 @@
 		},
 		"annotations": [],
 		"type": "AzureSqlDWTable",
-		"schema": [],
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "created_at",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "updated_at",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "slug",
+				"type": "nvarchar"
+			}
+		],
 		"typeProperties": {
 			"schema": "harmonia",
 			"table": "loyalty_scheme"

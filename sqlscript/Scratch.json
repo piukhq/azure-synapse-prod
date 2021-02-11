@@ -2,7 +2,7 @@
 	"name": "Scratch",
 	"properties": {
 		"content": {
-			"query": "-- GRANT CONTROL ON SCHEMA ::harmonia TO binkuksouthprodsynapse;\n\nSELECT * FROM harmonia.import_transaction",
+			"query": "-- GRANT CONTROL ON SCHEMA ::harmonia TO binkuksouthprodsynapse;\n\nSELECT * FROM harmonia.payment_provider",
 			"metadata": {
 				"language": "sql"
 			},
