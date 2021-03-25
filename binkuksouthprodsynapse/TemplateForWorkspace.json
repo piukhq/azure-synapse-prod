@@ -19,6 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'binkuksouthprodsynapse-WorkspaceDefaultSqlServer'"
 		},
+		"ls_Syn_DataWarehouse_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_Syn_DataWarehouse'"
+		},
+		"ls_pg_hermes_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_pg_hermes'"
+		},
 		"DataLakeProd_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://binkuksouthproddwh.dfs.core.windows.net"
@@ -30,12 +38,1132 @@
 		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://binkuksouthproddwh.dfs.core.windows.net"
+		},
+		"ls_adls_dwlanding_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://binkuksouthproddwh.dfs.core.windows.net"
 		}
 	},
 	"variables": {
 		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/Build Data Warehouse')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Master Pipeline to refresh Data Warehouse",
+				"activities": [
+					{
+						"name": "Load Source data to ADLS",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load Source data to ADLS",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Create External Objects",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Load Source data to ADLS",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Create External Objects",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Build Dimensions",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Create External Objects",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Build Dimensions",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Load Source data to ADLS",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Create External Objects",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Build Dimensions",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "@concat('{\n    \"','','type\": \"MessageCard\",\n    \"','','context\": \"https://schema.org/extensions\",\n    \"summary\": \"Issue 176715375\",\n    \"themeColor\": \"eb3434\",\n    \"title\": \"Azure Synapse notification alert!\",\n    \"sections\": [\n        {\n            \"activityTitle\": \"Pipeline failed\",\n            \"activitySubtitle\": \"UTC: ', utcnow() ,'\",\n            \"activityImage\": \"https://azurebloggingresources.blob.core.windows.net/images/error-red-cross.png\",\n            \"facts\": [\n                {\n                    \"name\": \"Azure Synpase Analytics:\",\n                    \"value\": \"**', pipeline().DataFactory,'**\"\n                },\n                {\n                    \"name\": \"Pipeline\",\n                    \"value\": \"**',pipeline().Pipeline,'**\"\n                },\n                {\n                    \"name\": \"Run ID\",\n                    \"value\": \"**',pipeline().RunId,'**\"\n                }\n            ],\n            \"text\": \"Error in inner pipeline: \"\n        }\n    ],\n    \"potentialAction\": [\n        {\n            \"type\": \"OpenUri\",\n            \"name\": \"Go to Pipeline Run\",\n            \"targets\": [\n                {\n                    \"os\": \"default\",\n                    \"uri\": \" https://web.azuresynapse.net\"\n                }\n            ]\n        }\n    ]\n}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS')]",
+				"[concat(variables('workspaceId'), '/pipelines/Create External Objects')]",
+				"[concat(variables('workspaceId'), '/pipelines/Build Dimensions')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Build Data Warehouse_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Master Pipeline to refresh Data Warehouse",
+				"activities": [
+					{
+						"name": "Load Source data to ADLS_FullLoad",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load Source data to ADLS_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Create External Objects",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Load Source data to ADLS_FullLoad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Create External Objects",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Build Dimensions_FullLoad",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Create External Objects",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Build Dimensions_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS_FullLoad')]",
+				"[concat(variables('workspaceId'), '/pipelines/Create External Objects')]",
+				"[concat(variables('workspaceId'), '/pipelines/Build Dimensions_FullLoad')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Build Dimensions')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Load DimPaymentCard",
+						"description": "Pipeline to trigger the \"Load DimPaymentCard\" Pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load DimPaymentCard",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Build Dimensions_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Load DimPaymentCard_FullLoad",
+						"description": "Pipeline to trigger the \"Load DimPaymentCard\" Pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load DimPaymentCard_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard_FullLoad')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create External Objects')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to create all required external tables dynamically",
+				"activities": [
+					{
+						"name": "Create External DS File Types and Tables",
+						"description": "To execute the Stored Procedure dwhpool.dbo.usp_CreateExternalTable",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "dwhpool",
+							"type": "SqlPoolReference"
+						},
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_CreateExternalObjects]",
+							"storedProcedureParameters": {
+								"Yr": {
+									"value": {
+										"value": "@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Mt": {
+									"value": {
+										"value": "@{formatDateTime(adddays(utcnow(),-1), 'MM')}",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Dy": {
+									"value": {
+										"value": "@{formatDateTime(adddays(utcnow(),-1), 'dd')}",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Create External DS File Types and Tables",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@@type": "MessageCard",
+								"@@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Data Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Create External DS Objects"
+									}
+								]
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hermes to ADLS')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to move data from all tables in Hermes to Synapse data lake in Parquet files. Hermes/tablename/year=YYYY/month=MM/day=DD/somerandomeid.parquet",
+				"activities": [
+					{
+						"name": "GetTableList",
+						"description": "Get the list of tables",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": {
+									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer') --, 'user', 'scheme_schemeaccount', 'history_historicalschemeaccount')",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_pg_hermes",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachTable",
+						"description": "Perform activity for each of the table",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetTableList",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetTableList').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "ExportToParquet",
+									"description": "Export Hermes data to parquet files",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzurePostgreSqlSource",
+											"query": {
+												"value": "@concat('select * from ',item().table_schema,'.',item().table_name)",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_pg_hermes",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_hermes",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@concat(item().Table_Schema,'_',item().Table_Name)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "GetTableList",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "ForEachTable",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@@type": "MessageCard",
+								"@@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Data Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Load Source data to ADLS"
+									}
+								]
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hermes to ADLS_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to move data from all tables in Hermes to Synapse data lake in Parquet files. Hermes/tablename/year=YYYY/month=MM/day=DD/somerandomeid.parquet",
+				"activities": [
+					{
+						"name": "GetTableList",
+						"description": "Get the list of tables",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": {
+									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer') \n/*table_name NOT IN ('payment_card_paymentcardaccount', 'history_historicalpaymentcardaccount', 'user', 'scheme_schemeaccount', 'history_historicalschemeaccount')*/",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_pg_hermes",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachTable",
+						"description": "Perform activity for each of the table",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetTableList",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetTableList').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "ExportToParquet",
+									"description": "Export Hermes data to parquet files",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzurePostgreSqlSource",
+											"query": {
+												"value": "@concat('select * from ',item().table_schema,'.',item().table_name)",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_pg_hermes",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_hermes",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@concat(item().Table_Schema,'_',item().Table_Name)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load Payment Card Dimension",
+				"activities": [
+					{
+						"name": "df_LoadPaymentCard",
+						"description": "Data flow to load Payment Card",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadPaymentCard",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcPaymentCardAccount": {},
+									"srcPaymentCard": {},
+									"scrPaymentCardIssuer": {},
+									"srcRefPaymentCardStatus": {},
+									"srcDimPaymentCard": {},
+									"MaxDimPCID": {},
+									"snkDimPaymentCard": {},
+									"snkDimPaymentCardEI": {},
+									"snkDimPaymentCardEU": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Update dimPaymentCard",
+						"description": "Update dimPaymentCard",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "df_LoadPaymentCard",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "dwhpool",
+							"type": "SqlPoolReference"
+						},
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_UpdateDimPaymentCard]"
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "df_LoadPaymentCard",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Update dimPaymentCard",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@@type": "MessageCard",
+								"@@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Data Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Create External DS Objects"
+									}
+								]
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadPaymentCard')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load DimPaymentCard_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load Payment Card Dimension",
+				"activities": [
+					{
+						"name": "df_LoadPaymentCard_FullLoad",
+						"description": "Data flow to load Payment Card",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadPaymentCard_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcPaymentCardAccount": {},
+									"srcPaymentCard": {},
+									"scrPaymentCardIssuer": {},
+									"srcRefPaymentCardStatus": {},
+									"srcDimPaymentCard": {},
+									"MaxDimPCID": {},
+									"snkDimPaymentCard": {},
+									"snkDimPaymentCardEI": {},
+									"snkDimPaymentCardEU": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Execute Build DimPaymentCard",
+						"description": "Execute Build DimPaymentCard",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_LoadPaymentCard_FullLoad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load DimPaymentCard",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadPaymentCard_FullLoad')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load Source data to ADLS')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy data from all sources into Data Lake",
+				"activities": [
+					{
+						"name": "Hermes",
+						"description": "Execute Hermes to ADLS pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Hermes to ADLS",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Hermes to ADLS_payment_card_paymentcardaccount",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Hermes to ADLS_payment_card_paymentcardaccount",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
+						"description": "history_historicalpaymentcardaccount",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Hermes to ADLS_history_historicalpaymentcardaccount",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoricalPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Hermes to ADLS_payment_card_paymentcardaccount",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_history_historicalpaymentcardaccount",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@@type": "MessageCard",
+								"@@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Data Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Load Source data to ADLS"
+									}
+								]
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS')]",
+				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_payment_card_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load Source data to ADLS_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy data from all sources into Data Lake",
+				"activities": [
+					{
+						"name": "Hermes_FullLoad",
+						"description": "Execute Hermes to ADLS pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Hermes to ADLS_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
+						"description": "history_historicalpaymentcardaccount",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoricalPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_payment_card_paymentcardaccount_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/harmonia_daily_dump_parquet')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
@@ -303,6 +1431,922 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/DataLakeProd')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_Syn_dimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set using Linked Service ls_Syn_DataWarehouse to connect to Dim.PaymentCard",
+				"linkedServiceName": {
+					"referenceName": "ls_Syn_DataWarehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "ID",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "NameOnCard",
+						"type": "varchar"
+					},
+					{
+						"name": "PANTruncation",
+						"type": "varchar"
+					},
+					{
+						"name": "ValidFrom",
+						"type": "date"
+					},
+					{
+						"name": "ValidTo",
+						"type": "date"
+					},
+					{
+						"name": "Token",
+						"type": "varchar"
+					},
+					{
+						"name": "Fingerprint",
+						"type": "varchar"
+					},
+					{
+						"name": "Issuer",
+						"type": "varchar"
+					},
+					{
+						"name": "CardProvider",
+						"type": "varchar"
+					},
+					{
+						"name": "Slug",
+						"type": "varchar"
+					},
+					{
+						"name": "CardType",
+						"type": "varchar"
+					},
+					{
+						"name": "CardStatus",
+						"type": "varchar"
+					},
+					{
+						"name": "IsDeleted",
+						"type": "bit"
+					},
+					{
+						"name": "Country",
+						"type": "varchar"
+					},
+					{
+						"name": "CCYCode",
+						"type": "varchar"
+					},
+					{
+						"name": "CardCreateDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "CardUpdateDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "EffFromDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "EffToDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ProcessDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "IsCurrent",
+						"type": "bit"
+					},
+					{
+						"name": "SourcePCKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "RestrictionKey",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "Dim",
+					"table": "PaymentCard"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/@{dataset().FileName}/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes history_historicalpaymentcardaccount table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_history_historicalpaymentcardaccount/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "INT32"
+					},
+					{
+						"name": "created",
+						"type": "INT96"
+					},
+					{
+						"name": "change_type",
+						"type": "UTF8"
+					},
+					{
+						"name": "instance_id",
+						"type": "UTF8"
+					},
+					{
+						"name": "channel",
+						"type": "UTF8"
+					},
+					{
+						"name": "user_id",
+						"type": "INT32"
+					},
+					{
+						"name": "body",
+						"type": "UTF8"
+					},
+					{
+						"name": "change_details",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_paymentcard')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.payment_card_paymentcard table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_payment_card_paymentcard/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_paymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.payment_card_paymentcardaccount table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_payment_card_paymentcardaccount/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "INT32"
+					},
+					{
+						"name": "name_on_card",
+						"type": "UTF8"
+					},
+					{
+						"name": "start_month",
+						"type": "INT32"
+					},
+					{
+						"name": "start_year",
+						"type": "INT32"
+					},
+					{
+						"name": "expiry_month",
+						"type": "INT32"
+					},
+					{
+						"name": "expiry_year",
+						"type": "INT32"
+					},
+					{
+						"name": "status",
+						"type": "INT32"
+					},
+					{
+						"name": "order",
+						"type": "INT32"
+					},
+					{
+						"name": "created",
+						"type": "INT96"
+					},
+					{
+						"name": "updated",
+						"type": "INT96"
+					},
+					{
+						"name": "issuer_id",
+						"type": "INT32"
+					},
+					{
+						"name": "payment_card_id",
+						"type": "INT32"
+					},
+					{
+						"name": "token",
+						"type": "UTF8"
+					},
+					{
+						"name": "country",
+						"type": "UTF8"
+					},
+					{
+						"name": "currency_code",
+						"type": "UTF8"
+					},
+					{
+						"name": "pan_end",
+						"type": "UTF8"
+					},
+					{
+						"name": "pan_start",
+						"type": "UTF8"
+					},
+					{
+						"name": "is_deleted",
+						"type": "BOOLEAN"
+					},
+					{
+						"name": "fingerprint",
+						"type": "UTF8"
+					},
+					{
+						"name": "psp_token",
+						"type": "UTF8"
+					},
+					{
+						"name": "consents",
+						"type": "UTF8"
+					},
+					{
+						"name": "hash",
+						"type": "UTF8"
+					},
+					{
+						"name": "formatted_images",
+						"type": "UTF8"
+					},
+					{
+						"name": "pll_links",
+						"type": "UTF8"
+					},
+					{
+						"name": "agent_data",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_paymentcardissuer')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.payment_card_issuer table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_payment_card_issuer/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_vw_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes external table  vw_history_historicalpaymentcardaccount table",
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "name_on_card",
+						"type": "varchar"
+					},
+					{
+						"name": "start_month",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "start_year",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "expiry_month",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "expiry_year",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "status",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "created",
+						"type": "varchar"
+					},
+					{
+						"name": "updated",
+						"type": "varchar"
+					},
+					{
+						"name": "issuer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "payment_card_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "token",
+						"type": "varchar"
+					},
+					{
+						"name": "country",
+						"type": "varchar"
+					},
+					{
+						"name": "currency_code",
+						"type": "varchar"
+					},
+					{
+						"name": "pan_end",
+						"type": "varchar"
+					},
+					{
+						"name": "pan_start",
+						"type": "varchar"
+					},
+					{
+						"name": "is_deleted",
+						"type": "bit"
+					},
+					{
+						"name": "fingerprint",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "vw_history_historicalpaymentcardaccount"
+				},
+				"sqlPool": {
+					"referenceName": "dwhpool",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_csv_PaymentCardStatus')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Reference Payment Card Status.csv",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Payment Card Status.csv",
+						"folderPath": "Reference",
+						"fileSystem": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes history_historicalpaymentcardaccount table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_type",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "instance_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "channel",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "user_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "body",
+						"type": "jsonb",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_details",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "history_historicalpaymentcardaccount"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_payment_card_paymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes payment_card_paymentcardaccount table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "name_on_card",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "start_month",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "start_year",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "expiry_month",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "expiry_year",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "order",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "issuer_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "payment_card_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "token",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "country",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "currency_code",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "pan_end",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "pan_start",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "is_deleted",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "fingerprint",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "psp_token",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "consents",
+						"type": "jsonb",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "hash",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "formatted_images",
+						"type": "jsonb",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "pll_links",
+						"type": "jsonb",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "agent_data",
+						"type": "jsonb",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "payment_card_paymentcardaccount"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_syn_dwhpool_vw_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_Syn_DataWarehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "name_on_card",
+						"type": "varchar"
+					},
+					{
+						"name": "start_month",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "start_year",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "expiry_month",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "expiry_year",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "status",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "created",
+						"type": "varchar"
+					},
+					{
+						"name": "updated",
+						"type": "varchar"
+					},
+					{
+						"name": "issuer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "payment_card_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "token",
+						"type": "varchar"
+					},
+					{
+						"name": "country",
+						"type": "varchar"
+					},
+					{
+						"name": "currency_code",
+						"type": "varchar"
+					},
+					{
+						"name": "pan_end",
+						"type": "varchar"
+					},
+					{
+						"name": "pan_start",
+						"type": "varchar"
+					},
+					{
+						"name": "is_deleted",
+						"type": "bit"
+					},
+					{
+						"name": "fingerprint",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "vw_history_historicalpaymentcardaccount"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
 			]
 		},
 		{
@@ -798,6 +2842,115 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/ls_Syn_DataWarehouse')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Linked Service to connect/sink data to Data Warehouse",
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_Syn_DataWarehouse_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ls_adls_dwlanding')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Linked Service for Landing Hermes in Data Lake",
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adls_dwlanding_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ls_pg_hermes')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Linked Service for Source Hermes in PostgreSQL",
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_pg_hermes_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "KeyVaultProd",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "synapse-postgres-hermes"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/linkedServices/KeyVaultProd')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Daily load')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "To load the source data daily",
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Load Source data to ADLS",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2021-02-05T10:55:00Z",
+						"endTime": "2021-03-31T10:55:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								2
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/HarmoniaDailyDump')]",
 			"type": "Microsoft.Synapse/workspaces/triggers",
 			"apiVersion": "2019-06-01-preview",
@@ -915,7 +3068,7 @@
 						}
 					],
 					"transformations": [],
-					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> PGHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 5000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaPaymentProvider\nPGHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyImportTransaction\nPGHarmoniaMerchantIdentifier sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyMerchantIdentifier\nPGHarmoniaLoyaltyScheme sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyLoyaltyScheme\nPGHarmoniaPaymentProvider sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyPaymentProvider"
+					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> PGHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 5000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaPaymentProvider\nPGHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyImportTransaction\nPGHarmoniaMerchantIdentifier sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyMerchantIdentifier\nPGHarmoniaLoyaltyScheme sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyLoyaltyScheme\nPGHarmoniaPaymentProvider sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyPaymentProvider"
 				}
 			},
 			"dependsOn": [
@@ -927,6 +3080,162 @@
 				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__merchant_identifier')]",
 				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__loyalty_scheme')]",
 				"[concat(variables('workspaceId'), '/datasets/dl_harmonia__daily__payment_provider')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hermes to ADLS_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalpaymentcardaccount table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoricalPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalpaymentcardaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalpaymentcardaccount table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoricalPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalpaymentcardaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hermes to ADLS_payment_card_paymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy payment_card_paymentcardaccount table from hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_payment_card_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_payment_card_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hermes to ADLS_payment_card_paymentcardaccount_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy payment_card_paymentcardaccount table from hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_payment_card_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_payment_card_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]"
 			]
 		},
 		{
@@ -1010,7 +3319,7 @@
 							"name": "AlterRow4"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaPaymentProvider\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nDLHarmoniaLoyaltyScheme alterRow(upsertIf(true())) ~> AlterRow3\nDLHarmoniaPaymentProvider alterRow(upsertIf(true())) ~> AlterRow4\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHMerchantIdentifier\nAlterRow3 sink(input(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHLoyaltyScheme\nAlterRow4 sink(input(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHPaymentProvider"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaPaymentProvider\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nDLHarmoniaLoyaltyScheme alterRow(upsertIf(true())) ~> AlterRow3\nDLHarmoniaPaymentProvider alterRow(upsertIf(true())) ~> AlterRow4\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHMerchantIdentifier\nAlterRow3 sink(input(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHLoyaltyScheme\nAlterRow4 sink(input(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DWHPaymentProvider"
 				}
 			},
 			"dependsOn": [
@@ -1025,12 +3334,410 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data flow task to load Payment Card Dimension",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_syn_dwhpool_vw_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCardAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcard",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardissuer",
+								"type": "DatasetReference"
+							},
+							"name": "scrPaymentCardIssuer"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_csv_PaymentCardStatus",
+								"type": "DatasetReference"
+							},
+							"name": "srcRefPaymentCardStatus"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "MaxDimPCID"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEI"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEU"
+						}
+					],
+					"transformations": [
+						{
+							"name": "JoinPCAPC"
+						},
+						{
+							"name": "SelectPCA"
+						},
+						{
+							"name": "SelectPC"
+						},
+						{
+							"name": "SelectPCI"
+						},
+						{
+							"name": "JoinPCAPCPCI"
+						},
+						{
+							"name": "JoinPCAPCPCIRef"
+						},
+						{
+							"name": "SelectRefPC"
+						},
+						{
+							"name": "SelectDimPC"
+						},
+						{
+							"name": "JoinMaxID"
+						},
+						{
+							"name": "LookupExistingRecords"
+						},
+						{
+							"name": "NewExistingSplit"
+						},
+						{
+							"name": "IsCurrentNew"
+						},
+						{
+							"name": "IsCurrentInsert"
+						},
+						{
+							"name": "IsCurrentUpdate"
+						},
+						{
+							"name": "Filter"
+						},
+						{
+							"name": "UpdateExistingRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\tcreated as string,\n\t\tupdated as string,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcPaymentCardAccount\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\tslug as string,\n\t\turl as string,\n\t\tscan_message as string,\n\t\tinput_label as string,\n\t\tis_active as boolean,\n\t\tsystem as string,\n\t\ttype as string,\n\t\ttoken_method as integer,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCard\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\timage as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrPaymentCardIssuer\nsource(output(\n\t\t{_col0_} as integer,\n\t\t{_col1_} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tskipLines: 1) ~> srcRefPaymentCardStatus\nsource(output(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimPaymentCard\nsource(output(\n\t\tMaxDimPCID as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxDimPCID FROM [Dim].[PaymentCard]',\n\tformat: 'query',\n\tstaged: false) ~> MaxDimPCID\nSelectPCA, SelectPC join({pca.payment_card_id} == {pc.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPC\nsrcPaymentCardAccount select(mapColumn(\n\t\t{pca.id} = id,\n\t\t{pca.name_on_card} = name_on_card,\n\t\t{pca.start_month} = start_month,\n\t\t{pca.start_year} = start_year,\n\t\t{pca.expiry_month} = expiry_month,\n\t\t{pca.expiry_year} = expiry_year,\n\t\t{pca.status} = status,\n\t\t{pca.created} = created,\n\t\t{pca.updated} = updated,\n\t\t{pca.issuer_id} = issuer_id,\n\t\t{pca.payment_card_id} = payment_card_id,\n\t\t{pca.token} = token,\n\t\t{pca.country} = country,\n\t\t{pca.currency_code} = currency_code,\n\t\t{pca.pan_end} = pan_end,\n\t\t{pca.pan_start} = pan_start,\n\t\t{pca.is_deleted} = is_deleted,\n\t\t{pca.fingerprint} = fingerprint\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCA\nsrcPaymentCard select(mapColumn(\n\t\t{pc.id} = id,\n\t\t{pc.name} = name,\n\t\t{pc.slug} = slug,\n\t\t{pc.is_active} = is_active,\n\t\t{pc.type} = type\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPC\nscrPaymentCardIssuer select(mapColumn(\n\t\t{pci.id} = id,\n\t\t{pci.name} = name\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCI\nJoinPCAPC, SelectPCI join({pca.issuer_id} == {pci.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCI\nJoinPCAPCPCI, SelectRefPC join({pca.status} == {ref.PCCode},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCIRef\nsrcRefPaymentCardStatus select(mapColumn(\n\t\t{ref.PCCode} = {_col0_},\n\t\t{ref.PCStatus} = {_col1_}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectRefPC\nsrcDimPaymentCard select(mapColumn(\n\t\t{dim.ID} = ID,\n\t\t{dim.NameOnCard} = NameOnCard,\n\t\t{dim.PANTruncation} = PANTruncation,\n\t\t{dim.ValidFrom} = ValidFrom,\n\t\t{dim.ValidTo} = ValidTo,\n\t\t{dim.Token} = Token,\n\t\t{dim.Fingerprint} = Fingerprint,\n\t\t{dim.Issuer} = Issuer,\n\t\t{dim.CardProvider} = CardProvider,\n\t\t{dim.Slug} = Slug,\n\t\t{dim.CardType} = CardType,\n\t\t{dim.CardStatus} = CardStatus,\n\t\t{dim.IsDeleted} = IsDeleted,\n\t\t{dim.Country} = Country,\n\t\t{dim.CCYCode} = CCYCode,\n\t\t{dim.CardCreateDate} = CardCreateDate,\n\t\t{dim.CardUpdateDate} = CardUpdateDate,\n\t\t{dim.EffFromDate} = EffFromDate,\n\t\t{dim.EffToDate} = EffToDate,\n\t\t{dim.ProcessDate} = ProcessDate,\n\t\t{dim.IsCurrent} = IsCurrent,\n\t\t{dim.SourcePCKey} = SourcePCKey,\n\t\t{dim.RestrictionKey} = RestrictionKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDimPC\nJoinPCAPCPCIRef, MaxDimPCID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nAdditionalFields, SelectDimPC lookup({pca.fingerprint} == {dim.Fingerprint}\n\t&& {new.ValidTo} == {dim.ValidTo},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nLookupExistingRecords split(isNull({dim.ID}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@NewRecord derive({new.IsCurrent} = toBoolean('yes')) ~> IsCurrentNew\nNewExistingSplit@ExistingRecord derive({new.IsCurrentInsert} = toBoolean('yes')) ~> IsCurrentInsert\nNewExistingSplit@ExistingRecord derive({new.IsCurrentUpdate} = toBoolean('No')) ~> IsCurrentUpdate\nIsCurrentUpdate filter({dim.ID}<=MaxDimPCID) ~> Filter\nFilter alterRow(updateIf({dim.ID}<=MaxDimPCID)) ~> UpdateExistingRecords\nJoinMaxID derive({new.ValidFrom} = toDate(concat(right(concat('20',toString({pca.start_year})),4),'-',right(concat('0',toString({pca.start_month})),2),'-01')),\n\t\t{new.ValidTo} = lastDayOfMonth(toDate(concat(right(concat('20',toString({pca.expiry_year})),4),'-',right(concat('0',toString({pca.expiry_month})),2),'-01'))),\n\t\t{new.PANTruncation} = concat({pca.pan_start}, 'xxx', {pca.pan_end}),\n\t\t{new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalFields\nIsCurrentNew sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrent},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCard\nIsCurrentInsert sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrentInsert},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tdateFormat:'yyyy-MM-dd',\n\ttimestampFormat:'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEI\nUpdateExistingRecords sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT Dim.LoyaltyCard ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT Dim.LoyaltyCard OFF;'],\n\tmapColumn(\n\t\tID = {dim.ID},\n\t\tIsCurrent = {new.IsCurrentUpdate},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEU"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_syn_dwhpool_vw_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadPaymentCard_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data flow task to load Payment Card Dimension",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCardAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcard",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardissuer",
+								"type": "DatasetReference"
+							},
+							"name": "scrPaymentCardIssuer"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_csv_PaymentCardStatus",
+								"type": "DatasetReference"
+							},
+							"name": "srcRefPaymentCardStatus"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "MaxDimPCID"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEI"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEU"
+						}
+					],
+					"transformations": [
+						{
+							"name": "JoinPCAPC"
+						},
+						{
+							"name": "SelectPCA"
+						},
+						{
+							"name": "SelectPC"
+						},
+						{
+							"name": "SelectPCI"
+						},
+						{
+							"name": "JoinPCAPCPCI"
+						},
+						{
+							"name": "JoinPCAPCPCIRef"
+						},
+						{
+							"name": "SelectRefPC"
+						},
+						{
+							"name": "SelectDimPC"
+						},
+						{
+							"name": "JoinMaxID"
+						},
+						{
+							"name": "LookupExistingRecords"
+						},
+						{
+							"name": "NewExistingSplit"
+						},
+						{
+							"name": "IsCurrentNew"
+						},
+						{
+							"name": "IsCurrentInsert"
+						},
+						{
+							"name": "IsCurrentUpdate"
+						},
+						{
+							"name": "Filter"
+						},
+						{
+							"name": "UpdateExistingRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCardAccount\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\tslug as string,\n\t\turl as string,\n\t\tscan_message as string,\n\t\tinput_label as string,\n\t\tis_active as boolean,\n\t\tsystem as string,\n\t\ttype as string,\n\t\ttoken_method as integer,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCard\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\timage as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrPaymentCardIssuer\nsource(output(\n\t\t{_col0_} as integer,\n\t\t{_col1_} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tskipLines: 1) ~> srcRefPaymentCardStatus\nsource(output(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimPaymentCard\nsource(output(\n\t\tMaxDimPCID as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxDimPCID FROM [Dim].[PaymentCard]',\n\tformat: 'query',\n\tstaged: false) ~> MaxDimPCID\nSelectPCA, SelectPC join({pca.payment_card_id} == {pc.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPC\nsrcPaymentCardAccount select(mapColumn(\n\t\t{pca.id} = id,\n\t\t{pca.name_on_card} = name_on_card,\n\t\t{pca.start_month} = start_month,\n\t\t{pca.start_year} = start_year,\n\t\t{pca.expiry_month} = expiry_month,\n\t\t{pca.expiry_year} = expiry_year,\n\t\t{pca.status} = status,\n\t\t{pca.order} = order,\n\t\t{pca.created} = created,\n\t\t{pca.updated} = updated,\n\t\t{pca.issuer_id} = issuer_id,\n\t\t{pca.payment_card_id} = payment_card_id,\n\t\t{pca.token} = token,\n\t\t{pca.country} = country,\n\t\t{pca.currency_code} = currency_code,\n\t\t{pca.pan_end} = pan_end,\n\t\t{pca.pan_start} = pan_start,\n\t\t{pca.is_deleted} = is_deleted,\n\t\t{pca.fingerprint} = fingerprint,\n\t\t{pca.psp_token} = psp_token,\n\t\t{pca.consents} = consents,\n\t\t{pca.hash} = hash,\n\t\t{pca.formatted_images} = formatted_images,\n\t\t{pca.pll_links} = pll_links,\n\t\t{pca.agent_data} = agent_data\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCA\nsrcPaymentCard select(mapColumn(\n\t\t{pc.id} = id,\n\t\t{pc.name} = name,\n\t\t{pc.slug} = slug,\n\t\t{pc.is_active} = is_active,\n\t\t{pc.type} = type\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPC\nscrPaymentCardIssuer select(mapColumn(\n\t\t{pci.id} = id,\n\t\t{pci.name} = name\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCI\nJoinPCAPC, SelectPCI join({pca.issuer_id} == {pci.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCI\nJoinPCAPCPCI, SelectRefPC join({pca.status} == {ref.PCCode},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCIRef\nsrcRefPaymentCardStatus select(mapColumn(\n\t\t{ref.PCCode} = {_col0_},\n\t\t{ref.PCStatus} = {_col1_}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectRefPC\nsrcDimPaymentCard select(mapColumn(\n\t\t{dim.ID} = ID,\n\t\t{dim.NameOnCard} = NameOnCard,\n\t\t{dim.PANTruncation} = PANTruncation,\n\t\t{dim.ValidFrom} = ValidFrom,\n\t\t{dim.ValidTo} = ValidTo,\n\t\t{dim.Token} = Token,\n\t\t{dim.Fingerprint} = Fingerprint,\n\t\t{dim.Issuer} = Issuer,\n\t\t{dim.CardProvider} = CardProvider,\n\t\t{dim.Slug} = Slug,\n\t\t{dim.CardType} = CardType,\n\t\t{dim.CardStatus} = CardStatus,\n\t\t{dim.IsDeleted} = IsDeleted,\n\t\t{dim.Country} = Country,\n\t\t{dim.CCYCode} = CCYCode,\n\t\t{dim.CardCreateDate} = CardCreateDate,\n\t\t{dim.CardUpdateDate} = CardUpdateDate,\n\t\t{dim.EffFromDate} = EffFromDate,\n\t\t{dim.EffToDate} = EffToDate,\n\t\t{dim.ProcessDate} = ProcessDate,\n\t\t{dim.IsCurrent} = IsCurrent,\n\t\t{dim.SourcePCKey} = SourcePCKey,\n\t\t{dim.RestrictionKey} = RestrictionKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDimPC\nJoinPCAPCPCIRef, MaxDimPCID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nAdditionalFields, SelectDimPC lookup({pca.fingerprint} == {dim.Fingerprint}\n\t&& {new.ValidTo} == {dim.ValidTo},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nLookupExistingRecords split(isNull({dim.ID}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@NewRecord derive({new.IsCurrent} = toBoolean('yes')) ~> IsCurrentNew\nNewExistingSplit@ExistingRecord derive({new.IsCurrentInsert} = toBoolean('yes')) ~> IsCurrentInsert\nNewExistingSplit@ExistingRecord derive({new.IsCurrentUpdate} = toBoolean('No')) ~> IsCurrentUpdate\nIsCurrentUpdate filter({dim.ID}<=MaxDimPCID) ~> Filter\nFilter alterRow(updateIf({dim.ID}<=MaxDimPCID)) ~> UpdateExistingRecords\nJoinMaxID derive({new.ValidFrom} = toDate(concat(right(concat('20',toString({pca.start_year})),4),'-',right(concat('0',toString({pca.start_month})),2),'-01')),\n\t\t{new.ValidTo} = lastDayOfMonth(toDate(concat(right(concat('20',toString({pca.expiry_year})),4),'-',right(concat('0',toString({pca.expiry_month})),2),'-01'))),\n\t\t{new.PANTruncation} = concat({pca.pan_start}, 'xxx', {pca.pan_end}),\n\t\t{new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalFields\nIsCurrentNew sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrent},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCard\nIsCurrentInsert sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrentInsert},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tdateFormat:'yyyy-MM-dd',\n\ttimestampFormat:'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEI\nUpdateExistingRecords sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT Dim.LoyaltyCard ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT Dim.LoyaltyCard OFF;'],\n\tmapColumn(\n\t\tID = {dim.ID},\n\t\tIsCurrent = {new.IsCurrentUpdate},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEU"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
 			"type": "Microsoft.Synapse/workspaces/credentials",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"type": "ManagedIdentity",
 				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/01 Create Schemas')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "This script creates all the required schemas for the dwh",
+				"folder": {
+					"name": "01 Payment Card"
+				},
+				"content": {
+					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/02 Create Dim_PaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Script to create an empty Payment Dimension",
+				"folder": {
+					"name": "01 Payment Card"
+				},
+				"content": {
+					"query": "--SurrogateKey: ID\n--Busniess/Natural Key: Fingerprint, ValidTo (with Is_deleted=0 in only 1 instance?)\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[PaymentCard]') AND type in (N'U'))\nDROP TABLE [Dim].[PaymentCard];\n\nCREATE TABLE Dim.PaymentCard\n  (  \n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CardCreateDate  DATETIME NULL,\n  CardUpdateDate  DATETIME NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,\n  SourcePCKey     INT NOT NULL,\n  RestrictionKey  INT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/03 usp_CreateExternalObjects')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Script creates a stored procedure which builds the external objects required to read source parquet file in the data lake & create a view on top of it.",
+				"folder": {
+					"name": "01 Payment Card"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n--history_historicalpaymentcardaccount\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = ef_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthdevsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthdevsynapse'\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/04 Create view vw_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Script to create a view pointing to the external table of the source table history_historicalpaymentcardaccount in datalake",
+				"folder": {
+					"name": "01 Payment Card"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalpaymentcardaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalpaymentcardaccount\nAS\nSELECT\n    js.[id],\n    js.[name_on_card],\n    js.[start_month],\n    js.[start_year],\n    js.[expiry_month],\n    js.[expiry_year],\n    js.[status],\n    js.[created],\n    js.[updated],\n    js.[issuer_id],\n    js.[payment_card_id],\n    js.[token],\n    js.[country],\n    js.[currency_code],\n    js.[pan_end],\n    js.[pan_start],\n    js.[is_deleted],\n    js.[fingerprint]\n FROM [dbo].[ext_history_historicalpaymentcardaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(Body, '$'))\n   WITH (\n        [id] int '$.id',\n        [name_on_card] varchar(150) '$.name_on_card',\n        [start_month] int '$.start_month',\n        [start_year] int '$.start_year',\n        [expiry_month] int '$.expiry_month',\n        [expiry_year] int '$.expiry_year',\n        [status] int '$.status',\n        [order] int '$.order',\n        [created] varchar(32) '$.created',\n        [updated] varchar(32) '$.updated',\n        [issuer_id] int '$.issuer',\n        [payment_card_id] int '$.payment_card',\n        [token] varchar(255) '$.token',\n        [country] varchar(40) '$.country',\n        [currency_code] varchar(3) '$.currency_code',\n        [pan_end] varchar(4) '$.pan_end',\n        [pan_start] varchar(4) '$.pan_start',\n        [is_deleted] bit '$.is_deleted',\n        [fingerprint] varchar(100) '$.fingerprint',\n        [psp_token] varchar(255) '$.psp_token',\n        [consents] varchar(4000) '$.consents',\n        [hash] varchar(255) '$.hash'\n   ) AS js",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/05 Update Dim_PaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "This script creates a stored procedure which updates the Payment Card dimension.",
+				"folder": {
+					"name": "01 Payment Card"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimPaymentCard', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimPaymentCard]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimPaymentCard] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent,\n  dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.PaymentCard dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EventID,\n    ValidTo,\n    Fingerprint,\n    CardCreateDate,\n    CardCreateDate AS EffFromDate,\n    LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourcePCKey\n  FROM Dim.PaymentCard\n) updt\nON updt.ID = dim.ID\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
 			},
 			"dependsOn": []
 		},
@@ -1077,18 +3784,26 @@
 			"type": "Microsoft.Synapse/workspaces/sqlPools",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"restorePointInTime": "0001-01-01T00:00:00",
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [],
+			"location": "uksouth"
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/stagingpool')]",
 			"type": "Microsoft.Synapse/workspaces/sqlPools",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"restorePointInTime": "0001-01-01T00:00:00",
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [],
+			"location": "uksouth"
 		}
 	]
 }

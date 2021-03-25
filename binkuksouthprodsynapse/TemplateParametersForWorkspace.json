@@ -14,6 +14,12 @@
 		"binkuksouthprodsynapse-WorkspaceDefaultSqlServer_connectionString": {
 			"value": ""
 		},
+		"ls_Syn_DataWarehouse_connectionString": {
+			"value": ""
+		},
+		"ls_pg_hermes_connectionString": {
+			"value": ""
+		},
 		"DataLakeProd_properties_typeProperties_url": {
 			"value": "https://binkuksouthproddwh.dfs.core.windows.net"
 		},
@@ -21,6 +27,9 @@
 			"value": "https://bink-uksouth-prod-inf.vault.azure.net/"
 		},
 		"binkuksouthprodsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://binkuksouthproddwh.dfs.core.windows.net"
+		},
+		"ls_adls_dwlanding_properties_typeProperties_url": {
 			"value": "https://binkuksouthproddwh.dfs.core.windows.net"
 		}
 	}
