@@ -10,7 +10,7 @@
 			"password": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
-					"referenceName": "KeyVaultPostgresCommon",
+					"referenceName": "KeyVaultProd",
 					"type": "LinkedServiceReference"
 				},
 				"secretName": "synapse-postgres-hermes"
