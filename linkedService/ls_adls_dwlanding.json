@@ -1,0 +1,15 @@
+{
+	"name": "ls_adls_dwlanding",
+	"properties": {
+		"description": "Linked Service for Landing Hermes in Data Lake",
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://binkuksouthproddwh.dfs.core.windows.net"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

@@ -1,0 +1,62 @@
+{
+	"name": "Build Data Warehouse_FullLoad",
+	"properties": {
+		"description": "Master Pipeline to refresh Data Warehouse",
+		"activities": [
+			{
+				"name": "Load Source data to ADLS_FullLoad",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load Source data to ADLS_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Create External Objects",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Load Source data to ADLS_FullLoad",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Create External Objects",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Build Dimensions_FullLoad",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Create External Objects",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Build Dimensions_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": []
+	}
+}

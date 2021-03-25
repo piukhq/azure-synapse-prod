@@ -1,0 +1,125 @@
+{
+	"name": "ds_adls_hermes_paymentcardaccount",
+	"properties": {
+		"description": "Data Set (Integration) for Landing/Data Lake Hermes public.payment_card_paymentcardaccount table",
+		"linkedServiceName": {
+			"referenceName": "ls_adls_dwlanding",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "Hermes/public_payment_card_paymentcardaccount/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+					"type": "Expression"
+				},
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "id",
+				"type": "INT32"
+			},
+			{
+				"name": "name_on_card",
+				"type": "UTF8"
+			},
+			{
+				"name": "start_month",
+				"type": "INT32"
+			},
+			{
+				"name": "start_year",
+				"type": "INT32"
+			},
+			{
+				"name": "expiry_month",
+				"type": "INT32"
+			},
+			{
+				"name": "expiry_year",
+				"type": "INT32"
+			},
+			{
+				"name": "status",
+				"type": "INT32"
+			},
+			{
+				"name": "order",
+				"type": "INT32"
+			},
+			{
+				"name": "created",
+				"type": "INT96"
+			},
+			{
+				"name": "updated",
+				"type": "INT96"
+			},
+			{
+				"name": "issuer_id",
+				"type": "INT32"
+			},
+			{
+				"name": "payment_card_id",
+				"type": "INT32"
+			},
+			{
+				"name": "token",
+				"type": "UTF8"
+			},
+			{
+				"name": "country",
+				"type": "UTF8"
+			},
+			{
+				"name": "currency_code",
+				"type": "UTF8"
+			},
+			{
+				"name": "pan_end",
+				"type": "UTF8"
+			},
+			{
+				"name": "pan_start",
+				"type": "UTF8"
+			},
+			{
+				"name": "is_deleted",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "fingerprint",
+				"type": "UTF8"
+			},
+			{
+				"name": "psp_token",
+				"type": "UTF8"
+			},
+			{
+				"name": "consents",
+				"type": "UTF8"
+			},
+			{
+				"name": "hash",
+				"type": "UTF8"
+			},
+			{
+				"name": "formatted_images",
+				"type": "UTF8"
+			},
+			{
+				"name": "pll_links",
+				"type": "UTF8"
+			},
+			{
+				"name": "agent_data",
+				"type": "UTF8"
+			}
+		]
+	}
+}

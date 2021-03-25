@@ -1,0 +1,110 @@
+{
+	"name": "Build Data Warehouse",
+	"properties": {
+		"description": "Master Pipeline to refresh Data Warehouse",
+		"activities": [
+			{
+				"name": "Load Source data to ADLS",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load Source data to ADLS",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Create External Objects",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Load Source data to ADLS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Create External Objects",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Build Dimensions",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Create External Objects",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Build Dimensions",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "FailureNotification",
+				"description": "Any failure is notified in Teams",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Load Source data to ADLS",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Create External Objects",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Build Dimensions",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "@concat('{\n    \"','','type\": \"MessageCard\",\n    \"','','context\": \"https://schema.org/extensions\",\n    \"summary\": \"Issue 176715375\",\n    \"themeColor\": \"eb3434\",\n    \"title\": \"Azure Synapse notification alert!\",\n    \"sections\": [\n        {\n            \"activityTitle\": \"Pipeline failed\",\n            \"activitySubtitle\": \"UTC: ', utcnow() ,'\",\n            \"activityImage\": \"https://azurebloggingresources.blob.core.windows.net/images/error-red-cross.png\",\n            \"facts\": [\n                {\n                    \"name\": \"Azure Synpase Analytics:\",\n                    \"value\": \"**', pipeline().DataFactory,'**\"\n                },\n                {\n                    \"name\": \"Pipeline\",\n                    \"value\": \"**',pipeline().Pipeline,'**\"\n                },\n                {\n                    \"name\": \"Run ID\",\n                    \"value\": \"**',pipeline().RunId,'**\"\n                }\n            ],\n            \"text\": \"Error in inner pipeline: \"\n        }\n    ],\n    \"potentialAction\": [\n        {\n            \"type\": \"OpenUri\",\n            \"name\": \"Go to Pipeline Run\",\n            \"targets\": [\n                {\n                    \"os\": \"default\",\n                    \"uri\": \" https://web.azuresynapse.net\"\n                }\n            ]\n        }\n    ]\n}')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}

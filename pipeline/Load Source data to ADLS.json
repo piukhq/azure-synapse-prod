@@ -1,0 +1,122 @@
+{
+	"name": "Load Source data to ADLS",
+	"properties": {
+		"description": "Copy data from all sources into Data Lake",
+		"activities": [
+			{
+				"name": "Hermes",
+				"description": "Execute Hermes to ADLS pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Hermes to ADLS",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Hermes to ADLS_payment_card_paymentcardaccount",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Hermes to ADLS_payment_card_paymentcardaccount",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
+				"description": "history_historicalpaymentcardaccount",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Hermes to ADLS_history_historicalpaymentcardaccount",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "FailureNotification",
+				"description": "Any failure is notified in Teams",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Hermes to ADLS_payment_card_paymentcardaccount",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Hermes to ADLS_history_historicalpaymentcardaccount",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"@@type": "MessageCard",
+						"@@context": "http://schema.org/extensions",
+						"themeColor": "d70000",
+						"summary": "Data Pipeline failed",
+						"sections": [
+							{
+								"activityTitle": "Pipeline failed",
+								"activitySubtitle": "Load Source data to ADLS"
+							}
+						]
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}

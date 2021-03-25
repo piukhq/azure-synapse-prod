@@ -1,0 +1,33 @@
+{
+	"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
+	"properties": {
+		"description": "Copy history_historicalpaymentcardaccount table from Hermes to ADLS",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_pg_hermes_history_historicalpaymentcardaccount",
+						"type": "DatasetReference"
+					},
+					"name": "SrcHistoricalPaymentCardAccount"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccount",
+						"type": "DatasetReference"
+					},
+					"name": "DstDataLake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterRecords"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+		}
+	}
+}

@@ -1,0 +1,97 @@
+{
+	"name": "Create External Objects",
+	"properties": {
+		"description": "Pipeline to create all required external tables dynamically",
+		"activities": [
+			{
+				"name": "Create External DS File Types and Tables",
+				"description": "To execute the Stored Procedure dwhpool.dbo.usp_CreateExternalTable",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "dwhpool",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_CreateExternalObjects]",
+					"storedProcedureParameters": {
+						"Yr": {
+							"value": {
+								"value": "@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Mt": {
+							"value": {
+								"value": "@{formatDateTime(adddays(utcnow(),-1), 'MM')}",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Dy": {
+							"value": {
+								"value": "@{formatDateTime(adddays(utcnow(),-1), 'dd')}",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				}
+			},
+			{
+				"name": "FailureNotification",
+				"description": "Any failure is notified in Teams",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Create External DS File Types and Tables",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"@@type": "MessageCard",
+						"@@context": "http://schema.org/extensions",
+						"themeColor": "d70000",
+						"summary": "Data Pipeline failed",
+						"sections": [
+							{
+								"activityTitle": "Pipeline failed",
+								"activitySubtitle": "Create External DS Objects"
+							}
+						]
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}

@@ -1,0 +1,62 @@
+{
+	"name": "Load DimPaymentCard_FullLoad",
+	"properties": {
+		"description": "Pipeline to load Payment Card Dimension",
+		"activities": [
+			{
+				"name": "df_LoadPaymentCard_FullLoad",
+				"description": "Data flow to load Payment Card",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_LoadPaymentCard_FullLoad",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ls_adls_dwlanding",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "staging/PolyBase"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Execute Build DimPaymentCard",
+				"description": "Execute Build DimPaymentCard",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_LoadPaymentCard_FullLoad",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load DimPaymentCard",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": []
+	}
+}

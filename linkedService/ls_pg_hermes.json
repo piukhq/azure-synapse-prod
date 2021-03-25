@@ -1,0 +1,24 @@
+{
+	"name": "ls_pg_hermes",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"description": "Linked Service for Source Hermes in PostgreSQL",
+		"annotations": [],
+		"type": "AzurePostgreSql",
+		"typeProperties": {
+			"connectionString": "Host=bink-uksouth-prod-hermes.postgres.database.azure.com;Port=5432;Database=hermes;UID=hermes@bink-uksouth-prod-hermes;EncryptionMethod=1;ValidateServerCertificate=0",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "KeyVaultPostgresCommon",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "synapse-postgres-hermes"
+			}
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
