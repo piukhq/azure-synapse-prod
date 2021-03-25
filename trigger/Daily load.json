@@ -10,6 +10,12 @@
 					"referenceName": "Load Source data to ADLS",
 					"type": "PipelineReference"
 				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "Build Data Warehouse",
+					"type": "PipelineReference"
+				}
 			}
 		],
 		"type": "ScheduleTrigger",
@@ -18,7 +24,6 @@
 				"frequency": "Day",
 				"interval": 1,
 				"startTime": "2021-02-05T10:55:00Z",
-				"endTime": "2021-03-31T10:55:00Z",
 				"timeZone": "UTC",
 				"schedule": {
 					"minutes": [
