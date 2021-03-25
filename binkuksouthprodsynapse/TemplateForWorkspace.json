@@ -2926,6 +2926,13 @@
 							"type": "PipelineReference"
 						},
 						"parameters": {}
+					},
+					{
+						"pipelineReference": {
+							"referenceName": "Build Data Warehouse",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
 					}
 				],
 				"type": "ScheduleTrigger",
@@ -2934,7 +2941,6 @@
 						"frequency": "Day",
 						"interval": 1,
 						"startTime": "2021-02-05T10:55:00Z",
-						"endTime": "2021-03-31T10:55:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -2948,7 +2954,8 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS')]"
+				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS')]",
+				"[concat(variables('workspaceId'), '/pipelines/Build Data Warehouse')]"
 			]
 		},
 		{
