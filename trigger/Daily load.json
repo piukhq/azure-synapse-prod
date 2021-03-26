@@ -7,12 +7,6 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "Load Source data to ADLS",
-					"type": "PipelineReference"
-				}
-			},
-			{
-				"pipelineReference": {
 					"referenceName": "Build Data Warehouse",
 					"type": "PipelineReference"
 				}
