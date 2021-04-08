@@ -262,12 +262,28 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Load DimUser",
+						"description": "Pipeline to trigger the \"Load DimUser\" Pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load DimUser",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard')]"
+				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load DimUser')]"
 			]
 		},
 		{
@@ -290,12 +306,28 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Load DimUser_FullLoad",
+						"description": "Pipeline to trigger the \"Load DimUser\" Pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load DimUser_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard_FullLoad')]"
+				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard_FullLoad')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load DimUser_FullLoad')]"
 			]
 		},
 		{
@@ -323,7 +355,7 @@
 							"type": "SqlPoolReference"
 						},
 						"typeProperties": {
-							"storedProcedureName": "[[dbo].[usp_CreateExternalObjects]",
+							"storedProcedureName": "[dbo].[usp_CreateExternalObjects]",
 							"storedProcedureParameters": {
 								"Yr": {
 									"value": {
@@ -426,7 +458,7 @@
 							"source": {
 								"type": "AzurePostgreSqlSource",
 								"query": {
-									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer') --, 'user', 'scheme_schemeaccount', 'history_historicalschemeaccount')",
+									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail')",
 									"type": "Expression"
 								}
 							},
@@ -536,6 +568,30 @@
 								"dependencyConditions": [
 									"Failed"
 								]
+							},
+							{
+								"activity": "Hermes to ADLS_payment_card_paymentcardaccount",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_history_historicalpaymentcardaccount",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_User",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_history_historicalcustomuser",
+								"dependencyConditions": [
+									"Failed"
+								]
 							}
 						],
 						"policy": {
@@ -570,6 +626,127 @@
 								]
 							}
 						}
+					},
+					{
+						"name": "Hermes to ADLS_payment_card_paymentcardaccount",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_payment_card_paymentcardaccount",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
+						"description": "history_historicalpaymentcardaccount",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalpaymentcardaccount",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoricalPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_User",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_user",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcUser": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalcustomuser",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalcustomuser",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoryHistoricalCustomUser": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"annotations": []
@@ -577,6 +754,10 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes')]",
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_payment_card_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_user')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalcustomuser')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes')]"
 			]
 		},
@@ -604,7 +785,7 @@
 							"source": {
 								"type": "AzurePostgreSqlSource",
 								"query": {
-									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer') \n/*table_name NOT IN ('payment_card_paymentcardaccount', 'history_historicalpaymentcardaccount', 'user', 'scheme_schemeaccount', 'history_historicalschemeaccount')*/",
+									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail')\n/*table_name NOT IN ('payment_card_paymentcardaccount', 'history_historicalpaymentcardaccount', 'user', 'scheme_schemeaccount', 'history_historicalschemeaccount')*/",
 									"type": "Expression"
 								}
 							},
@@ -697,25 +878,9 @@
 								}
 							]
 						}
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes')]",
-				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Load DimPaymentCard')]",
-			"type": "Microsoft.Synapse/workspaces/pipelines",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"description": "Pipeline to load Payment Card Dimension",
-				"activities": [
+					},
 					{
-						"name": "df_LoadPaymentCard",
-						"description": "Data flow to load Payment Card",
+						"name": "Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -728,11 +893,228 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "df_LoadPaymentCard",
+								"referenceName": "df_Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"srcPaymentCardAccount": {},
+									"SrcPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
+						"description": "history_historicalpaymentcardaccount",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoricalPaymentCardAccount": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_User_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_user_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcUser": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalcustomuser",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalcustomuser_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoryHistoricalCustomUser": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "GetTableList",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "ForEachTable",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_history_historicalpaymentcardaccount",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_User_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_history_historicalcustomuser",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@@type": "MessageCard",
+								"@@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Data Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Load Source data to ADLS"
+									}
+								]
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_payment_card_paymentcardaccount_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_user_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalcustomuser_FullLoad')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load Payment Card Dimension",
+				"activities": [
+					{
+						"name": "df_LoadDimPaymentCard",
+						"description": "Data flow to load Payment Card Dimension",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadDimPaymentCard",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcVwHistoryHistoricalPaymentCardAccount": {},
 									"srcPaymentCard": {},
 									"scrPaymentCardIssuer": {},
 									"srcRefPaymentCardStatus": {},
@@ -763,7 +1145,7 @@
 						"type": "SqlPoolStoredProcedure",
 						"dependsOn": [
 							{
-								"activity": "df_LoadPaymentCard",
+								"activity": "df_LoadDimPaymentCard",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -782,7 +1164,7 @@
 							"type": "SqlPoolReference"
 						},
 						"typeProperties": {
-							"storedProcedureName": "[[dbo].[usp_UpdateDimPaymentCard]"
+							"storedProcedureName": "[dbo].[usp_UpdateDimPaymentCard]"
 						}
 					},
 					{
@@ -791,7 +1173,7 @@
 						"type": "WebActivity",
 						"dependsOn": [
 							{
-								"activity": "df_LoadPaymentCard",
+								"activity": "df_LoadDimPaymentCard",
 								"dependencyConditions": [
 									"Failed"
 								]
@@ -840,7 +1222,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/dataflows/df_LoadPaymentCard')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimPaymentCard')]",
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
 				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]",
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
@@ -854,8 +1236,8 @@
 				"description": "Pipeline to load Payment Card Dimension",
 				"activities": [
 					{
-						"name": "df_LoadPaymentCard_FullLoad",
-						"description": "Data flow to load Payment Card",
+						"name": "df_LoadDimPaymentCard_FullLoad",
+						"description": "Data flow to load Payment Card Dimension",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -868,7 +1250,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "df_LoadPaymentCard_FullLoad",
+								"referenceName": "df_LoadDimPaymentCard_FullLoad",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
@@ -903,7 +1285,7 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "df_LoadPaymentCard_FullLoad",
+								"activity": "df_LoadDimPaymentCard_FullLoad",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -923,35 +1305,21 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/dataflows/df_LoadPaymentCard_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimPaymentCard_FullLoad')]",
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
 				"[concat(variables('workspaceId'), '/pipelines/Load DimPaymentCard')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Load Source data to ADLS')]",
+			"name": "[concat(parameters('workspaceName'), '/Load DimUser')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"description": "Copy data from all sources into Data Lake",
+				"description": "Pipeline to load user Dimension",
 				"activities": [
 					{
-						"name": "Hermes",
-						"description": "Execute Hermes to ADLS pipeline",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Hermes to ADLS",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Hermes to ADLS_payment_card_paymentcardaccount",
+						"name": "df_LoadDimUser",
+						"description": "Data flow to load Payment Card",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -964,15 +1332,29 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "Hermes to ADLS_payment_card_paymentcardaccount",
+								"referenceName": "df_LoadDimUser",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"SrcPaymentCardAccount": {},
-									"DstDataLake": {}
+									"srcVwHistoryHistoricalCustomUser": {},
+									"srcUserUserDetail": {},
+									"scrUserClientapplication": {},
+									"scrUserClientapplicationBundle": {},
+									"srcUserOrganisation": {},
+									"scrDimUser": {},
+									"MaxDimUserID": {},
+									"snkDimUser": {},
+									"snkDimUserEI": {},
+									"snkDimUserEU": {}
 								}
 							},
-							"staging": {},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
 							"compute": {
 								"coreCount": 8,
 								"computeType": "General"
@@ -981,10 +1363,17 @@
 						}
 					},
 					{
-						"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
-						"description": "history_historicalpaymentcardaccount",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
+						"name": "Update DimUser",
+						"description": "Update DimUser",
+						"type": "SqlPoolStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "df_LoadDimUser",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -993,22 +1382,12 @@
 							"secureInput": false
 						},
 						"userProperties": [],
+						"sqlPool": {
+							"referenceName": "dwhpool",
+							"type": "SqlPoolReference"
+						},
 						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Hermes to ADLS_history_historicalpaymentcardaccount",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"SrcHistoricalPaymentCardAccount": {},
-									"DstDataLake": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
+							"storedProcedureName": "[dbo].[usp_UpdateDimUser]"
 						}
 					},
 					{
@@ -1017,13 +1396,13 @@
 						"type": "WebActivity",
 						"dependsOn": [
 							{
-								"activity": "Hermes to ADLS_payment_card_paymentcardaccount",
+								"activity": "df_LoadDimUser",
 								"dependencyConditions": [
 									"Failed"
 								]
 							},
 							{
-								"activity": "Hermes to ADLS_history_historicalpaymentcardaccount",
+								"activity": "Update DimUser",
 								"dependencyConditions": [
 									"Failed"
 								]
@@ -1056,7 +1435,7 @@
 								"sections": [
 									{
 										"activityTitle": "Pipeline failed",
-										"activitySubtitle": "Load Source data to ADLS"
+										"activitySubtitle": "Create External DS Objects"
 									}
 								]
 							}
@@ -1066,10 +1445,122 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS')]",
-				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_payment_card_paymentcardaccount')]",
-				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimUser')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]",
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load DimUser_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load User Dimension",
+				"activities": [
+					{
+						"name": "df_LoadUser_FullLoad",
+						"description": "Data flow to load User",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadDimUser_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcUser": {},
+									"srcUserUserDetail": {},
+									"scrUserClientapplication": {},
+									"scrUserClientapplicationBundle": {},
+									"srcUserOrganisation": {},
+									"scrDimUser": {},
+									"MaxDimUserID": {},
+									"snkDimUser": {},
+									"snkDimUserEI": {},
+									"snkDimUserEU": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Execute Build DimUser",
+						"description": "Execute Build DimUser",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_LoadUser_FullLoad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load DimUser",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimUser_FullLoad')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load DimUser')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load Source data to ADLS')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy data from all sources into Data Lake",
+				"activities": [
+					{
+						"name": "Hermes",
+						"description": "Execute Hermes to ADLS pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Hermes to ADLS",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS')]"
 			]
 		},
 		{
@@ -1093,75 +1584,12 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
-					},
-					{
-						"name": "Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"SrcPaymentCardAccount": {},
-									"DstDataLake": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
-						"description": "history_historicalpaymentcardaccount",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"SrcHistoricalPaymentCardAccount": {},
-									"DstDataLake": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
 					}
 				],
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS_FullLoad')]",
-				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_payment_card_paymentcardaccount_FullLoad')]",
-				"[concat(variables('workspaceId'), '/dataflows/Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad')]"
+				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS_FullLoad')]"
 			]
 		},
 		{
@@ -1434,6 +1862,170 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/ds_Syn_DimUser')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set using Linked Service ls_Syn_DataWarehouse to connect to Dim.User",
+				"linkedServiceName": {
+					"referenceName": "ls_Syn_DataWarehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "FirstName",
+						"type": "varchar"
+					},
+					{
+						"name": "LastName",
+						"type": "varchar"
+					},
+					{
+						"name": "Phone",
+						"type": "varchar"
+					},
+					{
+						"name": "Email",
+						"type": "varchar"
+					},
+					{
+						"name": "Facebook",
+						"type": "varchar"
+					},
+					{
+						"name": "Twitter",
+						"type": "varchar"
+					},
+					{
+						"name": "AddressLine1",
+						"type": "varchar"
+					},
+					{
+						"name": "AddressLine2",
+						"type": "varchar"
+					},
+					{
+						"name": "City",
+						"type": "varchar"
+					},
+					{
+						"name": "Region",
+						"type": "varchar"
+					},
+					{
+						"name": "Postcode",
+						"type": "varchar"
+					},
+					{
+						"name": "Country",
+						"type": "varchar"
+					},
+					{
+						"name": "Gender",
+						"type": "varchar"
+					},
+					{
+						"name": "DateOfBirth",
+						"type": "date"
+					},
+					{
+						"name": "Channel",
+						"type": "varchar"
+					},
+					{
+						"name": "Organisation",
+						"type": "varchar"
+					},
+					{
+						"name": "Client",
+						"type": "varchar"
+					},
+					{
+						"name": "ExternalID",
+						"type": "varchar"
+					},
+					{
+						"name": "UserCreateDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "UserUpdateDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "IsActive",
+						"type": "bit"
+					},
+					{
+						"name": "DeleteToken",
+						"type": "varchar"
+					},
+					{
+						"name": "EffFromDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "EffToDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ProcessDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "IsStaff",
+						"type": "bit"
+					},
+					{
+						"name": "IsTester",
+						"type": "bit"
+					},
+					{
+						"name": "IsCurrent",
+						"type": "bit"
+					},
+					{
+						"name": "SourceUserKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "RestrictionID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "IsRTBF",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "Dim",
+					"table": "User"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ds_Syn_dimPaymentCard')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -1583,6 +2175,35 @@
 						"type": "AzureBlobFSLocation",
 						"folderPath": {
 							"value": "Hermes/@{dataset().FileName}/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_history_historicalcustomuser')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.user table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_history_historicalcustomuser/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
 							"type": "Expression"
 						},
 						"fileSystem": "datalake"
@@ -1846,6 +2467,151 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_user')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.user table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_user/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_user_clientapplication')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.user_clientapplication table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_user_clientapplication/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_user_clientapplicationbundle')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.user_clientapplicationbundle table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_user_clientapplicationbundle/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_user_organisation')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.user_organisation table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_user_organisation/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_user_userdetail')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.user_userdetail table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_user_userdetail/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_vw_history_historicalpaymentcardaccount')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -1998,6 +2764,83 @@
 				"type": "AzurePostgreSqlTable",
 				"schema": [],
 				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_history_historicalcustomuser')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes history_historicalcustomuser table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_type",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "instance_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "channel",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_details",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "body",
+						"type": "jsonb",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "email",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "external_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "history_historicalcustomuser"
+				}
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
@@ -2245,6 +3088,335 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_user')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes user table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "password",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_login",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "is_superuser",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "email",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "is_active",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "date_joined",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "is_staff",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "uid",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "facebook",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "twitter",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "reset_token",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "marketing_code_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "client_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "salt",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "external_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "is_tester",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "apple",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "delete_token",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "magic_link_verified",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "user"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_user_userdetail')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes user_userdetail table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "first_name",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_name",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "date_of_birth",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "phone",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "address_line_1",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "address_line_2",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "city",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "region",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "postcode",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "country",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "notifications",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "pass_code",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "currency",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "user_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "gender",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "user_userdetail"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_syn_dwhpool_vw_history_historicalcustomuser')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_Syn_DataWarehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "client",
+						"type": "varchar"
+					},
+					{
+						"name": "twitter",
+						"type": "varchar"
+					},
+					{
+						"name": "facebook",
+						"type": "varchar"
+					},
+					{
+						"name": "is_staff",
+						"type": "bit"
+					},
+					{
+						"name": "is_active",
+						"type": "bit"
+					},
+					{
+						"name": "is_tester",
+						"type": "bit"
+					},
+					{
+						"name": "date_joined",
+						"type": "varchar"
+					},
+					{
+						"name": "external_id",
+						"type": "varchar"
+					},
+					{
+						"name": "delete_token",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "vw_history_historicalcustomuser"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
 			]
 		},
 		{
@@ -3333,6 +4505,1020 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalcustomuser')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "history_historicalcustomuser table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalcustomuser",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoryHistoricalCustomUser"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalcustomuser",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tbody as string,\n\t\temail as string,\n\t\texternal_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalCustomUser\nSrcHistoryHistoricalCustomUser filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalcustomuser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalcustomuser')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalcustomuser_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "history_historicalcustomuser table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalcustomuser",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoryHistoricalCustomUser"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalcustomuser",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tbody as string,\n\t\temail as string,\n\t\texternal_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalCustomUser\nSrcHistoryHistoricalCustomUser filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalcustomuser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalcustomuser')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalpaymentcardaccount table from Hermes to ADLS (added df_)",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoricalPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalpaymentcardaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalpaymentcardaccount table from Hermes to ADLS (added df_)",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoricalPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalpaymentcardaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_payment_card_paymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy payment_card_paymentcardaccount table from hermes to ADLS (added df_)",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_payment_card_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_payment_card_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_payment_card_paymentcardaccount_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy payment_card_paymentcardaccount table from hermes to ADLS (added df_)",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_payment_card_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "SrcPaymentCardAccount"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_payment_card_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_user')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "User table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_user",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUser"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nSrcUser filter(and(toDate(date_joined) >= toDate(subDays(currentUTC(),1)), toDate(date_joined) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_user')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_user_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "User table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_user",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUser"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nSrcUser filter(toDate(date_joined) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_user')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_user_userdetail')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "user_userdetail table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_user_userdetail",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUserUserDetail"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_user",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUser"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_userdetail",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						},
+						{
+							"name": "SelectU"
+						},
+						{
+							"name": "SelectUD"
+						},
+						{
+							"name": "JoinUdU"
+						},
+						{
+							"name": "SelectUserDetail"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as date,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserUserDetail\nsource(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nJoinUdU filter(and(toDate({u.date_joined}) >= toDate(subDays(currentUTC(),1)), toDate({u.date_joined}) < toDate(currentUTC()))) ~> FilterRecords\nSrcUser select(mapColumn(\n\t\t{u.id} = id,\n\t\t{u.date_joined} = date_joined\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectU\nSrcUserUserDetail select(mapColumn(\n\t\t{ud.id} = id,\n\t\t{ud.first_name} = first_name,\n\t\t{ud.last_name} = last_name,\n\t\t{ud.date_of_birth} = date_of_birth,\n\t\t{ud.phone} = phone,\n\t\t{ud.address_line_1} = address_line_1,\n\t\t{ud.address_line_2} = address_line_2,\n\t\t{ud.city} = city,\n\t\t{ud.region} = region,\n\t\t{ud.postcode} = postcode,\n\t\t{ud.country} = country,\n\t\t{ud.notifications} = notifications,\n\t\t{ud.pass_code} = pass_code,\n\t\t{ud.currency} = currency,\n\t\t{ud.user_id} = user_id,\n\t\t{ud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUD\nSelectUD, SelectU join({ud.user_id} == {u.id},\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinUdU\nFilterRecords select(mapColumn(\n\t\tid = {ud.id},\n\t\tfirst_name = {ud.first_name},\n\t\tlast_name = {ud.last_name},\n\t\tdate_of_birth = {ud.date_of_birth},\n\t\tphone = {ud.phone},\n\t\taddress_line_1 = {ud.address_line_1},\n\t\taddress_line_2 = {ud.address_line_2},\n\t\tcity = {ud.city},\n\t\tregion = {ud.region},\n\t\tpostcode = {ud.postcode},\n\t\tcountry = {ud.country},\n\t\tnotifications = {ud.notifications},\n\t\tpass_code = {ud.pass_code},\n\t\tcurrency = {ud.currency},\n\t\tuser_id = {ud.user_id},\n\t\tgender = {ud.gender}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserDetail\nSelectUserDetail sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_user_userdetail')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_user')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_userdetail')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_user_userdetail_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "user_userdetail table from Hermes to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_user_userdetail",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUserUserDetail"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_user",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUser"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_userdetail",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						},
+						{
+							"name": "SelectU"
+						},
+						{
+							"name": "SelectUD"
+						},
+						{
+							"name": "JoinUdU"
+						},
+						{
+							"name": "SelectUserDetail"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as date,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserUserDetail\nsource(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nJoinUdU filter(toDate({u.date_joined}) < toDate(currentUTC())) ~> FilterRecords\nSrcUser select(mapColumn(\n\t\t{u.id} = id,\n\t\t{u.date_joined} = date_joined\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectU\nSrcUserUserDetail select(mapColumn(\n\t\t{ud.id} = id,\n\t\t{ud.first_name} = first_name,\n\t\t{ud.last_name} = last_name,\n\t\t{ud.date_of_birth} = date_of_birth,\n\t\t{ud.phone} = phone,\n\t\t{ud.address_line_1} = address_line_1,\n\t\t{ud.address_line_2} = address_line_2,\n\t\t{ud.city} = city,\n\t\t{ud.region} = region,\n\t\t{ud.postcode} = postcode,\n\t\t{ud.country} = country,\n\t\t{ud.notifications} = notifications,\n\t\t{ud.pass_code} = pass_code,\n\t\t{ud.currency} = currency,\n\t\t{ud.user_id} = user_id,\n\t\t{ud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUD\nSelectUD, SelectU join({ud.user_id} == {u.id},\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinUdU\nFilterRecords select(mapColumn(\n\t\tid = {ud.id},\n\t\tfirst_name = {ud.first_name},\n\t\tlast_name = {ud.last_name},\n\t\tdate_of_birth = {ud.date_of_birth},\n\t\tphone = {ud.phone},\n\t\taddress_line_1 = {ud.address_line_1},\n\t\taddress_line_2 = {ud.address_line_2},\n\t\tcity = {ud.city},\n\t\tregion = {ud.region},\n\t\tpostcode = {ud.postcode},\n\t\tcountry = {ud.country},\n\t\tnotifications = {ud.notifications},\n\t\tpass_code = {ud.pass_code},\n\t\tcurrency = {ud.currency},\n\t\tuser_id = {ud.user_id},\n\t\tgender = {ud.gender}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserDetail\nSelectUserDetail sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_user_userdetail')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_user')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_userdetail')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadDimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data flow task to load Payment Card Dimension",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_syn_dwhpool_vw_history_historicalpaymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcVwHistoryHistoricalPaymentCardAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcard",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardissuer",
+								"type": "DatasetReference"
+							},
+							"name": "scrPaymentCardIssuer"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_csv_PaymentCardStatus",
+								"type": "DatasetReference"
+							},
+							"name": "srcRefPaymentCardStatus"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "MaxDimPCID"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEI"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEU"
+						}
+					],
+					"transformations": [
+						{
+							"name": "JoinPCAPC"
+						},
+						{
+							"name": "SelectPCA"
+						},
+						{
+							"name": "SelectPC"
+						},
+						{
+							"name": "SelectPCI"
+						},
+						{
+							"name": "JoinPCAPCPCI"
+						},
+						{
+							"name": "JoinPCAPCPCIRef"
+						},
+						{
+							"name": "SelectRefPC"
+						},
+						{
+							"name": "SelectDimPC"
+						},
+						{
+							"name": "JoinMaxID"
+						},
+						{
+							"name": "LookupExistingRecords"
+						},
+						{
+							"name": "NewExistingSplit"
+						},
+						{
+							"name": "IsCurrentNew"
+						},
+						{
+							"name": "IsCurrentInsert"
+						},
+						{
+							"name": "IsCurrentUpdate"
+						},
+						{
+							"name": "Filter"
+						},
+						{
+							"name": "UpdateExistingRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\tcreated as string,\n\t\tupdated as string,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcVwHistoryHistoricalPaymentCardAccount\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\tslug as string,\n\t\turl as string,\n\t\tscan_message as string,\n\t\tinput_label as string,\n\t\tis_active as boolean,\n\t\tsystem as string,\n\t\ttype as string,\n\t\ttoken_method as integer,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCard\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\timage as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrPaymentCardIssuer\nsource(output(\n\t\t{_col0_} as integer,\n\t\t{_col1_} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tskipLines: 1) ~> srcRefPaymentCardStatus\nsource(output(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimPaymentCard\nsource(output(\n\t\tMaxDimPCID as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxDimPCID FROM [Dim].[PaymentCard]',\n\tformat: 'query',\n\tstaged: false) ~> MaxDimPCID\nSelectPCA, SelectPC join({pca.payment_card_id} == {pc.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPC\nsrcVwHistoryHistoricalPaymentCardAccount select(mapColumn(\n\t\t{pca.id} = id,\n\t\t{pca.name_on_card} = name_on_card,\n\t\t{pca.start_month} = start_month,\n\t\t{pca.start_year} = start_year,\n\t\t{pca.expiry_month} = expiry_month,\n\t\t{pca.expiry_year} = expiry_year,\n\t\t{pca.status} = status,\n\t\t{pca.created} = created,\n\t\t{pca.updated} = updated,\n\t\t{pca.issuer_id} = issuer_id,\n\t\t{pca.payment_card_id} = payment_card_id,\n\t\t{pca.token} = token,\n\t\t{pca.country} = country,\n\t\t{pca.currency_code} = currency_code,\n\t\t{pca.pan_end} = pan_end,\n\t\t{pca.pan_start} = pan_start,\n\t\t{pca.is_deleted} = is_deleted,\n\t\t{pca.fingerprint} = fingerprint\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCA\nsrcPaymentCard select(mapColumn(\n\t\t{pc.id} = id,\n\t\t{pc.name} = name,\n\t\t{pc.slug} = slug,\n\t\t{pc.is_active} = is_active,\n\t\t{pc.type} = type\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPC\nscrPaymentCardIssuer select(mapColumn(\n\t\t{pci.id} = id,\n\t\t{pci.name} = name\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCI\nJoinPCAPC, SelectPCI join({pca.issuer_id} == {pci.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCI\nJoinPCAPCPCI, SelectRefPC join({pca.status} == {ref.PCCode},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCIRef\nsrcRefPaymentCardStatus select(mapColumn(\n\t\t{ref.PCCode} = {_col0_},\n\t\t{ref.PCStatus} = {_col1_}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectRefPC\nsrcDimPaymentCard select(mapColumn(\n\t\t{dim.ID} = ID,\n\t\t{dim.NameOnCard} = NameOnCard,\n\t\t{dim.PANTruncation} = PANTruncation,\n\t\t{dim.ValidFrom} = ValidFrom,\n\t\t{dim.ValidTo} = ValidTo,\n\t\t{dim.Token} = Token,\n\t\t{dim.Fingerprint} = Fingerprint,\n\t\t{dim.Issuer} = Issuer,\n\t\t{dim.CardProvider} = CardProvider,\n\t\t{dim.Slug} = Slug,\n\t\t{dim.CardType} = CardType,\n\t\t{dim.CardStatus} = CardStatus,\n\t\t{dim.IsDeleted} = IsDeleted,\n\t\t{dim.Country} = Country,\n\t\t{dim.CCYCode} = CCYCode,\n\t\t{dim.CardCreateDate} = CardCreateDate,\n\t\t{dim.CardUpdateDate} = CardUpdateDate,\n\t\t{dim.EffFromDate} = EffFromDate,\n\t\t{dim.EffToDate} = EffToDate,\n\t\t{dim.ProcessDate} = ProcessDate,\n\t\t{dim.IsCurrent} = IsCurrent,\n\t\t{dim.SourcePCKey} = SourcePCKey,\n\t\t{dim.RestrictionKey} = RestrictionKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDimPC\nJoinPCAPCPCIRef, MaxDimPCID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nAdditionalFields, SelectDimPC lookup({pca.fingerprint} == {dim.Fingerprint}\n\t&& {new.ValidTo} == {dim.ValidTo},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nLookupExistingRecords split(isNull({dim.ID}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@NewRecord derive({new.IsCurrent} = toBoolean('yes')) ~> IsCurrentNew\nNewExistingSplit@ExistingRecord derive({new.IsCurrentInsert} = toBoolean('yes')) ~> IsCurrentInsert\nNewExistingSplit@ExistingRecord derive({new.IsCurrentUpdate} = toBoolean('No')) ~> IsCurrentUpdate\nIsCurrentUpdate filter({dim.ID}<=MaxDimPCID) ~> Filter\nFilter alterRow(updateIf({dim.ID}<=MaxDimPCID)) ~> UpdateExistingRecords\nJoinMaxID derive({new.ValidFrom} = toDate(concat(right(concat('20',toString({pca.start_year})),4),'-',right(concat('0',toString({pca.start_month})),2),'-01')),\n\t\t{new.ValidTo} = lastDayOfMonth(toDate(concat(right(concat('20',toString({pca.expiry_year})),4),'-',right(concat('0',toString({pca.expiry_month})),2),'-01'))),\n\t\t{new.PANTruncation} = concat({pca.pan_start}, 'xxx', {pca.pan_end}),\n\t\t{new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalFields\nIsCurrentNew sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrent},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCard\nIsCurrentInsert sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrentInsert},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tdateFormat:'yyyy-MM-dd',\n\ttimestampFormat:'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEI\nUpdateExistingRecords sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT Dim.PaymentCard ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT Dim.PaymentCard OFF;'],\n\tmapColumn(\n\t\tID = {dim.ID},\n\t\tIsCurrent = {new.IsCurrentUpdate},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEU"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_syn_dwhpool_vw_history_historicalpaymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadDimPaymentCard_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data flow task to load Payment Card Dimension",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCardAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcard",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardissuer",
+								"type": "DatasetReference"
+							},
+							"name": "scrPaymentCardIssuer"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_csv_PaymentCardStatus",
+								"type": "DatasetReference"
+							},
+							"name": "srcRefPaymentCardStatus"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "MaxDimPCID"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEI"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_dimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimPaymentCardEU"
+						}
+					],
+					"transformations": [
+						{
+							"name": "JoinPCAPC"
+						},
+						{
+							"name": "SelectPCA"
+						},
+						{
+							"name": "SelectPC"
+						},
+						{
+							"name": "SelectPCI"
+						},
+						{
+							"name": "JoinPCAPCPCI"
+						},
+						{
+							"name": "JoinPCAPCPCIRef"
+						},
+						{
+							"name": "SelectRefPC"
+						},
+						{
+							"name": "SelectDimPC"
+						},
+						{
+							"name": "JoinMaxID"
+						},
+						{
+							"name": "LookupExistingRecords"
+						},
+						{
+							"name": "NewExistingSplit"
+						},
+						{
+							"name": "IsCurrentNew"
+						},
+						{
+							"name": "IsCurrentInsert"
+						},
+						{
+							"name": "IsCurrentUpdate"
+						},
+						{
+							"name": "Filter"
+						},
+						{
+							"name": "UpdateExistingRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCardAccount\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\tslug as string,\n\t\turl as string,\n\t\tscan_message as string,\n\t\tinput_label as string,\n\t\tis_active as boolean,\n\t\tsystem as string,\n\t\ttype as string,\n\t\ttoken_method as integer,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCard\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\timage as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrPaymentCardIssuer\nsource(output(\n\t\t{_col0_} as integer,\n\t\t{_col1_} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tskipLines: 1) ~> srcRefPaymentCardStatus\nsource(output(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimPaymentCard\nsource(output(\n\t\tMaxDimPCID as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxDimPCID FROM [Dim].[PaymentCard]',\n\tformat: 'query',\n\tstaged: false) ~> MaxDimPCID\nSelectPCA, SelectPC join({pca.payment_card_id} == {pc.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPC\nsrcPaymentCardAccount select(mapColumn(\n\t\t{pca.id} = id,\n\t\t{pca.name_on_card} = name_on_card,\n\t\t{pca.start_month} = start_month,\n\t\t{pca.start_year} = start_year,\n\t\t{pca.expiry_month} = expiry_month,\n\t\t{pca.expiry_year} = expiry_year,\n\t\t{pca.status} = status,\n\t\t{pca.order} = order,\n\t\t{pca.created} = created,\n\t\t{pca.updated} = updated,\n\t\t{pca.issuer_id} = issuer_id,\n\t\t{pca.payment_card_id} = payment_card_id,\n\t\t{pca.token} = token,\n\t\t{pca.country} = country,\n\t\t{pca.currency_code} = currency_code,\n\t\t{pca.pan_end} = pan_end,\n\t\t{pca.pan_start} = pan_start,\n\t\t{pca.is_deleted} = is_deleted,\n\t\t{pca.fingerprint} = fingerprint,\n\t\t{pca.psp_token} = psp_token,\n\t\t{pca.consents} = consents,\n\t\t{pca.hash} = hash,\n\t\t{pca.formatted_images} = formatted_images,\n\t\t{pca.pll_links} = pll_links,\n\t\t{pca.agent_data} = agent_data\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCA\nsrcPaymentCard select(mapColumn(\n\t\t{pc.id} = id,\n\t\t{pc.name} = name,\n\t\t{pc.slug} = slug,\n\t\t{pc.is_active} = is_active,\n\t\t{pc.type} = type\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPC\nscrPaymentCardIssuer select(mapColumn(\n\t\t{pci.id} = id,\n\t\t{pci.name} = name\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPCI\nJoinPCAPC, SelectPCI join({pca.issuer_id} == {pci.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCI\nJoinPCAPCPCI, SelectRefPC join({pca.status} == {ref.PCCode},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinPCAPCPCIRef\nsrcRefPaymentCardStatus select(mapColumn(\n\t\t{ref.PCCode} = {_col0_},\n\t\t{ref.PCStatus} = {_col1_}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectRefPC\nsrcDimPaymentCard select(mapColumn(\n\t\t{dim.ID} = ID,\n\t\t{dim.NameOnCard} = NameOnCard,\n\t\t{dim.PANTruncation} = PANTruncation,\n\t\t{dim.ValidFrom} = ValidFrom,\n\t\t{dim.ValidTo} = ValidTo,\n\t\t{dim.Token} = Token,\n\t\t{dim.Fingerprint} = Fingerprint,\n\t\t{dim.Issuer} = Issuer,\n\t\t{dim.CardProvider} = CardProvider,\n\t\t{dim.Slug} = Slug,\n\t\t{dim.CardType} = CardType,\n\t\t{dim.CardStatus} = CardStatus,\n\t\t{dim.IsDeleted} = IsDeleted,\n\t\t{dim.Country} = Country,\n\t\t{dim.CCYCode} = CCYCode,\n\t\t{dim.CardCreateDate} = CardCreateDate,\n\t\t{dim.CardUpdateDate} = CardUpdateDate,\n\t\t{dim.EffFromDate} = EffFromDate,\n\t\t{dim.EffToDate} = EffToDate,\n\t\t{dim.ProcessDate} = ProcessDate,\n\t\t{dim.IsCurrent} = IsCurrent,\n\t\t{dim.SourcePCKey} = SourcePCKey,\n\t\t{dim.RestrictionKey} = RestrictionKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDimPC\nJoinPCAPCPCIRef, MaxDimPCID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nAdditionalFields, SelectDimPC lookup({pca.fingerprint} == {dim.Fingerprint}\n\t&& {new.ValidTo} == {dim.ValidTo},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nLookupExistingRecords split(isNull({dim.ID}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@NewRecord derive({new.IsCurrent} = toBoolean('yes')) ~> IsCurrentNew\nNewExistingSplit@ExistingRecord derive({new.IsCurrentInsert} = toBoolean('yes')) ~> IsCurrentInsert\nNewExistingSplit@ExistingRecord derive({new.IsCurrentUpdate} = toBoolean('No')) ~> IsCurrentUpdate\nIsCurrentUpdate filter({dim.ID}<=MaxDimPCID) ~> Filter\nFilter alterRow(updateIf({dim.ID}<=MaxDimPCID)) ~> UpdateExistingRecords\nJoinMaxID derive({new.ValidFrom} = toDate(concat(right(concat('20',toString({pca.start_year})),4),'-',right(concat('0',toString({pca.start_month})),2),'-01')),\n\t\t{new.ValidTo} = lastDayOfMonth(toDate(concat(right(concat('20',toString({pca.expiry_year})),4),'-',right(concat('0',toString({pca.expiry_month})),2),'-01'))),\n\t\t{new.PANTruncation} = concat({pca.pan_start}, 'xxx', {pca.pan_end}),\n\t\t{new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalFields\nIsCurrentNew sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrent},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCard\nIsCurrentInsert sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tNameOnCard = {pca.name_on_card},\n\t\tPANTruncation = {new.PANTruncation},\n\t\tValidFrom = {new.ValidFrom},\n\t\tValidTo = {new.ValidTo},\n\t\tToken = {pca.token},\n\t\tFingerprint = {pca.fingerprint},\n\t\tIssuer = {pci.name},\n\t\tCardProvider = {pc.name},\n\t\tSlug = {pc.slug},\n\t\tCardType = {pc.type},\n\t\tCardStatus = {ref.PCStatus},\n\t\tIsDeleted = {pca.is_deleted},\n\t\tCountry = {pca.country},\n\t\tCCYCode = {pca.currency_code},\n\t\tCardCreateDate = {pca.created},\n\t\tCardUpdateDate = {pca.updated},\n\t\tEffFromDate = {pca.created},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsCurrent = {new.IsCurrentInsert},\n\t\tSourcePCKey = {pca.id}\n\t),\n\tdateFormat:'yyyy-MM-dd',\n\ttimestampFormat:'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEI\nUpdateExistingRecords sink(input(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT Dim.PaymentCard ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT Dim.PaymentCard OFF;'],\n\tmapColumn(\n\t\tID = {dim.ID},\n\t\tIsCurrent = {new.IsCurrentUpdate},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimPaymentCardEU"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadDimUser')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data flow task to load User Dimension",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_syn_dwhpool_vw_history_historicalcustomuser",
+								"type": "DatasetReference"
+							},
+							"name": "srcVwHistoryHistoricalCustomUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_userdetail",
+								"type": "DatasetReference"
+							},
+							"name": "srcUserUserDetail"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_clientapplication",
+								"type": "DatasetReference"
+							},
+							"name": "scrUserClientapplication"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_clientapplicationbundle",
+								"type": "DatasetReference"
+							},
+							"name": "scrUserClientapplicationBundle"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_organisation",
+								"type": "DatasetReference"
+							},
+							"name": "srcUserOrganisation"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "scrDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "MaxDimUserID"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimUserEI"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimUserEU"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SelectVwHistoryHistoricalCustomUser"
+						},
+						{
+							"name": "SelectUserUserDetail"
+						},
+						{
+							"name": "SelectUserClientapplication"
+						},
+						{
+							"name": "LookupExistingRecords"
+						},
+						{
+							"name": "NewExistingSplit"
+						},
+						{
+							"name": "IsCurrentNew"
+						},
+						{
+							"name": "IsCurrentInsert"
+						},
+						{
+							"name": "IsCurrentUpdate"
+						},
+						{
+							"name": "Filter"
+						},
+						{
+							"name": "UpdateExistingRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						},
+						{
+							"name": "SelectUserClientapplicationBundle"
+						},
+						{
+							"name": "SelectUserOrganisation"
+						},
+						{
+							"name": "SelectDimUser"
+						},
+						{
+							"name": "JoinUUdCa"
+						},
+						{
+							"name": "JoinUUdCaCab"
+						},
+						{
+							"name": "JoinUUdCaCabOrg"
+						},
+						{
+							"name": "JoinUUd"
+						},
+						{
+							"name": "JoinMaxID"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\temail as string,\n\t\tclient_id as string,\n\t\ttwitter as string,\n\t\tfacebook as string,\n\t\tis_staff as boolean,\n\t\tis_active as boolean,\n\t\tis_tester as boolean,\n\t\tdate_joined as string,\n\t\texternal_id as string,\n\t\tdelete_token as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcVwHistoryHistoricalCustomUser\nsource(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as timestamp,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUserUserDetail\nsource(output(\n\t\tclient_id as string,\n\t\tname as string,\n\t\torganisation_id as integer,\n\t\tsecret as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrUserClientapplication\nsource(output(\n\t\tid as integer,\n\t\tbundle_id as string,\n\t\tclient_id as string,\n\t\tmagic_lifetime as integer,\n\t\tmagic_link_url as string,\n\t\texternal_name as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrUserClientapplicationBundle\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\tterms_and_conditions as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUserOrganisation\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> scrDimUser\nsource(output(\n\t\tMaxDimUserID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxDimUserID FROM [Dim].[User]',\n\tformat: 'query',\n\tstaged: false) ~> MaxDimUserID\nsrcVwHistoryHistoricalCustomUser select(mapColumn(\n\t\t{usr.id} = id,\n\t\t{usr.email} = email,\n\t\t{usr.client_id} = client_id,\n\t\t{usr.twitter} = twitter,\n\t\t{usr.facebook} = facebook,\n\t\t{usr.is_staff} = is_staff,\n\t\t{usr.is_active} = is_active,\n\t\t{usr.is_tester} = is_tester,\n\t\t{usr.date_joined} = date_joined,\n\t\t{usr.external_id} = external_id,\n\t\t{usr.delete_token} = delete_token\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectVwHistoryHistoricalCustomUser\nsrcUserUserDetail select(mapColumn(\n\t\t{uud.id} = id,\n\t\t{uud.first_name} = first_name,\n\t\t{uud.last_name} = last_name,\n\t\t{uud.date_of_birth} = date_of_birth,\n\t\t{uud.phone} = phone,\n\t\t{uud.address_line_1} = address_line_1,\n\t\t{uud.address_line_2} = address_line_2,\n\t\t{uud.city} = city,\n\t\t{uud.region} = region,\n\t\t{uud.postcode} = postcode,\n\t\t{uud.country} = country,\n\t\t{uud.user_id} = user_id,\n\t\t{uud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserUserDetail\nscrUserClientapplication select(mapColumn(\n\t\t{uca.client_id} = client_id,\n\t\t{uca.name} = name,\n\t\t{uca.organisation_id} = organisation_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserClientapplication\nAdditionalFields, SelectDimUser lookup({usr.email} == {dim.Email}\n\t&& {uca.name} == {dim.Client}\n\t&& {usr.external_id} == {dim.ExternalID},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nLookupExistingRecords split(isNull({dim.ID}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@NewRecord derive({new.IsCurrent} = toBoolean('yes')) ~> IsCurrentNew\nNewExistingSplit@ExistingRecord derive({new.IsCurrentInsert} = toBoolean('yes')) ~> IsCurrentInsert\nNewExistingSplit@ExistingRecord derive({new.IsCurrentUpdate} = toBoolean('No')) ~> IsCurrentUpdate\nIsCurrentUpdate filter({dim.ID}<=MaxDimUserID) ~> Filter\nFilter alterRow(updateIf({dim.ID}<=MaxDimUserID)) ~> UpdateExistingRecords\nJoinMaxID derive({new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalFields\nscrUserClientapplicationBundle select(mapColumn(\n\t\t{cab.id} = id,\n\t\t{cab.bundle_id} = bundle_id,\n\t\t{cab.client_id} = client_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserClientapplicationBundle\nsrcUserOrganisation select(mapColumn(\n\t\t{org.id} = id,\n\t\t{org.name} = name\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserOrganisation\nscrDimUser select(mapColumn(\n\t\t{dim.ID} = ID,\n\t\t{dim.FirstName} = FirstName,\n\t\t{dim.LastName} = LastName,\n\t\t{dim.Phone} = Phone,\n\t\t{dim.Email} = Email,\n\t\t{dim.Facebook} = Facebook,\n\t\t{dim.Twitter} = Twitter,\n\t\t{dim.AddressLine1} = AddressLine1,\n\t\t{dim.AddressLine2} = AddressLine2,\n\t\t{dim.City} = City,\n\t\t{dim.Region} = Region,\n\t\t{dim.Postcode} = Postcode,\n\t\t{dim.Country} = Country,\n\t\t{dim.Gender} = Gender,\n\t\t{dim.DateOfBirth} = DateOfBirth,\n\t\t{dim.Channel} = Channel,\n\t\t{dim.Organisation} = Organisation,\n\t\t{dim.Client} = Client,\n\t\t{dim.ExternalID} = ExternalID,\n\t\t{dim.UserCreateDate} = UserCreateDate,\n\t\t{dim.UserUpdateDate} = UserUpdateDate,\n\t\t{dim.IsActive} = IsActive,\n\t\t{dim.DeleteToken} = DeleteToken,\n\t\t{dim.EffFromDate} = EffFromDate,\n\t\t{dim.EffToDate} = EffToDate,\n\t\t{dim.ProcessDate} = ProcessDate,\n\t\t{dim.IsStaff} = IsStaff,\n\t\t{dim.IsTester} = IsTester,\n\t\t{dim.IsCurrent} = IsCurrent,\n\t\t{dim.SourceUserKey} = SourceUserKey,\n\t\t{dim.RestrictionID} = RestrictionID,\n\t\t{dim.IsRTBF} = IsRTBF\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDimUser\nJoinUUd, SelectUserClientapplication join({usr.client_id} == {uca.client_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCa\nJoinUUdCa, SelectUserClientapplicationBundle join({usr.client_id} == {cab.client_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCaCab\nJoinUUdCaCab, SelectUserOrganisation join({uca.organisation_id} == {org.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCaCabOrg\nSelectVwHistoryHistoricalCustomUser, SelectUserUserDetail join({usr.id} == {uud.user_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUd\nJoinUUdCaCabOrg, MaxDimUserID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nIsCurrentNew sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tFirstName = {uud.first_name},\n\t\tLastName = {uud.last_name},\n\t\tPhone = {uud.phone},\n\t\tEmail = {usr.email},\n\t\tFacebook = {usr.facebook},\n\t\tTwitter = {usr.twitter},\n\t\tAddressLine1 = {uud.address_line_1},\n\t\tAddressLine2 = {uud.address_line_2},\n\t\tCity = {uud.city},\n\t\tRegion = {uud.region},\n\t\tPostcode = {uud.postcode},\n\t\tCountry = {uud.country},\n\t\tGender = {uud.gender},\n\t\tDateOfBirth = {uud.date_of_birth},\n\t\tChannel = {cab.bundle_id},\n\t\tOrganisation = {org.name},\n\t\tClient = {uca.name},\n\t\tExternalID = {usr.external_id},\n\t\tUserCreateDate = {usr.date_joined},\n\t\tIsActive = {usr.is_active},\n\t\tDeleteToken = {usr.delete_token},\n\t\tEffFromDate = {usr.date_joined},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsStaff = {usr.is_staff},\n\t\tIsTester = {usr.is_tester},\n\t\tIsCurrent = {new.IsCurrent},\n\t\tSourceUserKey = {usr.id}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUser\nIsCurrentInsert sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tFirstName = {uud.first_name},\n\t\tLastName = {uud.last_name},\n\t\tPhone = {uud.phone},\n\t\tEmail = {usr.email},\n\t\tFacebook = {usr.facebook},\n\t\tTwitter = {usr.twitter},\n\t\tAddressLine1 = {uud.address_line_1},\n\t\tAddressLine2 = {uud.address_line_2},\n\t\tCity = {uud.city},\n\t\tRegion = {uud.region},\n\t\tPostcode = {uud.postcode},\n\t\tCountry = {uud.country},\n\t\tGender = {uud.gender},\n\t\tDateOfBirth = {uud.date_of_birth},\n\t\tChannel = {cab.bundle_id},\n\t\tOrganisation = {org.name},\n\t\tClient = {uca.name},\n\t\tExternalID = {usr.external_id},\n\t\tUserCreateDate = {usr.date_joined},\n\t\tIsActive = {usr.is_active},\n\t\tDeleteToken = {usr.delete_token},\n\t\tEffFromDate = {usr.date_joined},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsStaff = {usr.is_staff},\n\t\tIsTester = {usr.is_tester},\n\t\tIsCurrent = {new.IsCurrentInsert},\n\t\tSourceUserKey = {usr.id}\n\t),\n\tdateFormat:'yyyy-MM-dd',\n\ttimestampFormat:'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUserEI\nUpdateExistingRecords sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT [Dim].[User] ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT [Dim].[User] OFF;'],\n\tmapColumn(\n\t\tID = {dim.ID},\n\t\tIsCurrent = {new.IsCurrentUpdate},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUserEU"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_syn_dwhpool_vw_history_historicalcustomuser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_userdetail')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_clientapplication')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_clientapplicationbundle')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_organisation')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimUser')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadDimUser_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data flow task to load User Dimension",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user",
+								"type": "DatasetReference"
+							},
+							"name": "srcUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_userdetail",
+								"type": "DatasetReference"
+							},
+							"name": "srcUserUserDetail"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_clientapplication",
+								"type": "DatasetReference"
+							},
+							"name": "scrUserClientapplication"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_clientapplicationbundle",
+								"type": "DatasetReference"
+							},
+							"name": "scrUserClientapplicationBundle"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_user_organisation",
+								"type": "DatasetReference"
+							},
+							"name": "srcUserOrganisation"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "scrDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "MaxDimUserID"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimUserEI"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "snkDimUserEU"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SelectUser"
+						},
+						{
+							"name": "SelectUserUserDetail"
+						},
+						{
+							"name": "SelectUserClientapplication"
+						},
+						{
+							"name": "LookupExistingRecords"
+						},
+						{
+							"name": "NewExistingSplit"
+						},
+						{
+							"name": "IsCurrentNew"
+						},
+						{
+							"name": "IsCurrentInsert"
+						},
+						{
+							"name": "IsCurrentUpdate"
+						},
+						{
+							"name": "Filter"
+						},
+						{
+							"name": "UpdateExistingRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						},
+						{
+							"name": "SelectUserClientapplicationBundle"
+						},
+						{
+							"name": "SelectUserOrganisation"
+						},
+						{
+							"name": "SelectDimUser"
+						},
+						{
+							"name": "JoinUUdCa"
+						},
+						{
+							"name": "JoinUUdCaCab"
+						},
+						{
+							"name": "JoinUUdCaCabOrg"
+						},
+						{
+							"name": "JoinUUd"
+						},
+						{
+							"name": "JoinMaxID"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUser\nsource(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as timestamp,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUserUserDetail\nsource(output(\n\t\tclient_id as string,\n\t\tname as string,\n\t\torganisation_id as integer,\n\t\tsecret as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrUserClientapplication\nsource(output(\n\t\tid as integer,\n\t\tbundle_id as string,\n\t\tclient_id as string,\n\t\tmagic_lifetime as integer,\n\t\tmagic_link_url as string,\n\t\texternal_name as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrUserClientapplicationBundle\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\tterms_and_conditions as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUserOrganisation\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tLastLoginDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> scrDimUser\nsource(output(\n\t\tMaxDimUserID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxDimUserID FROM [Dim].[User]',\n\tformat: 'query',\n\tstaged: false) ~> MaxDimUserID\nsrcUser select(mapColumn(\n\t\t{usr.id} = id,\n\t\t{usr.last_login} = last_login,\n\t\t{usr.is_superuser} = is_superuser,\n\t\t{usr.email} = email,\n\t\t{usr.is_active} = is_active,\n\t\t{usr.date_joined} = date_joined,\n\t\t{usr.is_staff} = is_staff,\n\t\t{usr.uid} = uid,\n\t\t{usr.facebook} = facebook,\n\t\t{usr.twitter} = twitter,\n\t\t{usr.reset_token} = reset_token,\n\t\t{usr.client_id} = client_id,\n\t\t{usr.external_id} = external_id,\n\t\t{usr.is_tester} = is_tester,\n\t\t{usr.delete_token} = delete_token\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUser\nsrcUserUserDetail select(mapColumn(\n\t\t{uud.id} = id,\n\t\t{uud.first_name} = first_name,\n\t\t{uud.last_name} = last_name,\n\t\t{uud.date_of_birth} = date_of_birth,\n\t\t{uud.phone} = phone,\n\t\t{uud.address_line_1} = address_line_1,\n\t\t{uud.address_line_2} = address_line_2,\n\t\t{uud.city} = city,\n\t\t{uud.region} = region,\n\t\t{uud.postcode} = postcode,\n\t\t{uud.country} = country,\n\t\t{uud.user_id} = user_id,\n\t\t{uud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserUserDetail\nscrUserClientapplication select(mapColumn(\n\t\t{uca.client_id} = client_id,\n\t\t{uca.name} = name,\n\t\t{uca.organisation_id} = organisation_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserClientapplication\nAdditionalFields, SelectDimUser lookup({usr.email} == {dim.Email}\n\t&& {uca.name} == {dim.Client}\n\t&& {usr.external_id} == {dim.ExternalID},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nLookupExistingRecords split(isNull({dim.ID}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@NewRecord derive({new.IsCurrent} = toBoolean('yes')) ~> IsCurrentNew\nNewExistingSplit@ExistingRecord derive({new.IsCurrentInsert} = toBoolean('yes')) ~> IsCurrentInsert\nNewExistingSplit@ExistingRecord derive({new.IsCurrentUpdate} = toBoolean('No')) ~> IsCurrentUpdate\nIsCurrentUpdate filter({dim.ID}<=MaxDimUserID) ~> Filter\nFilter alterRow(updateIf({dim.ID}<=MaxDimUserID)) ~> UpdateExistingRecords\nJoinMaxID derive({new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalFields\nscrUserClientapplicationBundle select(mapColumn(\n\t\t{cab.id} = id,\n\t\t{cab.bundle_id} = bundle_id,\n\t\t{cab.client_id} = client_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserClientapplicationBundle\nsrcUserOrganisation select(mapColumn(\n\t\t{org.id} = id,\n\t\t{org.name} = name\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserOrganisation\nscrDimUser select(mapColumn(\n\t\t{dim.ID} = ID,\n\t\t{dim.FirstName} = FirstName,\n\t\t{dim.LastName} = LastName,\n\t\t{dim.Phone} = Phone,\n\t\t{dim.Email} = Email,\n\t\t{dim.Facebook} = Facebook,\n\t\t{dim.Twitter} = Twitter,\n\t\t{dim.AddressLine1} = AddressLine1,\n\t\t{dim.AddressLine2} = AddressLine2,\n\t\t{dim.City} = City,\n\t\t{dim.Region} = Region,\n\t\t{dim.Postcode} = Postcode,\n\t\t{dim.Country} = Country,\n\t\t{dim.Gender} = Gender,\n\t\t{dim.DateOfBirth} = DateOfBirth,\n\t\t{dim.Channel} = Channel,\n\t\t{dim.Organisation} = Organisation,\n\t\t{dim.Client} = Client,\n\t\t{dim.ExternalID} = ExternalID,\n\t\t{dim.UserCreateDate} = UserCreateDate,\n\t\t{dim.UserUpdateDate} = UserUpdateDate,\n\t\t{dim.LastLoginDate} = LastLoginDate,\n\t\t{dim.IsActive} = IsActive,\n\t\t{dim.DeleteToken} = DeleteToken,\n\t\t{dim.EffFromDate} = EffFromDate,\n\t\t{dim.EffToDate} = EffToDate,\n\t\t{dim.ProcessDate} = ProcessDate,\n\t\t{dim.IsStaff} = IsStaff,\n\t\t{dim.IsTester} = IsTester,\n\t\t{dim.IsCurrent} = IsCurrent,\n\t\t{dim.SourceUserKey} = SourceUserKey,\n\t\t{dim.RestrictionID} = RestrictionID,\n\t\t{dim.IsRTBF} = IsRTBF\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDimUser\nJoinUUd, SelectUserClientapplication join({usr.client_id} == {uca.client_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCa\nJoinUUdCa, SelectUserClientapplicationBundle join({usr.client_id} == {cab.client_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCaCab\nJoinUUdCaCab, SelectUserOrganisation join({uca.organisation_id} == {org.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCaCabOrg\nSelectUser, SelectUserUserDetail join({usr.id} == {uud.user_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUd\nJoinUUdCaCabOrg, MaxDimUserID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nIsCurrentNew sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tFirstName = {uud.first_name},\n\t\tLastName = {uud.last_name},\n\t\tPhone = {uud.phone},\n\t\tEmail = {usr.email},\n\t\tFacebook = {usr.facebook},\n\t\tTwitter = {usr.twitter},\n\t\tAddressLine1 = {uud.address_line_1},\n\t\tAddressLine2 = {uud.address_line_2},\n\t\tCity = {uud.city},\n\t\tRegion = {uud.region},\n\t\tPostcode = {uud.postcode},\n\t\tCountry = {uud.country},\n\t\tGender = {uud.gender},\n\t\tDateOfBirth = {uud.date_of_birth},\n\t\tChannel = {cab.bundle_id},\n\t\tOrganisation = {org.name},\n\t\tClient = {uca.name},\n\t\tExternalID = {usr.external_id},\n\t\tUserCreateDate = {usr.date_joined},\n\t\tLastLoginDate = {usr.last_login},\n\t\tIsActive = {usr.is_active},\n\t\tDeleteToken = {usr.delete_token},\n\t\tEffFromDate = {usr.date_joined},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsStaff = {usr.is_staff},\n\t\tIsTester = {usr.is_tester},\n\t\tIsCurrent = {new.IsCurrent},\n\t\tSourceUserKey = {usr.id}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUser\nIsCurrentInsert sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tFirstName = {uud.first_name},\n\t\tLastName = {uud.last_name},\n\t\tPhone = {uud.phone},\n\t\tEmail = {usr.email},\n\t\tFacebook = {usr.facebook},\n\t\tTwitter = {usr.twitter},\n\t\tAddressLine1 = {uud.address_line_1},\n\t\tAddressLine2 = {uud.address_line_2},\n\t\tCity = {uud.city},\n\t\tRegion = {uud.region},\n\t\tPostcode = {uud.postcode},\n\t\tCountry = {uud.country},\n\t\tGender = {uud.gender},\n\t\tDateOfBirth = {uud.date_of_birth},\n\t\tChannel = {cab.bundle_id},\n\t\tOrganisation = {org.name},\n\t\tClient = {uca.name},\n\t\tExternalID = {usr.external_id},\n\t\tUserCreateDate = {usr.date_joined},\n\t\tLastLoginDate = {usr.last_login},\n\t\tIsActive = {usr.is_active},\n\t\tDeleteToken = {usr.delete_token},\n\t\tEffFromDate = {usr.date_joined},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsStaff = {usr.is_staff},\n\t\tIsTester = {usr.is_tester},\n\t\tIsCurrent = {new.IsCurrentInsert},\n\t\tSourceUserKey = {usr.id}\n\t),\n\tdateFormat:'yyyy-MM-dd',\n\ttimestampFormat:'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUserEI\nUpdateExistingRecords sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT [Dim].[User] ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT [Dim].[User] OFF;'],\n\tmapColumn(\n\t\tID = {dim.ID},\n\t\tIsCurrent = {new.IsCurrentUpdate},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUserEU"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_userdetail')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_clientapplication')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_clientapplicationbundle')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_user_organisation')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimUser')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/df_LoadPaymentCard')]",
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
@@ -3741,6 +5927,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL Users')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- Tableau\n\n-- in master db\n-- CREATE LOGIN Tableau1 WITH PASSWORD = 'SMa97RZSmGcwVHUzsQj2rSTLwBWFXVLb';\n\n-- in dwhpool\n-- CREATE USER Tableau1 FROM LOGIN Tableau1;\n-- EXEC sp_addrolemember 'db_datareader', 'Tableau1';\n-- GRANT SELECT ON DATABASE::dwhpool to Tableau1;\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Scratch')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -3773,6 +5979,190 @@
 						"poolName": "Built-in",
 						"databaseName": "temp"
 					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u01 Create Schemas')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u02 usp_CreateExternalObjects')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n/****************************************history_historicalpaymentcardaccount****************************************/\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalcustomuser****************************************/\nSET @tbl = 'history_historicalcustomuser'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [change_details] VARCHAR(255),\n    [body] VARCHAR(4000),\n    [email] VARCHAR(100),\n    [external_id] VARCHAR(100)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthdevsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthdevsynapse'\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u03 Create DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[PaymentCard]') AND type in (N'U'))\nDROP TABLE [Dim].[PaymentCard];\n\nCREATE TABLE Dim.PaymentCard\n  (  \n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CardCreateDate  DATETIME NULL,--20210301NOT NULL,\n  CardUpdateDate  DATETIME NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL,\n  RestrictionKey  INT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u04 Create DimUser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "--Change of Columns used for SCD: Status\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[User]') AND type in (N'U'))\nDROP TABLE [Dim].[User];\n\nCREATE TABLE Dim.[User]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  FirstName       VARCHAR(255) NULL,\n  LastName        VARCHAR(255) NULL,\n  Phone           VARCHAR(100) NULL,\n  Email           VARCHAR(255) NULL,\n  Facebook        VARCHAR(255) NULL,\n  Twitter         VARCHAR(255) NULL,\n  AddressLine1    VARCHAR(255) NULL,\n  AddressLine2    VARCHAR(255) NULL,\n  City            VARCHAR(100) NULL,\n  Region          VARCHAR(100) NULL,\n  Postcode        VARCHAR(20) NULL,\n  Country         VARCHAR(100) NULL,\n  Gender          VARCHAR(16) NULL,\n  DateOfBirth     DATE NULL,\n  Channel         VARCHAR(100) NULL,\n  Organisation    VARCHAR(100) NOT NULL,\n  Client          VARCHAR(100) NOT NULL,\n  ExternalID      VARCHAR(255) NOT NULL,\n  UserCreateDate  DATETIME NULL,\n  UserUpdateDate  DATETIME NULL,\n  IsActive        BIT NOT NULL DEFAULT 1,\n  DeleteToken     VARCHAR(255) NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NULL,\n  IsStaff         BIT NULL,\n  IsTester        BIT NOT NULL,\n  IsCurrent       BIT NOT NULL,\n  SourceUserKey   INT NULL,\n  RestrictionID   INT NULL,\n  IsRTBF          BIT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u05 Create view vw_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalpaymentcardaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalpaymentcardaccount\nAS\nSELECT\n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[user_id],\n    --ext.[body],\n    --ext.[change_details],\n    --ext.*,\n    js.[id],\n    js.[name_on_card],\n    js.[start_month],\n    js.[start_year],\n    js.[expiry_month],\n    js.[expiry_year],\n    js.[status],\n    js.[created],\n    js.[updated],\n    js.[issuer_id],\n    js.[payment_card_id],\n    js.[token],\n    js.[country],\n    js.[currency_code],\n    js.[pan_end],\n    js.[pan_start],\n    js.[is_deleted],\n    js.[fingerprint]\n FROM [dbo].[ext_history_historicalpaymentcardaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(Body, '$'))\n   WITH (\n        [id] int '$.id',\n        [name_on_card] varchar(150) '$.name_on_card',\n        [start_month] int '$.start_month',\n        [start_year] int '$.start_year',\n        [expiry_month] int '$.expiry_month',\n        [expiry_year] int '$.expiry_year',\n        [status] int '$.status',\n        [order] int '$.order',\n        [created] varchar(32) '$.created',\n        [updated] varchar(32) '$.updated',\n        [issuer_id] int '$.issuer',\n        [payment_card_id] int '$.payment_card',\n        [token] varchar(255) '$.token',\n        [country] varchar(40) '$.country',\n        [currency_code] varchar(3) '$.currency_code',\n        [pan_end] varchar(4) '$.pan_end',\n        [pan_start] varchar(4) '$.pan_start',\n        [is_deleted] bit '$.is_deleted',\n        [fingerprint] varchar(100) '$.fingerprint',\n        [psp_token] varchar(255) '$.psp_token',\n        [consents] varchar(4000) '$.consents',\n        [hash] varchar(255) '$.hash'\n   ) AS js\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u06 Create view vw_history_historicalcustomuser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalcustomuser\nGO\n\nCREATE VIEW dbo.vw_history_historicalcustomuser\nAS\nSELECT DISTINCT \n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[change_details],\n    --ext.[body],\n    --ext.[email],\n    --ext.external_id,\n    --ext.*\n   js.[id],\n   js.[email],\n   js.[client_id],\n   js.[twitter],\n   js.[facebook],\n   js.[is_staff],\n   js.[is_active],\n   js.[is_tester],\n   js.[date_joined],\n   js.[external_id],\n   js.[delete_token]\nFROM [dbo].[ext_history_historicalcustomuser] ext\nOUTER APPLY OPENJSON (JSON_QUERY(body, '$'))\n   WITH (\n        [id]            INT '$.id',\n        [email]         VARCHAR(255) '$.email',\n        [client_id]     VARCHAR(100) '$.client',\n        [twitter]       VARCHAR(100) '$.twitter',\n        [facebook]      VARCHAR(100) '$.facebook',\n        [is_staff]      bit '$.is_staff',\n        [is_active]     bit '$.is_active',\n        [is_tester]     bit '$.is_tester',\n        [date_joined]   VARCHAR(50) '$.date_joined',\n        [external_id]   VARCHAR(255) '$.external_id',\n        [delete_token]  VARCHAR(255) '$.delete_token'\n   ) AS js\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u07 Update DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimPaymentCard', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimPaymentCard]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimPaymentCard] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent,\n  dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.PaymentCard dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EventID,\n    ValidTo,\n    Fingerprint,\n    CardCreateDate,\n    CardCreateDate AS EffFromDate,\n    LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourcePCKey\n  FROM Dim.PaymentCard\n) updt\nON updt.ID = dim.ID\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/u08 Update DimUser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "02 User"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimUser', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimUser]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimUser] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent,\n  dim.ProcessDate = GETDATE()\n--SELECT *\nFROM [Dim].[User] dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EventID,\n    Email, \n    Client, \n    ExternalID,\n    IsActive,\n    UserCreateDate,\n    UserCreateDate AS EffFromDate,\n    LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourceUserKey\n  FROM [Dim].[User]\n) updt\nON updt.ID = dim.ID\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
 				},
 				"type": "SqlQuery"
 			},
