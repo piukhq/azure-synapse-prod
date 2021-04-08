@@ -1,0 +1,20 @@
+{
+	"name": "u05 Create view vw_history_historicalpaymentcardaccount",
+	"properties": {
+		"folder": {
+			"name": "02 User"
+		},
+		"content": {
+			"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalpaymentcardaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalpaymentcardaccount\nAS\nSELECT\n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[user_id],\n    --ext.[body],\n    --ext.[change_details],\n    --ext.*,\n    js.[id],\n    js.[name_on_card],\n    js.[start_month],\n    js.[start_year],\n    js.[expiry_month],\n    js.[expiry_year],\n    js.[status],\n    js.[created],\n    js.[updated],\n    js.[issuer_id],\n    js.[payment_card_id],\n    js.[token],\n    js.[country],\n    js.[currency_code],\n    js.[pan_end],\n    js.[pan_start],\n    js.[is_deleted],\n    js.[fingerprint]\n FROM [dbo].[ext_history_historicalpaymentcardaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(Body, '$'))\n   WITH (\n        [id] int '$.id',\n        [name_on_card] varchar(150) '$.name_on_card',\n        [start_month] int '$.start_month',\n        [start_year] int '$.start_year',\n        [expiry_month] int '$.expiry_month',\n        [expiry_year] int '$.expiry_year',\n        [status] int '$.status',\n        [order] int '$.order',\n        [created] varchar(32) '$.created',\n        [updated] varchar(32) '$.updated',\n        [issuer_id] int '$.issuer',\n        [payment_card_id] int '$.payment_card',\n        [token] varchar(255) '$.token',\n        [country] varchar(40) '$.country',\n        [currency_code] varchar(3) '$.currency_code',\n        [pan_end] varchar(4) '$.pan_end',\n        [pan_start] varchar(4) '$.pan_start',\n        [is_deleted] bit '$.is_deleted',\n        [fingerprint] varchar(100) '$.fingerprint',\n        [psp_token] varchar(255) '$.psp_token',\n        [consents] varchar(4000) '$.consents',\n        [hash] varchar(255) '$.hash'\n   ) AS js\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

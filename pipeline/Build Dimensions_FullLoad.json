@@ -15,6 +15,20 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "Load DimUser_FullLoad",
+				"description": "Pipeline to trigger the \"Load DimUser\" Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load DimUser_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"annotations": []

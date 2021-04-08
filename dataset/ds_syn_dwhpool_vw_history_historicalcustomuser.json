@@ -1,0 +1,62 @@
+{
+	"name": "ds_syn_dwhpool_vw_history_historicalcustomuser",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "email",
+				"type": "varchar"
+			},
+			{
+				"name": "client",
+				"type": "varchar"
+			},
+			{
+				"name": "twitter",
+				"type": "varchar"
+			},
+			{
+				"name": "facebook",
+				"type": "varchar"
+			},
+			{
+				"name": "is_staff",
+				"type": "bit"
+			},
+			{
+				"name": "is_active",
+				"type": "bit"
+			},
+			{
+				"name": "is_tester",
+				"type": "bit"
+			},
+			{
+				"name": "date_joined",
+				"type": "varchar"
+			},
+			{
+				"name": "external_id",
+				"type": "varchar"
+			},
+			{
+				"name": "delete_token",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "vw_history_historicalcustomuser"
+		}
+	}
+}

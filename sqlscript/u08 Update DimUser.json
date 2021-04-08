@@ -1,0 +1,20 @@
+{
+	"name": "u08 Update DimUser",
+	"properties": {
+		"folder": {
+			"name": "02 User"
+		},
+		"content": {
+			"query": "IF OBJECT_ID('usp_UpdateDimUser', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimUser]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimUser] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent,\n  dim.ProcessDate = GETDATE()\n--SELECT *\nFROM [Dim].[User] dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EventID,\n    Email, \n    Client, \n    ExternalID,\n    IsActive,\n    UserCreateDate,\n    UserCreateDate AS EffFromDate,\n    LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourceUserKey\n  FROM [Dim].[User]\n) updt\nON updt.ID = dim.ID\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

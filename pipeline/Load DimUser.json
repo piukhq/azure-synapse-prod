@@ -1,11 +1,11 @@
 {
-	"name": "Load DimPaymentCard",
+	"name": "Load DimUser",
 	"properties": {
-		"description": "Pipeline to load Payment Card Dimension",
+		"description": "Pipeline to load user Dimension",
 		"activities": [
 			{
-				"name": "df_LoadDimPaymentCard",
-				"description": "Data flow to load Payment Card Dimension",
+				"name": "df_LoadDimUser",
+				"description": "Data flow to load Payment Card",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -18,7 +18,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_LoadDimPaymentCard",
+						"referenceName": "df_LoadDimUser",
 						"type": "DataFlowReference"
 					},
 					"staging": {
@@ -36,12 +36,12 @@
 				}
 			},
 			{
-				"name": "Update dimPaymentCard",
-				"description": "Update dimPaymentCard",
+				"name": "Update DimUser",
+				"description": "Update DimUser",
 				"type": "SqlPoolStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "df_LoadDimPaymentCard",
+						"activity": "df_LoadDimUser",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -60,7 +60,7 @@
 					"type": "SqlPoolReference"
 				},
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[usp_UpdateDimPaymentCard]"
+					"storedProcedureName": "[dbo].[usp_UpdateDimUser]"
 				}
 			},
 			{
@@ -69,13 +69,13 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "df_LoadDimPaymentCard",
+						"activity": "df_LoadDimUser",
 						"dependencyConditions": [
 							"Failed"
 						]
 					},
 					{
-						"activity": "Update dimPaymentCard",
+						"activity": "Update DimUser",
 						"dependencyConditions": [
 							"Failed"
 						]

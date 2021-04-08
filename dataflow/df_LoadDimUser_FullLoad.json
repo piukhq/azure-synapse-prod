@@ -1,0 +1,143 @@
+{
+	"name": "df_LoadDimUser_FullLoad",
+	"properties": {
+		"description": "Data flow task to load User Dimension",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_user",
+						"type": "DatasetReference"
+					},
+					"name": "srcUser"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_user_userdetail",
+						"type": "DatasetReference"
+					},
+					"name": "srcUserUserDetail"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_user_clientapplication",
+						"type": "DatasetReference"
+					},
+					"name": "scrUserClientapplication"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_user_clientapplicationbundle",
+						"type": "DatasetReference"
+					},
+					"name": "scrUserClientapplicationBundle"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_user_organisation",
+						"type": "DatasetReference"
+					},
+					"name": "srcUserOrganisation"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_Syn_DimUser",
+						"type": "DatasetReference"
+					},
+					"name": "scrDimUser"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_Syn_DimUser",
+						"type": "DatasetReference"
+					},
+					"name": "MaxDimUserID"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_Syn_DimUser",
+						"type": "DatasetReference"
+					},
+					"name": "snkDimUser"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_Syn_DimUser",
+						"type": "DatasetReference"
+					},
+					"name": "snkDimUserEI"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_Syn_DimUser",
+						"type": "DatasetReference"
+					},
+					"name": "snkDimUserEU"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SelectUser"
+				},
+				{
+					"name": "SelectUserUserDetail"
+				},
+				{
+					"name": "SelectUserClientapplication"
+				},
+				{
+					"name": "LookupExistingRecords"
+				},
+				{
+					"name": "NewExistingSplit"
+				},
+				{
+					"name": "IsCurrentNew"
+				},
+				{
+					"name": "IsCurrentInsert"
+				},
+				{
+					"name": "IsCurrentUpdate"
+				},
+				{
+					"name": "Filter"
+				},
+				{
+					"name": "UpdateExistingRecords"
+				},
+				{
+					"name": "AdditionalFields"
+				},
+				{
+					"name": "SelectUserClientapplicationBundle"
+				},
+				{
+					"name": "SelectUserOrganisation"
+				},
+				{
+					"name": "SelectDimUser"
+				},
+				{
+					"name": "JoinUUdCa"
+				},
+				{
+					"name": "JoinUUdCaCab"
+				},
+				{
+					"name": "JoinUUdCaCabOrg"
+				},
+				{
+					"name": "JoinUUd"
+				},
+				{
+					"name": "JoinMaxID"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUser\nsource(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as timestamp,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUserUserDetail\nsource(output(\n\t\tclient_id as string,\n\t\tname as string,\n\t\torganisation_id as integer,\n\t\tsecret as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrUserClientapplication\nsource(output(\n\t\tid as integer,\n\t\tbundle_id as string,\n\t\tclient_id as string,\n\t\tmagic_lifetime as integer,\n\t\tmagic_link_url as string,\n\t\texternal_name as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> scrUserClientapplicationBundle\nsource(output(\n\t\tid as integer,\n\t\tname as string,\n\t\tterms_and_conditions as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUserOrganisation\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tLastLoginDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> scrDimUser\nsource(output(\n\t\tMaxDimUserID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxDimUserID FROM [Dim].[User]',\n\tformat: 'query',\n\tstaged: false) ~> MaxDimUserID\nsrcUser select(mapColumn(\n\t\t{usr.id} = id,\n\t\t{usr.last_login} = last_login,\n\t\t{usr.is_superuser} = is_superuser,\n\t\t{usr.email} = email,\n\t\t{usr.is_active} = is_active,\n\t\t{usr.date_joined} = date_joined,\n\t\t{usr.is_staff} = is_staff,\n\t\t{usr.uid} = uid,\n\t\t{usr.facebook} = facebook,\n\t\t{usr.twitter} = twitter,\n\t\t{usr.reset_token} = reset_token,\n\t\t{usr.client_id} = client_id,\n\t\t{usr.external_id} = external_id,\n\t\t{usr.is_tester} = is_tester,\n\t\t{usr.delete_token} = delete_token\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUser\nsrcUserUserDetail select(mapColumn(\n\t\t{uud.id} = id,\n\t\t{uud.first_name} = first_name,\n\t\t{uud.last_name} = last_name,\n\t\t{uud.date_of_birth} = date_of_birth,\n\t\t{uud.phone} = phone,\n\t\t{uud.address_line_1} = address_line_1,\n\t\t{uud.address_line_2} = address_line_2,\n\t\t{uud.city} = city,\n\t\t{uud.region} = region,\n\t\t{uud.postcode} = postcode,\n\t\t{uud.country} = country,\n\t\t{uud.user_id} = user_id,\n\t\t{uud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserUserDetail\nscrUserClientapplication select(mapColumn(\n\t\t{uca.client_id} = client_id,\n\t\t{uca.name} = name,\n\t\t{uca.organisation_id} = organisation_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserClientapplication\nAdditionalFields, SelectDimUser lookup({usr.email} == {dim.Email}\n\t&& {uca.name} == {dim.Client}\n\t&& {usr.external_id} == {dim.ExternalID},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nLookupExistingRecords split(isNull({dim.ID}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@NewRecord derive({new.IsCurrent} = toBoolean('yes')) ~> IsCurrentNew\nNewExistingSplit@ExistingRecord derive({new.IsCurrentInsert} = toBoolean('yes')) ~> IsCurrentInsert\nNewExistingSplit@ExistingRecord derive({new.IsCurrentUpdate} = toBoolean('No')) ~> IsCurrentUpdate\nIsCurrentUpdate filter({dim.ID}<=MaxDimUserID) ~> Filter\nFilter alterRow(updateIf({dim.ID}<=MaxDimUserID)) ~> UpdateExistingRecords\nJoinMaxID derive({new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalFields\nscrUserClientapplicationBundle select(mapColumn(\n\t\t{cab.id} = id,\n\t\t{cab.bundle_id} = bundle_id,\n\t\t{cab.client_id} = client_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserClientapplicationBundle\nsrcUserOrganisation select(mapColumn(\n\t\t{org.id} = id,\n\t\t{org.name} = name\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserOrganisation\nscrDimUser select(mapColumn(\n\t\t{dim.ID} = ID,\n\t\t{dim.FirstName} = FirstName,\n\t\t{dim.LastName} = LastName,\n\t\t{dim.Phone} = Phone,\n\t\t{dim.Email} = Email,\n\t\t{dim.Facebook} = Facebook,\n\t\t{dim.Twitter} = Twitter,\n\t\t{dim.AddressLine1} = AddressLine1,\n\t\t{dim.AddressLine2} = AddressLine2,\n\t\t{dim.City} = City,\n\t\t{dim.Region} = Region,\n\t\t{dim.Postcode} = Postcode,\n\t\t{dim.Country} = Country,\n\t\t{dim.Gender} = Gender,\n\t\t{dim.DateOfBirth} = DateOfBirth,\n\t\t{dim.Channel} = Channel,\n\t\t{dim.Organisation} = Organisation,\n\t\t{dim.Client} = Client,\n\t\t{dim.ExternalID} = ExternalID,\n\t\t{dim.UserCreateDate} = UserCreateDate,\n\t\t{dim.UserUpdateDate} = UserUpdateDate,\n\t\t{dim.LastLoginDate} = LastLoginDate,\n\t\t{dim.IsActive} = IsActive,\n\t\t{dim.DeleteToken} = DeleteToken,\n\t\t{dim.EffFromDate} = EffFromDate,\n\t\t{dim.EffToDate} = EffToDate,\n\t\t{dim.ProcessDate} = ProcessDate,\n\t\t{dim.IsStaff} = IsStaff,\n\t\t{dim.IsTester} = IsTester,\n\t\t{dim.IsCurrent} = IsCurrent,\n\t\t{dim.SourceUserKey} = SourceUserKey,\n\t\t{dim.RestrictionID} = RestrictionID,\n\t\t{dim.IsRTBF} = IsRTBF\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDimUser\nJoinUUd, SelectUserClientapplication join({usr.client_id} == {uca.client_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCa\nJoinUUdCa, SelectUserClientapplicationBundle join({usr.client_id} == {cab.client_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCaCab\nJoinUUdCaCab, SelectUserOrganisation join({uca.organisation_id} == {org.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUdCaCabOrg\nSelectUser, SelectUserUserDetail join({usr.id} == {uud.user_id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUUd\nJoinUUdCaCabOrg, MaxDimUserID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nIsCurrentNew sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tFirstName = {uud.first_name},\n\t\tLastName = {uud.last_name},\n\t\tPhone = {uud.phone},\n\t\tEmail = {usr.email},\n\t\tFacebook = {usr.facebook},\n\t\tTwitter = {usr.twitter},\n\t\tAddressLine1 = {uud.address_line_1},\n\t\tAddressLine2 = {uud.address_line_2},\n\t\tCity = {uud.city},\n\t\tRegion = {uud.region},\n\t\tPostcode = {uud.postcode},\n\t\tCountry = {uud.country},\n\t\tGender = {uud.gender},\n\t\tDateOfBirth = {uud.date_of_birth},\n\t\tChannel = {cab.bundle_id},\n\t\tOrganisation = {org.name},\n\t\tClient = {uca.name},\n\t\tExternalID = {usr.external_id},\n\t\tUserCreateDate = {usr.date_joined},\n\t\tLastLoginDate = {usr.last_login},\n\t\tIsActive = {usr.is_active},\n\t\tDeleteToken = {usr.delete_token},\n\t\tEffFromDate = {usr.date_joined},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsStaff = {usr.is_staff},\n\t\tIsTester = {usr.is_tester},\n\t\tIsCurrent = {new.IsCurrent},\n\t\tSourceUserKey = {usr.id}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUser\nIsCurrentInsert sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tFirstName = {uud.first_name},\n\t\tLastName = {uud.last_name},\n\t\tPhone = {uud.phone},\n\t\tEmail = {usr.email},\n\t\tFacebook = {usr.facebook},\n\t\tTwitter = {usr.twitter},\n\t\tAddressLine1 = {uud.address_line_1},\n\t\tAddressLine2 = {uud.address_line_2},\n\t\tCity = {uud.city},\n\t\tRegion = {uud.region},\n\t\tPostcode = {uud.postcode},\n\t\tCountry = {uud.country},\n\t\tGender = {uud.gender},\n\t\tDateOfBirth = {uud.date_of_birth},\n\t\tChannel = {cab.bundle_id},\n\t\tOrganisation = {org.name},\n\t\tClient = {uca.name},\n\t\tExternalID = {usr.external_id},\n\t\tUserCreateDate = {usr.date_joined},\n\t\tLastLoginDate = {usr.last_login},\n\t\tIsActive = {usr.is_active},\n\t\tDeleteToken = {usr.delete_token},\n\t\tEffFromDate = {usr.date_joined},\n\t\tProcessDate = {new.ProcessDate},\n\t\tIsStaff = {usr.is_staff},\n\t\tIsTester = {usr.is_tester},\n\t\tIsCurrent = {new.IsCurrentInsert},\n\t\tSourceUserKey = {usr.id}\n\t),\n\tdateFormat:'yyyy-MM-dd',\n\ttimestampFormat:'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUserEI\nUpdateExistingRecords sink(input(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT [Dim].[User] ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT [Dim].[User] OFF;'],\n\tmapColumn(\n\t\tID = {dim.ID},\n\t\tIsCurrent = {new.IsCurrentUpdate},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> snkDimUserEU"
+		}
+	}
+}

@@ -1,11 +1,11 @@
 {
-	"name": "Load DimPaymentCard_FullLoad",
+	"name": "Load DimUser_FullLoad",
 	"properties": {
-		"description": "Pipeline to load Payment Card Dimension",
+		"description": "Pipeline to load User Dimension",
 		"activities": [
 			{
-				"name": "df_LoadDimPaymentCard_FullLoad",
-				"description": "Data flow to load Payment Card Dimension",
+				"name": "df_LoadUser_FullLoad",
+				"description": "Data flow to load User",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -18,7 +18,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_LoadDimPaymentCard_FullLoad",
+						"referenceName": "df_LoadDimUser_FullLoad",
 						"type": "DataFlowReference"
 					},
 					"staging": {
@@ -36,12 +36,12 @@
 				}
 			},
 			{
-				"name": "Execute Build DimPaymentCard",
-				"description": "Execute Build DimPaymentCard",
+				"name": "Execute Build DimUser",
+				"description": "Execute Build DimUser",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "df_LoadDimPaymentCard_FullLoad",
+						"activity": "df_LoadUser_FullLoad",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -50,7 +50,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Load DimPaymentCard",
+						"referenceName": "Load DimUser",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
