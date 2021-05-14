@@ -161,8 +161,7 @@
 						}
 					}
 				],
-				"annotations": [],
-				"lastPublishTime": "2021-03-25T13:00:33Z"
+				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS')]",
@@ -218,7 +217,7 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Create External Objects",
+								"activity": "Truncate Tables",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -233,15 +232,42 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Truncate Tables",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Create External Objects",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[dbo].[usp_TruncateTable]"
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_Syn_DataWarehouse",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
-				"annotations": [],
-				"lastPublishTime": "2021-03-25T13:00:47Z"
+				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS_FullLoad')]",
 				"[concat(variables('workspaceId'), '/pipelines/Create External Objects')]",
-				"[concat(variables('workspaceId'), '/pipelines/Build Dimensions_FullLoad')]"
+				"[concat(variables('workspaceId'), '/pipelines/Build Dimensions_FullLoad')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
 			]
 		},
 		{
