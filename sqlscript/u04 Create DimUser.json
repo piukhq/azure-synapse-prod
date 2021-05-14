@@ -1,0 +1,20 @@
+{
+	"name": "u04 Create DimUser",
+	"properties": {
+		"folder": {
+			"name": "02 User"
+		},
+		"content": {
+			"query": "--Change of Columns used for SCD: Status\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[User]') AND type in (N'U'))\nDROP TABLE [Dim].[User];\n\nCREATE TABLE Dim.[User]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  FirstName       VARCHAR(255) NULL,\n  LastName        VARCHAR(255) NULL,\n  Phone           VARCHAR(100) NULL,\n  Email           VARCHAR(255) NULL,\n  Facebook        VARCHAR(255) NULL,\n  Twitter         VARCHAR(255) NULL,\n  AddressLine1    VARCHAR(255) NULL,\n  AddressLine2    VARCHAR(255) NULL,\n  City            VARCHAR(100) NULL,\n  Region          VARCHAR(100) NULL,\n  Postcode        VARCHAR(20) NULL,\n  Country         VARCHAR(100) NULL,\n  Gender          VARCHAR(16) NULL,\n  DateOfBirth     DATE NULL,\n  Channel         VARCHAR(100) NULL,\n  Organisation    VARCHAR(100) NOT NULL,\n  Client          VARCHAR(100) NOT NULL,\n  ExternalID      VARCHAR(255) NOT NULL,\n  UserCreateDate  DATETIME NULL,\n  UserUpdateDate  DATETIME NULL,\n  IsActive        BIT NOT NULL DEFAULT 1,\n  DeleteToken     VARCHAR(255) NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NULL,\n  IsStaff         BIT NULL,\n  IsTester        BIT NOT NULL,\n  IsCurrent       BIT NOT NULL,\n  SourceUserKey   INT NULL,\n  RestrictionID   INT NULL,\n  IsRTBF          BIT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

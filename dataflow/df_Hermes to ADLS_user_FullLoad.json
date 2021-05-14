@@ -1,0 +1,33 @@
+{
+	"name": "df_Hermes to ADLS_user_FullLoad",
+	"properties": {
+		"description": "User table from Hermes to ADLS",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_pg_hermes_user",
+						"type": "DatasetReference"
+					},
+					"name": "SrcUser"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_user",
+						"type": "DatasetReference"
+					},
+					"name": "DstDataLake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterRecords"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nSrcUser filter(toDate(date_joined) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+		}
+	}
+}

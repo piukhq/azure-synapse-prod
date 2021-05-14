@@ -1,0 +1,128 @@
+{
+	"name": "harmonia_daily_dump_parquet",
+	"properties": {
+		"activities": [
+			{
+				"name": "HarmoniaDailyExport",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "HarmoniaDailyDumpToParquet",
+						"type": "DataFlowReference",
+						"parameters": {
+							"recordsBefore": {
+								"value": "'20210127'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "HarmoniaDailyImport",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "HarmoniaDailyExport",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "LoadDailyHarmoniaImportTransactionToDWH",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "DataLakeProd",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "binkuksouthprod-datalake/temp/synapse/harmoniaimport"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine",
+					"continueOnError": true
+				}
+			},
+			{
+				"name": "TeamsFailure",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "HarmoniaDailyImport",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "HarmoniaDailyExport",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/5284ca0f02cc40de8b85ecd18bf0ec55/f7c46488-2054-46de-9673-e0c6e94b232c",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"@@type": "MessageCard",
+						"@@context": "http://schema.org/extensions",
+						"themeColor": "d70000",
+						"summary": "Pipeline failed",
+						"sections": [
+							{
+								"activityTitle": "Pipeline failed",
+								"activitySubtitle": "Harmonia import transactions"
+							}
+						]
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Harmonia"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-03-02T10:08:20Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

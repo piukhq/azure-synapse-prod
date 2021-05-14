@@ -1,0 +1,17 @@
+{
+	"name": "dwhsql_harmonia__import_transaction",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DWHSQLPool",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "harmonia",
+			"table": "import_transaction"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

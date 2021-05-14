@@ -1,0 +1,33 @@
+{
+	"name": "Hermes to ADLS_payment_card_paymentcardaccount_FullLoad",
+	"properties": {
+		"description": "Copy payment_card_paymentcardaccount table from hermes to ADLS",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_pg_hermes_payment_card_paymentcardaccount",
+						"type": "DatasetReference"
+					},
+					"name": "SrcPaymentCardAccount"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_paymentcardaccount",
+						"type": "DatasetReference"
+					},
+					"name": "DstDataLake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterRecords"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+		}
+	}
+}

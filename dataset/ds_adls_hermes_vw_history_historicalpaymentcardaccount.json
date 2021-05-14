@@ -1,0 +1,99 @@
+{
+	"name": "ds_adls_hermes_vw_history_historicalpaymentcardaccount",
+	"properties": {
+		"description": "Data Set (Integration) for Landing/Data Lake Hermes external table  vw_history_historicalpaymentcardaccount table",
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "name_on_card",
+				"type": "varchar"
+			},
+			{
+				"name": "start_month",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "start_year",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "expiry_month",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "expiry_year",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "status",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "created",
+				"type": "varchar"
+			},
+			{
+				"name": "updated",
+				"type": "varchar"
+			},
+			{
+				"name": "issuer_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "payment_card_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "token",
+				"type": "varchar"
+			},
+			{
+				"name": "country",
+				"type": "varchar"
+			},
+			{
+				"name": "currency_code",
+				"type": "varchar"
+			},
+			{
+				"name": "pan_end",
+				"type": "varchar"
+			},
+			{
+				"name": "pan_start",
+				"type": "varchar"
+			},
+			{
+				"name": "is_deleted",
+				"type": "bit"
+			},
+			{
+				"name": "fingerprint",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "vw_history_historicalpaymentcardaccount"
+		},
+		"sqlPool": {
+			"referenceName": "dwhpool",
+			"type": "SqlPoolReference"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

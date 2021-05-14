@@ -1,0 +1,73 @@
+{
+	"name": "ds_pg_hermes_history_historicalcustomuser",
+	"properties": {
+		"description": "Data Set (Integration) for Source/PostgreSQL Hermes history_historicalcustomuser table",
+		"linkedServiceName": {
+			"referenceName": "ls_pg_hermes",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "created",
+				"type": "timestamp with time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "change_type",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "instance_id",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "channel",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "change_details",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "body",
+				"type": "jsonb",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "email",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "external_id",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "public",
+			"table": "history_historicalcustomuser"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

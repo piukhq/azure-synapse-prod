@@ -1,0 +1,20 @@
+{
+	"name": "u03 Create DimPaymentCard",
+	"properties": {
+		"folder": {
+			"name": "02 User"
+		},
+		"content": {
+			"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[PaymentCard]') AND type in (N'U'))\nDROP TABLE [Dim].[PaymentCard];\n\nCREATE TABLE Dim.PaymentCard\n  (  \n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CardCreateDate  DATETIME NULL,--20210301NOT NULL,\n  CardUpdateDate  DATETIME NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL,\n  RestrictionKey  INT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

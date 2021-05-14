@@ -1,0 +1,32 @@
+{
+	"name": "ds_csv_LoyaltyCardStatus",
+	"properties": {
+		"description": "Data Set (Integration) for Landing/Data Lake Reference Loyalty Card Status.csv",
+		"linkedServiceName": {
+			"referenceName": "ls_adls_dwlanding",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "Loyalty Card Status.csv",
+				"folderPath": "Reference",
+				"fileSystem": "datalake"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

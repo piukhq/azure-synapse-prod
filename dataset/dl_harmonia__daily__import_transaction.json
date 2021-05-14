@@ -1,0 +1,24 @@
+{
+	"name": "dl_harmonia__daily__import_transaction",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DataLakeProd",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@concat('temp/harmonia/import_transaction/date=', getPastTime(1, 'Day', 'yyyy-MM-dd'), '/')",
+					"type": "Expression"
+				},
+				"fileSystem": "binkuksouthprod-datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

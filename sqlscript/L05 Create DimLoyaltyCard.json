@@ -1,0 +1,20 @@
+{
+	"name": "L05 Create DimLoyaltyCard",
+	"properties": {
+		"folder": {
+			"name": "03 Loyalty Card"
+		},
+		"content": {
+			"query": "--SurrogateKey: ID\n--Busniess/Natural Key: a, b (with Is_deleted=0 in only 1 instance?)\n  \n--OR\n\n--Busniess Key: ID\n--SurrogqteKey: Hash of a & b - toString(crc32(a, b))\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[LoyaltyCard]') AND type in (N'U'))\nDROP TABLE [Dim].[LoyaltyCard];\n\nCREATE TABLE Dim.LoyaltyCard\n  (  \n  ID                  INT IDENTITY(1,1) NOT NULL,\n  CardNumber          VARCHAR(200) NOT NULL,\n  PlanName            VARCHAR(400) NULL,\n  PlanDescription     VARCHAR(4000) NULL,\n  LCStatus            VARCHAR(200) NOT NULL,\n  Merchant            VARCHAR(200) NULL,\n  Category            VARCHAR(200) NULL,\n  BonusName           VARCHAR(10) NULL,\n  BalanceValue        NUMERIC(18,2) NULL,\n  BalancePoints       NUMERIC(18,2) NULL,\n  Balance             NUMERIC(18,2) NULL,\n  BalanceIsStale      BIT NULL,\n  --BalanceUserSet      INT NULL,\n  --BalanceSchemeID     INT NULL,\n  --BalanceSAID         INT NULL,\n  BalanceUpdateDate   DATETIME NULL,\n  BalanceRewardTier   VARCHAR(50) NULL,\n  BalanceValueLabel   VARCHAR(50) NULL,\n  BalancePointsLabel  VARCHAR(50) NULL,\n\n\t--BalancePrefix       VARCHAR(32) NOT NULL,\n\t--BalanceSuffix       VARCHAR(32) NOT NULL,\n\t--BalanceCurrency     VARCHAR(32) NOT NULL,\n\t--BalanceCreateTime   DATETIME NOT NULL,\n\t--BalanceUpdateTime   DATETIME NOT NULL,\n\t--BalanceDescription  VARCHAR(100) NOT NULL,\n\t--BalanceRewardTeir   VARCHAR(32) NOT NULL,\n  --Vouchers        VARCHAR(4000) NULL,\n  --Transactions    VARCHAR(4000) NULL,\n  --PLLLinks        VARCHAR(4000) NULL,\n  AddDate             DATETIME NULL,\n  JoinDate            DATETIME NULL,\n  EffFromDate         DATETIME NULL,\n  EffToDate           DATETIME NULL,\n  ProcessDate         DATETIME NOT NULL,\n  IsCurrent           BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourceLCKey         INT NOT NULL,\n  RestrictionKey      INT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

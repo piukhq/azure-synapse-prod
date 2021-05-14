@@ -1,0 +1,38 @@
+{
+	"name": "Build Dimensions",
+	"properties": {
+		"activities": [
+			{
+				"name": "Load DimPaymentCard",
+				"description": "Pipeline to trigger the \"Load DimPaymentCard\" Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load DimPaymentCard",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Load DimUser",
+				"description": "Pipeline to trigger the \"Load DimUser\" Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load DimUser",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-04-08T11:15:19Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

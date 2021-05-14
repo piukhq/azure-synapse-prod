@@ -1,0 +1,115 @@
+{
+	"name": "ds_syn_dwhpool_vw_scheme_schemeaccount_voucher",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "SAID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SACreated",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "SAUpdated",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "VoucherCode",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnType",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnValue",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnPrefix",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnSuffix",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnCurrency",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnType",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnValue",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnPrefix",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnSuffix",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnCurrency",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnTargetValue",
+				"type": "varchar"
+			},
+			{
+				"name": "VoucherState",
+				"type": "varchar"
+			},
+			{
+				"name": "SubText",
+				"type": "varchar"
+			},
+			{
+				"name": "Headline",
+				"type": "varchar"
+			},
+			{
+				"name": "BodyText",
+				"type": "varchar"
+			},
+			{
+				"name": "IssueDate",
+				"type": "varchar"
+			},
+			{
+				"name": "ExpiryDate",
+				"type": "varchar"
+			},
+			{
+				"name": "BarcodeType",
+				"type": "varchar"
+			},
+			{
+				"name": "TCUrl",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "vw_scheme_schemeaccount_voucher"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

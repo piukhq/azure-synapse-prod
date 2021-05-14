@@ -1,0 +1,20 @@
+{
+	"name": "L09 Create view vw_history_historicalschemeaccount",
+	"properties": {
+		"folder": {
+			"name": "03 Loyalty Card"
+		},
+		"content": {
+			"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalschemeaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalschemeaccount\nAS\nSELECT\n   ext.instance_id   AS SAID,\n   ext.change_type   AS ChangeType,\n   ext.created       AS SACreated,\n\n   js.Status,\n   js.CreateDate,\n   js.UpdateDate,\n   js.JoinDate,\n   js.LinkDate,\n   js.IsDeleted\nFROM [dbo].[ext_history_historicalschemeaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(body, '$'))\n   WITH (\n         [Status]       INT '$.status',\n         [CreateDate]   VARCHAR(16) '$.created',\n         [UpdateDate]   VARCHAR(16) '$.updated',\n         [JoinDate]     VARCHAR(16) '$.created',\n         [LinkDate]     VARCHAR(16) '$.created',\n         [IsDeleted]    BIT '$.is_deleted'\n         ) AS js\n--WHERE vouchers <> '{}' and ext.id = 40000\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

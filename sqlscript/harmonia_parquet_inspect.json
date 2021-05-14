@@ -1,0 +1,16 @@
+{
+	"name": "harmonia_parquet_inspect",
+	"properties": {
+		"content": {
+			"query": "-- SELECT\n--     TOP 100 *\n-- FROM\n--     OPENROWSET(\n--         BULK 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/part-00000-931e9f73-f3b2-462a-a203-358cfd48c033-c000.snappy.parquet',\n--         FORMAT='PARQUET'\n--     ) AS [result]\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'test1234!atasergr'\n-- GO\n-- CREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\n-- WITH IDENTITY = 'Managed Identity'\n-- CREATE EXTERNAL DATA SOURCE harmonia_test\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthprod-datalake/temp/harmonia/oneoffexport/', CREDENTIAL = WorkspaceIdentity)\n\n-- SELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'harmonia_test', FORMAT='PARQUET') as rows;\n-- CREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] WITH ( FORMAT_TYPE = PARQUET)\n-- CREATE EXTERNAL TABLE dbo.harmonia_import_transaction_test (\n--     [id] int, \n--     [created_at] datetime, \n--     [updated_at] datetime, \n--     [transaction_id] varchar(8000), \n--     [provider_slug] varchar(8000), \n--     [identified] bit, \n--     [source] varchar(8000), \n--     [data] varchar(8000), \n--     [match_group] VARCHAR(8000)\n-- ) WITH (LOCATION = '*.parquet', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test;\n-- SELECT TOP 10 * FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NOT NULL;\n-- SELECT count(1) FROM dbo.harmonia_import_transaction_test WHERE updated_at IS NULL;\n\n-- CREATE EXTERNAL TABLE dbo.tharmonia_import_transaction_testout WITH (\n--     LOCATION = 'new_data/', DATA_SOURCE = [harmonia_test], FILE_FORMAT = [SynapseParquetFormat]\n-- ) AS SELECT id, JSON_VALUE(data, '$.TransactionCardFirst6') AS first6, data FROM dbo.harmonia_import_transaction_test WHERE id = 49094976;\n\n\n\n-- CREATE USER [binkuksouthprodsynapse] FROM EXTERNAL PROVIDER;\n-- ALTER ROLE db_owner ADD MEMBER [binkuksouthprodsynapse];\n-- GRANT CONTROL ON SCHEMA :: dbo TO binkuksouthprodsynapse;\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "temp"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

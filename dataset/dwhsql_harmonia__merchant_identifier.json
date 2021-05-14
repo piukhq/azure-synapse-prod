@@ -1,0 +1,17 @@
+{
+	"name": "dwhsql_harmonia__merchant_identifier",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DWHSQLPool",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "harmonia",
+			"table": "merchant_identifier"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

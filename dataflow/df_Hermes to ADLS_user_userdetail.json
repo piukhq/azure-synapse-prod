@@ -1,0 +1,52 @@
+{
+	"name": "df_Hermes to ADLS_user_userdetail",
+	"properties": {
+		"description": "user_userdetail table from Hermes to ADLS",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_pg_hermes_user_userdetail",
+						"type": "DatasetReference"
+					},
+					"name": "SrcUserUserDetail"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_pg_hermes_user",
+						"type": "DatasetReference"
+					},
+					"name": "SrcUser"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_user_userdetail",
+						"type": "DatasetReference"
+					},
+					"name": "DstDataLake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterRecords"
+				},
+				{
+					"name": "SelectU"
+				},
+				{
+					"name": "SelectUD"
+				},
+				{
+					"name": "JoinUdU"
+				},
+				{
+					"name": "SelectUserDetail"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as date,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserUserDetail\nsource(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nJoinUdU filter(and(toDate({u.date_joined}) >= toDate(subDays(currentUTC(),1)), toDate({u.date_joined}) < toDate(currentUTC()))) ~> FilterRecords\nSrcUser select(mapColumn(\n\t\t{u.id} = id,\n\t\t{u.date_joined} = date_joined\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectU\nSrcUserUserDetail select(mapColumn(\n\t\t{ud.id} = id,\n\t\t{ud.first_name} = first_name,\n\t\t{ud.last_name} = last_name,\n\t\t{ud.date_of_birth} = date_of_birth,\n\t\t{ud.phone} = phone,\n\t\t{ud.address_line_1} = address_line_1,\n\t\t{ud.address_line_2} = address_line_2,\n\t\t{ud.city} = city,\n\t\t{ud.region} = region,\n\t\t{ud.postcode} = postcode,\n\t\t{ud.country} = country,\n\t\t{ud.notifications} = notifications,\n\t\t{ud.pass_code} = pass_code,\n\t\t{ud.currency} = currency,\n\t\t{ud.user_id} = user_id,\n\t\t{ud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUD\nSelectUD, SelectU join({ud.user_id} == {u.id},\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinUdU\nFilterRecords select(mapColumn(\n\t\tid = {ud.id},\n\t\tfirst_name = {ud.first_name},\n\t\tlast_name = {ud.last_name},\n\t\tdate_of_birth = {ud.date_of_birth},\n\t\tphone = {ud.phone},\n\t\taddress_line_1 = {ud.address_line_1},\n\t\taddress_line_2 = {ud.address_line_2},\n\t\tcity = {ud.city},\n\t\tregion = {ud.region},\n\t\tpostcode = {ud.postcode},\n\t\tcountry = {ud.country},\n\t\tnotifications = {ud.notifications},\n\t\tpass_code = {ud.pass_code},\n\t\tcurrency = {ud.currency},\n\t\tuser_id = {ud.user_id},\n\t\tgender = {ud.gender}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserDetail\nSelectUserDetail sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+		}
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"name": "Load Source data to ADLS_FullLoad",
+	"properties": {
+		"description": "Copy data from all sources into Data Lake",
+		"activities": [
+			{
+				"name": "Hermes_FullLoad",
+				"description": "Execute Hermes to ADLS pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Hermes to ADLS_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-04-08T11:15:38Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

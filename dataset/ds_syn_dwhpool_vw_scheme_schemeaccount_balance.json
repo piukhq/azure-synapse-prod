@@ -1,0 +1,87 @@
+{
+	"name": "ds_syn_dwhpool_vw_scheme_schemeaccount_balance",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "SAID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SACreated",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "SAUpdated",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "BalanceValue",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "BalancePoints",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "Balance",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "BalanceIsStale",
+				"type": "bit"
+			},
+			{
+				"name": "BalanceUserSet",
+				"type": "varchar"
+			},
+			{
+				"name": "BalanceSchemeID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "BalanceUpdateDate",
+				"type": "varchar"
+			},
+			{
+				"name": "BalanceRewardTeir",
+				"type": "varchar"
+			},
+			{
+				"name": "BalanceValueLabel",
+				"type": "varchar"
+			},
+			{
+				"name": "BalancePointsLabel",
+				"type": "varchar"
+			},
+			{
+				"name": "BalanceSAID",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "vw_scheme_schemeaccount_balance"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

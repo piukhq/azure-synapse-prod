@@ -1,0 +1,121 @@
+{
+	"name": "ds_pg_hermes_scheme_schemeaccount",
+	"properties": {
+		"description": "Data Set (Integration) for Source/PostgreSQL Hermes scheme_schemeaccount table",
+		"linkedServiceName": {
+			"referenceName": "ls_pg_hermes",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "status",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "order",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "created",
+				"type": "timestamp with time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "updated",
+				"type": "timestamp with time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "scheme_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "is_deleted",
+				"type": "boolean",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "link_date",
+				"type": "timestamp with time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "join_date",
+				"type": "timestamp with time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "balances",
+				"type": "jsonb",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "vouchers",
+				"type": "jsonb",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "barcode",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "card_number",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "transactions",
+				"type": "jsonb",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "main_answer",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "pll_links",
+				"type": "jsonb",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "formatted_images",
+				"type": "jsonb",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "public",
+			"table": "scheme_schemeaccount"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

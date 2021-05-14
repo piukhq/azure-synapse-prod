@@ -1,0 +1,17 @@
+{
+	"name": "SQL Users",
+	"properties": {
+		"content": {
+			"query": "-- Tableau\n\n-- in master db\n-- CREATE LOGIN Tableau1 WITH PASSWORD = 'SMa97RZSmGcwVHUzsQj2rSTLwBWFXVLb';\n\n-- in dwhpool\n-- CREATE USER Tableau1 FROM LOGIN Tableau1;\n-- EXEC sp_addrolemember 'db_datareader', 'Tableau1';\n-- GRANT SELECT ON DATABASE::dwhpool to Tableau1;\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

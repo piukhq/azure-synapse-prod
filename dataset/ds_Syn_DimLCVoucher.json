@@ -1,0 +1,141 @@
+{
+	"name": "ds_Syn_DimLCVoucher",
+	"properties": {
+		"description": "Data Set using Linked Service ls_Syn_DataWarehouse to connect to Dim.LCVoucher",
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LoyaltyCardID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "VoucherCode",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnType",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnValue",
+				"type": "decimal",
+				"precision": 8,
+				"scale": 2
+			},
+			{
+				"name": "BurnPrefix",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnSuffix",
+				"type": "varchar"
+			},
+			{
+				"name": "BurnCurrency",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnType",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnValue",
+				"type": "decimal",
+				"precision": 8,
+				"scale": 2
+			},
+			{
+				"name": "EarnPrefix",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnSuffix",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnCurrency",
+				"type": "varchar"
+			},
+			{
+				"name": "EarnTargetValue",
+				"type": "decimal",
+				"precision": 8,
+				"scale": 2
+			},
+			{
+				"name": "VoucherState",
+				"type": "varchar"
+			},
+			{
+				"name": "Subtext",
+				"type": "varchar"
+			},
+			{
+				"name": "Headline",
+				"type": "varchar"
+			},
+			{
+				"name": "BodyText",
+				"type": "varchar"
+			},
+			{
+				"name": "IssueDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ExpiryDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "BarcodeType",
+				"type": "varchar"
+			},
+			{
+				"name": "TCUrl",
+				"type": "varchar"
+			},
+			{
+				"name": "EffFromDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EffToDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ProcessDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "IsCurrent",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "Dim",
+			"table": "LCVoucher"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

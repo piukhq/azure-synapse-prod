@@ -1,0 +1,160 @@
+{
+	"name": "ds_Syn_DimUser",
+	"properties": {
+		"description": "Data Set using Linked Service ls_Syn_DataWarehouse to connect to Dim.User",
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FirstName",
+				"type": "varchar"
+			},
+			{
+				"name": "LastName",
+				"type": "varchar"
+			},
+			{
+				"name": "Phone",
+				"type": "varchar"
+			},
+			{
+				"name": "Email",
+				"type": "varchar"
+			},
+			{
+				"name": "Facebook",
+				"type": "varchar"
+			},
+			{
+				"name": "Twitter",
+				"type": "varchar"
+			},
+			{
+				"name": "AddressLine1",
+				"type": "varchar"
+			},
+			{
+				"name": "AddressLine2",
+				"type": "varchar"
+			},
+			{
+				"name": "City",
+				"type": "varchar"
+			},
+			{
+				"name": "Region",
+				"type": "varchar"
+			},
+			{
+				"name": "Postcode",
+				"type": "varchar"
+			},
+			{
+				"name": "Country",
+				"type": "varchar"
+			},
+			{
+				"name": "Gender",
+				"type": "varchar"
+			},
+			{
+				"name": "DateOfBirth",
+				"type": "date"
+			},
+			{
+				"name": "Channel",
+				"type": "varchar"
+			},
+			{
+				"name": "Organisation",
+				"type": "varchar"
+			},
+			{
+				"name": "Client",
+				"type": "varchar"
+			},
+			{
+				"name": "ExternalID",
+				"type": "varchar"
+			},
+			{
+				"name": "UserCreateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "UserUpdateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "IsActive",
+				"type": "bit"
+			},
+			{
+				"name": "DeleteToken",
+				"type": "varchar"
+			},
+			{
+				"name": "EffFromDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EffToDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ProcessDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "IsStaff",
+				"type": "bit"
+			},
+			{
+				"name": "IsTester",
+				"type": "bit"
+			},
+			{
+				"name": "IsCurrent",
+				"type": "bit"
+			},
+			{
+				"name": "SourceUserKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "RestrictionID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "IsRTBF",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "Dim",
+			"table": "User"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

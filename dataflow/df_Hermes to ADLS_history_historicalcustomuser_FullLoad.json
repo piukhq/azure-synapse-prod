@@ -1,0 +1,33 @@
+{
+	"name": "df_Hermes to ADLS_history_historicalcustomuser_FullLoad",
+	"properties": {
+		"description": "history_historicalcustomuser table from Hermes to ADLS",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_pg_hermes_history_historicalcustomuser",
+						"type": "DatasetReference"
+					},
+					"name": "SrcHistoryHistoricalCustomUser"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_history_historicalcustomuser",
+						"type": "DatasetReference"
+					},
+					"name": "DstDataLake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterRecords"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tbody as string,\n\t\temail as string,\n\t\texternal_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalCustomUser\nSrcHistoryHistoricalCustomUser filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+		}
+	}
+}

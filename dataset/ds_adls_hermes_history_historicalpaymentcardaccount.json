@@ -1,0 +1,58 @@
+{
+	"name": "ds_adls_hermes_history_historicalpaymentcardaccount",
+	"properties": {
+		"description": "Data Set (Integration) for Landing/Data Lake Hermes history_historicalpaymentcardaccount table",
+		"linkedServiceName": {
+			"referenceName": "ls_adls_dwlanding",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "Hermes/public_history_historicalpaymentcardaccount/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+					"type": "Expression"
+				},
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "id",
+				"type": "INT32"
+			},
+			{
+				"name": "created",
+				"type": "INT96"
+			},
+			{
+				"name": "change_type",
+				"type": "UTF8"
+			},
+			{
+				"name": "instance_id",
+				"type": "UTF8"
+			},
+			{
+				"name": "channel",
+				"type": "UTF8"
+			},
+			{
+				"name": "user_id",
+				"type": "INT32"
+			},
+			{
+				"name": "body",
+				"type": "UTF8"
+			},
+			{
+				"name": "change_details",
+				"type": "UTF8"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

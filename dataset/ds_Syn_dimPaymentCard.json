@@ -1,0 +1,124 @@
+{
+	"name": "ds_Syn_dimPaymentCard",
+	"properties": {
+		"description": "Data Set using Linked Service ls_Syn_DataWarehouse to connect to Dim.PaymentCard",
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "NameOnCard",
+				"type": "varchar"
+			},
+			{
+				"name": "PANTruncation",
+				"type": "varchar"
+			},
+			{
+				"name": "ValidFrom",
+				"type": "date"
+			},
+			{
+				"name": "ValidTo",
+				"type": "date"
+			},
+			{
+				"name": "Token",
+				"type": "varchar"
+			},
+			{
+				"name": "Fingerprint",
+				"type": "varchar"
+			},
+			{
+				"name": "Issuer",
+				"type": "varchar"
+			},
+			{
+				"name": "CardProvider",
+				"type": "varchar"
+			},
+			{
+				"name": "Slug",
+				"type": "varchar"
+			},
+			{
+				"name": "CardType",
+				"type": "varchar"
+			},
+			{
+				"name": "CardStatus",
+				"type": "varchar"
+			},
+			{
+				"name": "IsDeleted",
+				"type": "bit"
+			},
+			{
+				"name": "Country",
+				"type": "varchar"
+			},
+			{
+				"name": "CCYCode",
+				"type": "varchar"
+			},
+			{
+				"name": "CardCreateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "CardUpdateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EffFromDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EffToDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ProcessDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "IsCurrent",
+				"type": "bit"
+			},
+			{
+				"name": "SourcePCKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "RestrictionKey",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "Dim",
+			"table": "PaymentCard"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

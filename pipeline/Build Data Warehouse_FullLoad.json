@@ -1,0 +1,91 @@
+{
+	"name": "Build Data Warehouse_FullLoad",
+	"properties": {
+		"description": "Master Pipeline to refresh Data Warehouse",
+		"activities": [
+			{
+				"name": "Load Source data to ADLS_FullLoad",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load Source data to ADLS_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Create External Objects",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Load Source data to ADLS_FullLoad",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Create External Objects",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Build Dimensions_FullLoad",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Truncate Tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Build Dimensions_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Truncate Tables",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Create External Objects",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_TruncateTable]"
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_Syn_DataWarehouse",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-05-14T14:13:33Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

@@ -1,0 +1,121 @@
+{
+	"name": "Load DimPaymentCard",
+	"properties": {
+		"description": "Pipeline to load Payment Card Dimension",
+		"activities": [
+			{
+				"name": "df_LoadDimPaymentCard",
+				"description": "Data flow to load Payment Card Dimension",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_LoadDimPaymentCard",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ls_adls_dwlanding",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "staging/PolyBase"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Update dimPaymentCard",
+				"description": "Update dimPaymentCard",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "df_LoadDimPaymentCard",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "dwhpool",
+					"type": "SqlPoolReference"
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_UpdateDimPaymentCard]"
+				}
+			},
+			{
+				"name": "FailureNotification",
+				"description": "Any failure is notified in Teams",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "df_LoadDimPaymentCard",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Update dimPaymentCard",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"@@type": "MessageCard",
+						"@@context": "http://schema.org/extensions",
+						"themeColor": "d70000",
+						"summary": "Data Pipeline failed",
+						"sections": [
+							{
+								"activityTitle": "Pipeline failed",
+								"activitySubtitle": "Create External DS Objects"
+							}
+						]
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-04-08T11:14:21Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

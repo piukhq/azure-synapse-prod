@@ -1,0 +1,136 @@
+{
+	"name": "ds_Syn_DimLoyaltyCard",
+	"properties": {
+		"description": "Data Set using Linked Service ls_Syn_DataWarehouse to connect to Dim.LoyaltyCard",
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CardNumber",
+				"type": "varchar"
+			},
+			{
+				"name": "PlanName",
+				"type": "varchar"
+			},
+			{
+				"name": "PlanDescription",
+				"type": "varchar"
+			},
+			{
+				"name": "LCStatus",
+				"type": "varchar"
+			},
+			{
+				"name": "Merchant",
+				"type": "varchar"
+			},
+			{
+				"name": "Category",
+				"type": "varchar"
+			},
+			{
+				"name": "BonusName",
+				"type": "varchar"
+			},
+			{
+				"name": "BalanceValue",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "BalancePoints",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "Balance",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "BalanceIsStale",
+				"type": "bit"
+			},
+			{
+				"name": "BalanceUpdateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "BalanceRewardTier",
+				"type": "varchar"
+			},
+			{
+				"name": "BalanceValueLabel",
+				"type": "varchar"
+			},
+			{
+				"name": "BalancePointsLabel",
+				"type": "varchar"
+			},
+			{
+				"name": "AddDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "JoinDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EffFromDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EffToDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ProcessDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "IsCurrent",
+				"type": "bit"
+			},
+			{
+				"name": "SourceLCKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "RestrictionKey",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "Dim",
+			"table": "LoyaltyCard"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}
