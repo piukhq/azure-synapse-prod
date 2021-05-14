@@ -2663,7 +2663,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/ds_Syn_dimPaymentCard')]",
+			"name": "[concat(parameters('workspaceName'), '/ds_Syn_DimPaymentCard')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -6886,14 +6886,14 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "srcDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "MaxDimPCID"
@@ -6902,21 +6902,21 @@
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEI"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEU"
@@ -6983,7 +6983,7 @@
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
-				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimPaymentCard')]"
 			]
 		},
 		{
@@ -7025,14 +7025,14 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "srcDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "MaxDimPCID"
@@ -7041,21 +7041,21 @@
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEI"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEU"
@@ -7122,7 +7122,7 @@
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
-				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimPaymentCard')]"
 			]
 		},
 		{
@@ -7470,14 +7470,14 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "srcDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "MaxDimPCID"
@@ -7486,21 +7486,21 @@
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEI"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEU"
@@ -7567,7 +7567,7 @@
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
-				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimPaymentCard')]"
 			]
 		},
 		{
@@ -7609,14 +7609,14 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "srcDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "MaxDimPCID"
@@ -7625,21 +7625,21 @@
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCard"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEI"
 						},
 						{
 							"dataset": {
-								"referenceName": "ds_Syn_dimPaymentCard",
+								"referenceName": "ds_Syn_DimPaymentCard",
 								"type": "DatasetReference"
 							},
 							"name": "snkDimPaymentCardEU"
@@ -7706,7 +7706,7 @@
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcard')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardissuer')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_csv_PaymentCardStatus')]",
-				"[concat(variables('workspaceId'), '/datasets/ds_Syn_dimPaymentCard')]"
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimPaymentCard')]"
 			]
 		},
 		{
