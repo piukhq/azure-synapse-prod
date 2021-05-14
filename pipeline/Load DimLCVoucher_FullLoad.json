@@ -1,11 +1,11 @@
 {
-	"name": "Load DimUser_FullLoad",
+	"name": "Load DimLCVoucher_FullLoad",
 	"properties": {
-		"description": "Pipeline to load User Dimension",
+		"description": "Pipeline to load LCVoucher Dimension",
 		"activities": [
 			{
-				"name": "df_LoadUser_FullLoad",
-				"description": "Data flow to load User",
+				"name": "df_LoadLCVoucher_FullLoad",
+				"description": "Data flow to load LCVoucher dimension",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -18,7 +18,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_LoadDimUser_FullLoad",
+						"referenceName": "df_LoadDimLCVoucher_FullLoad",
 						"type": "DataFlowReference"
 					},
 					"staging": {
@@ -36,24 +36,31 @@
 				}
 			},
 			{
-				"name": "Execute Build DimUser",
-				"description": "Execute Build DimUser",
-				"type": "ExecutePipeline",
+				"name": "Update dimLCVoucher",
+				"description": "Update dimLCVoucher",
+				"type": "SqlPoolStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "df_LoadUser_FullLoad",
+						"activity": "df_LoadLCVoucher_FullLoad",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					}
 				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
+				"sqlPool": {
+					"referenceName": "dwhpool",
+					"type": "SqlPoolReference"
+				},
 				"typeProperties": {
-					"pipeline": {
-						"referenceName": "Load DimUser",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
+					"storedProcedureName": "[dbo].[usp_UpdateDimLCVoucher]"
 				}
 			}
 		],

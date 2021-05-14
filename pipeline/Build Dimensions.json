@@ -29,10 +29,43 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "Load DimLoyaltyCard",
+				"description": "Pipeline to trigger the \"Load DimLoyaltyCard\" Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load DimLoyaltyCard",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Load DimLCVoucher",
+				"description": "Pipeline to trigger the \"Load DimLCVoucher\" Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Load DimLoyaltyCard",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load DimLCVoucher",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
-		"annotations": [],
-		"lastPublishTime": "2021-04-08T11:15:19Z"
-	},
-	"type": "Microsoft.Synapse/workspaces/pipelines"
+		"annotations": []
+	}
 }

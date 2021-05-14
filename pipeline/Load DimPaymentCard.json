@@ -107,15 +107,13 @@
 						"sections": [
 							{
 								"activityTitle": "Pipeline failed",
-								"activitySubtitle": "Create External DS Objects"
+								"activitySubtitle": "Load Payment Dimension"
 							}
 						]
 					}
 				}
 			}
 		],
-		"annotations": [],
-		"lastPublishTime": "2021-04-08T11:14:21Z"
-	},
-	"type": "Microsoft.Synapse/workspaces/pipelines"
+		"annotations": []
+	}
 }

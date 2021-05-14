@@ -1,13 +1,52 @@
 {
-	"name": "Create External Objects",
+	"name": "Load DimLCVoucher",
 	"properties": {
-		"description": "Pipeline to create all required external tables dynamically",
+		"description": "Pipeline to load LCVoucher Dimension",
 		"activities": [
 			{
-				"name": "Create External DS File Types and Tables",
-				"description": "To execute the Stored Procedure dwhpool.dbo.usp_CreateExternalTable",
-				"type": "SqlPoolStoredProcedure",
+				"name": "df_LoadLCVoucher",
+				"description": "Data flow to load LoyaltyCard Voucher Dimension",
+				"type": "ExecuteDataFlow",
 				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_LoadDimLCVoucher",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ls_adls_dwlanding",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "staging/PolyBase"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Update dimLCVoucher",
+				"description": "Update dimLCVoucher",
+				"type": "SqlPoolStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "df_LoadLCVoucher",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -21,30 +60,7 @@
 					"type": "SqlPoolReference"
 				},
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[usp_CreateExternalObjects]",
-					"storedProcedureParameters": {
-						"Yr": {
-							"value": {
-								"value": "@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"Mt": {
-							"value": {
-								"value": "@{formatDateTime(adddays(utcnow(),-1), 'MM')}",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"Dy": {
-							"value": {
-								"value": "@{formatDateTime(adddays(utcnow(),-1), 'dd')}",
-								"type": "Expression"
-							},
-							"type": "String"
-						}
-					}
+					"storedProcedureName": "[dbo].[usp_UpdateDimLCVoucher]"
 				}
 			},
 			{
@@ -53,7 +69,7 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "Create External DS File Types and Tables",
+						"activity": "df_LoadLCVoucher",
 						"dependencyConditions": [
 							"Failed"
 						]
@@ -85,7 +101,7 @@
 						"sections": [
 							{
 								"activityTitle": "Pipeline failed",
-								"activitySubtitle": "Create External DS Objects"
+								"activitySubtitle": "Load Payment Dimension"
 							}
 						]
 					}

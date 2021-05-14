@@ -1,11 +1,10 @@
 {
-	"name": "Load DimUser_FullLoad",
+	"name": "Load DimLoyaltyCard_FullLoad",
 	"properties": {
-		"description": "Pipeline to load User Dimension",
+		"description": "Pipeline to load Loyalty Card Dimension",
 		"activities": [
 			{
-				"name": "df_LoadUser_FullLoad",
-				"description": "Data flow to load User",
+				"name": "df_LoadLoyaltyCard_FullLoad",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -18,7 +17,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_LoadDimUser_FullLoad",
+						"referenceName": "df_LoadDimLoyaltyCard_FullLoad",
 						"type": "DataFlowReference"
 					},
 					"staging": {
@@ -33,27 +32,6 @@
 						"computeType": "General"
 					},
 					"traceLevel": "Fine"
-				}
-			},
-			{
-				"name": "Execute Build DimUser",
-				"description": "Execute Build DimUser",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "df_LoadUser_FullLoad",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "Load DimUser",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
 				}
 			}
 		],

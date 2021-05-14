@@ -20,7 +20,7 @@
 					"source": {
 						"type": "AzurePostgreSqlSource",
 						"query": {
-							"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail')\n/*table_name NOT IN ('payment_card_paymentcardaccount', 'history_historicalpaymentcardaccount', 'user', 'scheme_schemeaccount', 'history_historicalschemeaccount')*/",
+							"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail', 'scheme_scheme', 'scheme_category')",
 							"type": "Expression"
 						}
 					},
@@ -137,7 +137,7 @@
 				}
 			},
 			{
-				"name": "Hermes to ADLS_history_historicalpaymentcardaccount",
+				"name": "Hermes to ADLS_history_historicalpaymentcardaccount_Ful",
 				"description": "history_historicalpaymentcardaccount",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
@@ -186,7 +186,7 @@
 				}
 			},
 			{
-				"name": "Hermes to ADLS_history_historicalcustomuser",
+				"name": "Hermes to ADLS_history_historicalcustomuser_FullLoad",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -233,7 +233,7 @@
 						]
 					},
 					{
-						"activity": "Hermes to ADLS_history_historicalpaymentcardaccount",
+						"activity": "Hermes to ADLS_history_historicalpaymentcardaccount_Ful",
 						"dependencyConditions": [
 							"Failed"
 						]
@@ -245,7 +245,19 @@
 						]
 					},
 					{
-						"activity": "Hermes to ADLS_history_historicalcustomuser",
+						"activity": "Hermes to ADLS_history_historicalcustomuser_FullLoad",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Hermes to ADLS_scheme_schemeaccount_FullLoad",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Hermes to ADLS_history_historicalschemeaccount_FullLoad",
 						"dependencyConditions": [
 							"Failed"
 						]
@@ -282,10 +294,56 @@
 						]
 					}
 				}
+			},
+			{
+				"name": "Hermes to ADLS_scheme_schemeaccount_FullLoad",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_Hermes to ADLS_scheme_schemeaccount_FullLoad",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Hermes to ADLS_history_historicalschemeaccount_FullLoad",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_Hermes to ADLS_history_historicalschemeaccount_FullLoad",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
 			}
 		],
-		"annotations": [],
-		"lastPublishTime": "2021-04-08T11:15:05Z"
-	},
-	"type": "Microsoft.Synapse/workspaces/pipelines"
+		"annotations": []
+	}
 }
