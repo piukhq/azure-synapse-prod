@@ -1,0 +1,33 @@
+{
+	"name": "df_Hermes to ADLS_scheme_schemeaccount_FullLoad",
+	"properties": {
+		"description": "Copy scheme_schemeaccount table from hermes",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_pg_hermes_scheme_schemeaccount",
+						"type": "DatasetReference"
+					},
+					"name": "SrcLoyaltyCardAccount"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_hermes_scheme_schemeaccount",
+						"type": "DatasetReference"
+					},
+					"name": "DstDataLake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterRecords"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcLoyaltyCardAccount\nSrcLoyaltyCardAccount filter(or(\n    toDate(created) < toDate(currentUTC()),\n    toDate(updated) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+		}
+	}
+}
