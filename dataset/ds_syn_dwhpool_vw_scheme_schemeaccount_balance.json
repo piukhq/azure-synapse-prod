@@ -82,6 +82,5 @@
 			"schema": "dbo",
 			"table": "vw_scheme_schemeaccount_balance"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

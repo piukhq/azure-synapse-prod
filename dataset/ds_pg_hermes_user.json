@@ -134,6 +134,5 @@
 			"schema": "public",
 			"table": "user"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

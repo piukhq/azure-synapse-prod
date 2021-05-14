@@ -110,6 +110,5 @@
 			"schema": "dbo",
 			"table": "vw_scheme_schemeaccount_voucher"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

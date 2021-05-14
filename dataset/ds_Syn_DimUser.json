@@ -155,6 +155,5 @@
 			"schema": "Dim",
 			"table": "User"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

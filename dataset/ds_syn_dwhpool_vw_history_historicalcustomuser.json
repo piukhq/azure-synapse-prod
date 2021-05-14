@@ -58,6 +58,5 @@
 			"schema": "dbo",
 			"table": "vw_history_historicalcustomuser"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

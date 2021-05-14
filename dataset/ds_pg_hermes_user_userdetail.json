@@ -110,6 +110,5 @@
 			"schema": "public",
 			"table": "user_userdetail"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

@@ -1,5 +1,5 @@
 {
-	"name": "ds_Syn_dimPaymentCard",
+	"name": "ds_Syn_DimPaymentCard",
 	"properties": {
 		"description": "Data Set using Linked Service ls_Syn_DataWarehouse to connect to Dim.PaymentCard",
 		"linkedServiceName": {
@@ -119,6 +119,5 @@
 			"schema": "Dim",
 			"table": "PaymentCard"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

@@ -116,6 +116,5 @@
 			"schema": "public",
 			"table": "scheme_schemeaccount"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

@@ -136,6 +136,5 @@
 			"schema": "Dim",
 			"table": "LCVoucher"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }

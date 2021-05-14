@@ -68,6 +68,5 @@
 			"schema": "public",
 			"table": "history_historicalschemeaccount"
 		}
-	},
-	"type": "Microsoft.Synapse/workspaces/datasets"
+	}
 }
