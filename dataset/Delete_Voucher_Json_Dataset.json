@@ -1,0 +1,20 @@
+{
+	"name": "Delete_Voucher_Json_Dataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DataLakeProd",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "part-00000-a7c9d05c-c3b3-45b0-94ea-367e55849846-c000.json",
+				"folderPath": "Hermes/public_scheme_schemeaccount/2021/202105/20210520_VoucherOnlyJson",
+				"fileSystem": "datalake"
+			}
+		},
+		"schema": {}
+	}
+}
