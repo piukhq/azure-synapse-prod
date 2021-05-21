@@ -10,8 +10,8 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "part-00000-a7c9d05c-c3b3-45b0-94ea-367e55849846-c000.json",
-				"folderPath": "Hermes/public_scheme_schemeaccount/2021/202105/20210520_VoucherOnlyJson",
+				"fileName": "part-00000-8b61bda6-12d3-4474-9677-41dde5ea086e-c000.json",
+				"folderPath": "Hermes/public_scheme_schemeaccount/2021/202105/20210520",
 				"fileSystem": "datalake"
 			}
 		},
