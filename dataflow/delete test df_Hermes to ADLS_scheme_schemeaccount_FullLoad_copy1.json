@@ -16,7 +16,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ds_adls_hermes_scheme_schemeaccount",
+						"referenceName": "Json1",
 						"type": "DatasetReference"
 					},
 					"name": "DstDataLake"
@@ -27,7 +27,7 @@
 					"name": "Select1"
 				}
 			],
-			"script": "source(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcLoyaltyCardAccount\nSrcLoyaltyCardAccount select(mapColumn(\n\t\tid,\n\t\tvouchers\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+			"script": "source(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcLoyaltyCardAccount\nSrcLoyaltyCardAccount select(mapColumn(\n\t\tid,\n\t\tvouchers\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 		}
 	}
 }

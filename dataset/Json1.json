@@ -1,0 +1,19 @@
+{
+	"name": "Json1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DataLakeProd",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Hermes/public_scheme_schemeaccount/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+				"fileSystem": "datalake"
+			}
+		},
+		"schema": {}
+	}
+}
