@@ -1,0 +1,19 @@
+{
+	"name": "Recreate eds_payment_card_paymentcard",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "DROP EXTERNAL DATA SOURCE [eds_payment_card_paymentcard]\nGO\n\nCREATE EXTERNAL DATA SOURCE [eds_payment_card_paymentcard] WITH \n(\tTYPE = HADOOP,\n\tLOCATION = N'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_payment_card_paymentcard/',\n\tCREDENTIAL = [SynapseIdentity]\n);\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

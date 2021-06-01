@@ -164,6 +164,18 @@
 						"dependencyConditions": [
 							"Failed"
 						]
+					},
+					{
+						"activity": "Hermes to ADLS_history_historicalschemeaccountentry",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Hermes to ADLS_historicalpaymentcardaccountentry",
+						"dependencyConditions": [
+							"Failed"
+						]
 					}
 				],
 				"policy": {
@@ -334,6 +346,54 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_Hermes to ADLS_history_historicalschemeaccount",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Hermes to ADLS_history_historicalschemeaccountentry",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_Hermes to ADLS_history_historicalschemeaccountentry",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Hermes to ADLS_historicalpaymentcardaccountentry",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_Hermes to ADLS_history_historicalpaymentcardaccountentry",
 						"type": "DataFlowReference"
 					},
 					"compute": {

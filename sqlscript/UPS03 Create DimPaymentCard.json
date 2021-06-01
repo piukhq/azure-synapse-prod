@@ -1,0 +1,20 @@
+{
+	"name": "UPS03 Create DimPaymentCard",
+	"properties": {
+		"folder": {
+			"name": "04 UserLCPC"
+		},
+		"content": {
+			"query": "--SurrogateKey: ID\n--Busniess/Natural Key: Fingerprint, ValidTo (with Is_deleted=0 in only 1 instance?)\n  \n--OR\n\n--Busniess Key: ID\n--SurrogqteKey: Hash of Fingerprint & ValidTo - toString(crc32(Fingerprint, ValidTo))\n\n--EmpId, SurrogateKey, ......IsCurrent, ProcessDate\n--EmpId exists in source and is the business key. EmpID used in LookUp\n--Surrogate key created for each employee. Surrogate key added as derived col in Iscurrent task. toString(crc32(EmpID, EmpFunction))\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[PaymentCard]') AND type in (N'U'))\nDROP TABLE [Dim].[PaymentCard];\n\nCREATE TABLE Dim.PaymentCard\n  (  \n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CardCreateDate  DATETIME NULL,--20210301NOT NULL,\n  CardUpdateDate  DATETIME NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL,\n  RestrictionKey  INT NULL\n  --PLLLinks      VARCHAR(4000) NULL\n  --PSPToken      VARCHAR(100),\n  --EventID       SMALLINT\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n/*202103081422\n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CreateDate      DATETIME NULL,--20210301NOT NULL,\n  UpdateDate      DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL\n  --PLLLinks        VARCHAR(4000) NULL\n  --PSPToken        VARCHAR(100),\n  --EventID         SMALLINT\n*/\n\n/*20210305:0947\n  ID              INT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CreateDate      DATETIME NULL,--20210301NOT NULL,\n  UpdateDate      DATETIME NULL,\n  --IsCurrent       BIT NOT NULL,-- DEFAULT 1,\n  SourcePCKey     INT NOT NULL\n  --PLLLinks        VARCHAR(4000) NULL\n  --PSPToken        VARCHAR(100),\n  --EventID         SMALLINT\n*/\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

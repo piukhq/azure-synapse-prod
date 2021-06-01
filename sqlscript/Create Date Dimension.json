@@ -1,0 +1,19 @@
+{
+	"name": "Create Date Dimension",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "-- Create external table with date dimension in it\nCREATE EXTERNAL DATA SOURCE [eds_reference] WITH \n(\tTYPE = HADOOP,\n\tLOCATION = N'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Reference/',\n\tCREDENTIAL = [SynapseIdentity]\n);\n\nCREATE EXTERNAL FILE FORMAT [ef_reference_date_dimension] \nWITH (\n\tFORMAT_TYPE = PARQUET, \n\tDATA_COMPRESSION = 'org.apache.hadoop.io.compress.SnappyCodec'\n)\n\nCREATE EXTERNAL TABLE [dbo].[ext_date_dimension]\n( \n\t[id] INT  NOT NULL,\n\t[date] DATE NOT NULL,\n    [day] INT NOT NULL,\n    [dayName] VARCHAR(9) NOT NULL,\n    [dayOfWeek] INT NOT NULL,\n    [dayOfYear] INT NOT NULL,\n    [weekNumber] INT NOT NULL,\n\t[month] INT NOT NULL,\n    [monthName] VARCHAR(9) NOT NULL,\n    [monthStart] DATE NOT NULL,\n    [monthEnd] DATE NOT NULL,\n    [monthYear] INT NOT NULL,\n    [quarter] INT NOT NULL,\n    [year] INT NOT NULL\n)\nWITH (DATA_SOURCE = [eds_reference], LOCATION = 'date_dimension_2020-01-01_2040-01-01_v1.snappy.parquet', FILE_FORMAT = [ef_reference_date_dimension])\n\nSELECT TOP 10 * FROM [dbo].[ext_date_dimension] ORDER BY Id\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE TABLE [Dim].[Date]\n( \n\t[id] INT  NOT NULL,\n\t[date] DATE NOT NULL,\n    [day] INT NOT NULL,\n    [dayName] VARCHAR(9) NOT NULL,\n    [dayOfWeek] INT NOT NULL,\n    [dayOfYear] INT NOT NULL,\n    [weekNumber] INT NOT NULL,\n\t[month] INT NOT NULL,\n    [monthName] VARCHAR(9) NOT NULL,\n    [monthStart] DATE NOT NULL,\n    [monthEnd] DATE NOT NULL,\n    [monthYear] INT NOT NULL,\n    [quarter] INT NOT NULL,\n    [year] INT NOT NULL\n)\nWITH\n(\n\tCLUSTERED COLUMNSTORE INDEX,  \n    DISTRIBUTION = REPLICATE\n)\n\nINSERT INTO [Dim].[Date] SELECT * FROM [dbo].[ext_date_dimension]\n\nSELECT TOP 10 * FROM [Dim].[Date] ORDER BY Id\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"name": "Serverless Parquet JSON flatten",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "-- SELECT * FROM dbo.db1;\n\nSELECT *\nFROM dbo.db1\nCROSS APPLY OPENJSON (jsondata, '$.somelist') WITH (num int '$')",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "temp_serverless"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

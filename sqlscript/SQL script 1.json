@@ -1,0 +1,19 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "-- CREATE DATABASE test1;\n\n-- CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'test1234!atasergr'\n-- CREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\n-- WITH IDENTITY = 'Managed Identity'\n\n-- CREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] WITH ( FORMAT_TYPE = PARQUET)\n\n-- CREATE EXTERNAL DATA SOURCE mysample\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthdev-datalake/testparquet/20210101/', CREDENTIAL = WorkspaceIdentity)\n\n-- CREATE EXTERNAL TABLE dbo.db1 ([id] int, [first_name] varchar(8000), [last_name] varchar(8000), [numsold] int)\n-- WITH (LOCATION = '*.parquet', DATA_SOURCE = [mysample], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT TOP 10 * FROM dbo.db1;\n-- SELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'mysample', FORMAT='PARQUET') as rows;\n\n\n\n---- bundle\n\n-- CREATE EXTERNAL DATA SOURCE mysample2\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthdev-datalake/testparquetbundle/', CREDENTIAL = WorkspaceIdentity)\n\n-- CREATE EXTERNAL TABLE dbo.db2 ([id] int, [first_name] varchar(8000), [last_name] varchar(8000), [numsold] int)\n-- WITH (LOCATION = '*.parquet', DATA_SOURCE = [mysample2], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT TOP 10 * FROM dbo.db2;\nSELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'mysample2', FORMAT='PARQUET') as rows;\n\n\n\n-- CREATE LOGIN TerryTest1 WITH PASSWORD = 'VeryHard1!';",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "test1"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

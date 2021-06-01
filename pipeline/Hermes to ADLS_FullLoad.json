@@ -20,7 +20,7 @@
 					"source": {
 						"type": "AzurePostgreSqlSource",
 						"query": {
-							"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail', 'scheme_scheme', 'scheme_category')",
+							"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail', 'scheme_scheme', 'scheme_category', 'ubiquity_schemeaccountentry', 'ubiquity_paymentcardaccountentry')",
 							"type": "Expression"
 						}
 					},
@@ -261,6 +261,18 @@
 						"dependencyConditions": [
 							"Failed"
 						]
+					},
+					{
+						"activity": "Hermes to ADLS_history_historicalschemeaccountentry_FL",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Hermes to ADLS_historicalpaymentcardaccountentry_FL",
+						"dependencyConditions": [
+							"Failed"
+						]
 					}
 				],
 				"policy": {
@@ -334,6 +346,54 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_Hermes to ADLS_history_historicalschemeaccount_FullLoad",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Hermes to ADLS_history_historicalschemeaccountentry_FL",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_Hermes to ADLS_history_historicalschemeaccountentry_FullLoad",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Hermes to ADLS_historicalpaymentcardaccountentry_FL",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_Hermes to ADLS_history_historicalpaymentcardaccountentry_FullLoad",
 						"type": "DataFlowReference"
 					},
 					"compute": {

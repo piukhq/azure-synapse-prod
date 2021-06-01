@@ -1,0 +1,19 @@
+{
+	"name": "Create ext table - RK",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "DROP EXTERNAL TABLE dbo.ext_payment_card_paymentcard\nGO\n\nCREATE EXTERNAL TABLE dbo.ext_payment_card_paymentcard \n(    \n\t[id] int,    \n\t[name] VARCHAR(200),    \n\t[slug] VARCHAR(50),    \n\t[url] VARCHAR(200),    \n\t[scan_message] VARCHAR(100),    \n\t[input_label] VARCHAR(150),    \n\t[is_active] bit,    \n\t[system] VARCHAR(40),    \n\t[type] VARCHAR(40),    \n\t[token_method] int,    \n\t[formatted_images] VARCHAR(4000)    \n)    \nWITH    \n(               \n\tLOCATION = '2021/202102/20210210/',            \n\tDATA_SOURCE = eds_payment_card_paymentcard,             \n\tFILE_FORMAT = ef_payment_card_paymentcard            \n)\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"name": "ExternalTableJsonIssue",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "--DROP EXTERNAL DATA SOURCE eds_scheme_schemeaccount_Test1\nCREATE EXTERNAL DATA SOURCE eds_scheme_schemeaccount_Test1\n    WITH    (   \n            LOCATION = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_scheme_schemeaccount/',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )\n\n--DROP EXTERNAL FILE FORMAT eff_scheme_schemeaccount_Test1\nCREATE EXTERNAL FILE FORMAT eff_scheme_schemeaccount_Test1\nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = 'org.apache.hadoop.io.compress.SnappyCodec'\n    )\n\n--DROP EXTERNAL TABLE dbo.ext_scheme_schemeaccount_Test1 \nCREATE EXTERNAL TABLE dbo.ext_scheme_schemeaccount_Test1 \n    (    [id]\t            INT,\n    [status]\t        INT,\n    [order]\t            INT,\n    [created]\t        DATETIME,\n    [updated]\t        DATETIME,\n    [scheme_id]\t        INT,\n    [is_deleted]\t    BIT,\n    [link_date]\t        DATETIME,\n    [join_date]\t        DATETIME,\n    [balances]\t        VARCHAR(4000),\n    [vouchers]\t        VARCHAR(MAX),\n    [barcode]\t        VARCHAR(250),\n    [card_number]\t    VARCHAR(250),\n    [transactions]\t    VARCHAR(4000),\n    [main_answer]\t    VARCHAR(250),\n    [pll_links]\t        VARCHAR(4000),\n    [formatted_images]  VARCHAR(4000))\n    WITH    (   \n            LOCATION = '2021/202105/20210516_real/',\n            DATA_SOURCE = eds_scheme_schemeaccount_Test1, \n            FILE_FORMAT = eff_scheme_schemeaccount_Test1\n            )\n\n--dwhpool\nSELECT TOP 10\n   ext.id         AS SAID,\n   ext.created    AS SACreated,\n   ext.updated    AS SAUpdated,\n\n   js.[VoucherCode],\n   \n   js.[BurnType],\n   js.[BurnValue],\n   js.[BurnPrefix],\n   js.[BurnSuffix],\n   js.[BurnCurrency],\n   \n   js.[EarnType],\n   js.[EarnValue],\n   js.[EarnPrefix],\n   js.[EarnSuffix],\n   js.[EarnCurrency],\n   js.[EarnTargetValue],\n   \n   js.[VoucherState],\n   js.[SubText],\n   js.[Headline],\n   js.[BodyText],\n   js.[IssueDate],\n   js.[ExpiryDate],\n   js.[BarcodeType],\n   js.TCUrl\nFROM dbo.ext_scheme_schemeaccount_Test1  ext\nOUTER APPLY OPENJSON (JSON_VALUE(vouchers, '$'))\n   WITH (\n        [VoucherCode]            VARCHAR(32) '$.code',\n\n        [BurnType]               VARCHAR(32) '$.burn.type',\n        [BurnValue]              VARCHAR(32) '$.burn.value',\n        [BurnPrefix]             VARCHAR(32) '$.burn.prefix',\n        [BurnSuffix]             VARCHAR(32) '$.burn.suffix',\n        [BurnCurrency]           VARCHAR(32) '$.burn.Currency',\n\n        [EarnType]               VARCHAR(32) '$.earn.type',\n        [EarnValue]              VARCHAR(32) '$.earn.value',\n        [EarnPrefix]             VARCHAR(32) '$.earn.prefix',\n        [EarnSuffix]             VARCHAR(32) '$.earn.suffix',\n        [EarnCurrency]           VARCHAR(32) '$.earn.Currency',\n        [EarnTargetValue]        VARCHAR(32) '$.earn.target_value',\n\n        [VoucherState]           VARCHAR(32) '$.state',\n        [SubText]                VARCHAR(32) '$.subtext',\n        [Headline]               VARCHAR(32) '$.headline',\n        [BodyText]               VARCHAR(32) '$.body_text',\n        [IssueDate]              VARCHAR(32) '$.date_issued',\n        [ExpiryDate]             VARCHAR(32) '$.expiry_date',\n        [BarcodeType]            VARCHAR(32) '$.barcode_type',\n        [TCUrl]                  VARCHAR(100) '$.terms_and_conditions_url'   \n         ) AS js\nWHERE ext.vouchers <> '{}'\n   AND js.[VoucherState] <> 'inprogress'\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

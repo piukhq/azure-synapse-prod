@@ -82,6 +82,26 @@
 					"referenceName": "ls_Syn_DataWarehouse",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "Build Facts_FullLoad",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Build Dimensions_FullLoad",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Build Facts_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"annotations": []

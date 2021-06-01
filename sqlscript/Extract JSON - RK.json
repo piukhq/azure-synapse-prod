@@ -1,0 +1,20 @@
+{
+	"name": "Extract JSON - RK",
+	"properties": {
+		"description": "Sample query to extract json from ext_history_historicalpaymentcardaccount",
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "SELECT TOP 10\n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[user_id],\n    --ext.[body],\n    --ext.[change_details],\n    --ext.*,\n    jset.[id],\n    jset.[name_on_card],\n    jset.[start_month],\n    jset.[start_year],\n    jset.[expiry_month],\n    jset.[expiry_year],\n    jset.[status],\n    jset.[created],\n    jset.[updated],\n    jset.[issuer_id],\n    jset.[payment_card_id],\n    jset.[token],\n    jset.[country],\n    jset.[currency_code],\n    jset.[pan_end],\n    jset.[pan_start],\n    jset.[is_deleted],\n    jset.[fingerprint]\n FROM [dbo].[ext_history_historicalpaymentcardaccount] ext\n--CROSS APPLY OPENJSON (jsondata, '$.somelist') WITH (num int '$')\n--OUTER APPLY OPENJSON (JSON_VALUE(Body, '$'))\nOUTER APPLY OPENJSON (JSON_QUERY(Body, '$'))\n   WITH (\n        [id] int '$.id',\n        [name_on_card] varchar(150) '$.name_on_card',\n        [start_month] int '$.start_month',\n        [start_year] int '$.start_year',\n        [expiry_month] int '$.expiry_month',\n        [expiry_year] int '$.expiry_year',\n        [status] int '$.status',\n        [order] int '$.order',\n        [created] varchar(32) '$.created',\n        [updated] varchar(32) '$.updated',\n        [issuer_id] int '$.issuer',\n        [payment_card_id] int '$.payment_card',\n        [token] varchar(255) '$.token',\n        [country] varchar(40) '$.country',\n        [currency_code] varchar(3) '$.currency_code',\n        [pan_end] varchar(4) '$.pan_end',\n        [pan_start] varchar(4) '$.pan_start',\n        [is_deleted] bit '$.is_deleted',\n        [fingerprint] varchar(100) '$.fingerprint',\n        [psp_token] varchar(255) '$.psp_token',\n        [consents] varchar(4000) '$.consents',\n        [hash] varchar(255) '$.hash'\n   ) AS jset\n   WHERE ext.Id = 89\n\n/*\nSELECT TOP 10\n    ext.[id],\n    ext.[created],\n    ext.[change_type],\n    ext.[instance_id],\n    ext.[channel],\n    ext.[user_id],\n    ext.[body],\n    ext.[change_details],\n    JSON_VALUE(ext.body,'$.id') AS jsonid\nFROM [dbo].[ext_history_historicalpaymentcardaccount] ext\nWHERE ext.Id = 89\n*/",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

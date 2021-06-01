@@ -1,0 +1,80 @@
+{
+	"name": "Load FactUserLC_FullLoad",
+	"properties": {
+		"description": "Pipeline to load UserLC fact table",
+		"activities": [
+			{
+				"name": "df_LoadFactUserLC_FullLoad",
+				"description": "Data Flow to load fact.UserLC",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_LoadFactUserLC_FullLoad",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ls_adls_dwlanding",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "staging/PolyBase"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "df_LoadFactUserLC",
+				"description": "Data Flow to load fact.UserLC",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "df_LoadFactUserLC_FullLoad",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_LoadFactUserLC",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ls_adls_dwlanding",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "staging/PolyBase"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

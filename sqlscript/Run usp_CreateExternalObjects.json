@@ -1,0 +1,19 @@
+{
+	"name": "Run usp_CreateExternalObjects",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "DECLARE @Yr varchar(4)\nDECLARE @Mt varchar(2)\nDECLARE @Dy varchar(2)\n\nSET @yr = '2021'\nSET\t@Mt = '02'\nSET\t@Dy = '25'\n\n EXECUTE [dbo].[usp_CreateExternalObjects]\n\t@Yr,\n\t@Mt,\n\t@Dy\n\n\tDROP EXTERNAL TABLE ",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "dwhpool",
+				"databaseName": "dwhpool"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

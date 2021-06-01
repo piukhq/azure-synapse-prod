@@ -1,0 +1,19 @@
+{
+	"name": "Tableau Synapse User",
+	"properties": {
+		"folder": {
+			"name": "Archive"
+		},
+		"content": {
+			"query": "-- in master db\n-- CREATE LOGIN TerryTest1 WITH PASSWORD = 'VeryHard1!';\n\n-- in dwhpool\n-- CREATE USER TerryTest1 FROM LOGIN TerryTest1;\n-- EXEC sp_addrolemember 'db_owner', 'TerryTest1';\n--GRANT CONTROL ON DATABASE::dwhpool to TerryTest1;\n\n-- so the laadmin user and its randompw also works but shouldn't be used :/\n\n\n\n\n\n\n-- Serverless\n-- CREATE LOGIN TerryTest1 WITH PASSWORD = 'VeryHard1!';\n-- CREATE USER TerryTest1 FROM LOGIN TerryTest1;\n-- ALTER ROLE db_owner ADD MEMBER TerryTest1;\n-- GRANT CONTROL ON DATABASE::test1 to TerryTest1\n\n-- Tableau cant connect, think its using wrong freetds version param\n-- freetds.conf -- this works\n--   [binkuksouthprodsynapse-ondemand.sql.azuresynapse.net]\n--   tds version = 7.1\n--   host = binkuksouthprodsynapse-ondemand.sql.azuresynapse.net\n--   database = test1\n--   port = 1433\n--   user = laadmin\n--   password = laaaa\n\n-- tsql -S binkuksouthprodsynapse-ondemand.sql.azuresynapse.net -p 1433 -U laadmin -P laaaaa\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "test1"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}
