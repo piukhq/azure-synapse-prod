@@ -133,6 +133,12 @@
 								"dependencyConditions": [
 									"Failed"
 								]
+							},
+							{
+								"activity": "Build Facts",
+								"dependencyConditions": [
+									"Failed"
+								]
 							}
 						],
 						"policy": {
@@ -159,6 +165,27 @@
 								"type": "Expression"
 							}
 						}
+					},
+					{
+						"name": "Build Facts",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Build Dimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Build Facts",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"annotations": []
@@ -167,7 +194,8 @@
 				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS')]",
 				"[concat(variables('workspaceId'), '/pipelines/Create External Objects')]",
 				"[concat(variables('workspaceId'), '/pipelines/Build Dimensions')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/pipelines/Build Facts')]"
 			]
 		},
 		{
@@ -259,6 +287,27 @@
 							"referenceName": "ls_Syn_DataWarehouse",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "Build Facts_FullLoad",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Build Dimensions_FullLoad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Build Facts_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"annotations": []
@@ -267,7 +316,8 @@
 				"[concat(variables('workspaceId'), '/pipelines/Load Source data to ADLS_FullLoad')]",
 				"[concat(variables('workspaceId'), '/pipelines/Create External Objects')]",
 				"[concat(variables('workspaceId'), '/pipelines/Build Dimensions_FullLoad')]",
-				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]",
+				"[concat(variables('workspaceId'), '/pipelines/Build Facts_FullLoad')]"
 			]
 		},
 		{
@@ -434,6 +484,90 @@
 				"[concat(variables('workspaceId'), '/pipelines/Load DimUser_FullLoad')]",
 				"[concat(variables('workspaceId'), '/pipelines/Load DimLoyaltyCard_FullLoad')]",
 				"[concat(variables('workspaceId'), '/pipelines/Load DimLCVoucher_FullLoad')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Build Facts')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Execute Load FactUserLC",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load FactUserLC",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Execute Load FactUserPC",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load FactUserPC",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Load FactUserLC')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load FactUserPC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Build Facts_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Execute Load FactUserLC_FullLoad",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load FactUserLC_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Execute Load FactUserPC_FullLoad",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load FactUserPC_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Load FactUserLC_FullLoad')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load FactUserPC_FullLoad')]"
 			]
 		},
 		{
@@ -710,6 +844,18 @@
 								"dependencyConditions": [
 									"Failed"
 								]
+							},
+							{
+								"activity": "Hermes to ADLS_history_historicalschemeaccountentry",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_historicalpaymentcardaccountentry",
+								"dependencyConditions": [
+									"Failed"
+								]
 							}
 						],
 						"policy": {
@@ -925,6 +1071,66 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalschemeaccountentry",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalschemeaccountentry",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoryHistoricalSchemeAccountEntry": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_historicalpaymentcardaccountentry",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalpaymentcardaccountentry",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoryHistoricalPaymentCardAccountEntry": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"annotations": []
@@ -938,6 +1144,8 @@
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalcustomuser')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_scheme_schemeaccount')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalschemeaccount')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalschemeaccountentry')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalpaymentcardaccountentry')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes')]"
 			]
 		},
@@ -965,7 +1173,7 @@
 							"source": {
 								"type": "AzurePostgreSqlSource",
 								"query": {
-									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail', 'scheme_scheme', 'scheme_category')",
+									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' and table_name IN ('payment_card_paymentcard', 'payment_card_issuer', 'user_clientapplication', 'user_clientapplicationbundle', 'user_organisation', 'user_userdetail', 'scheme_scheme', 'scheme_category', 'ubiquity_schemeaccountentry', 'ubiquity_paymentcardaccountentry')",
 									"type": "Expression"
 								}
 							},
@@ -1232,6 +1440,18 @@
 								"dependencyConditions": [
 									"Failed"
 								]
+							},
+							{
+								"activity": "Hermes to ADLS_history_historicalschemeaccountentry_FL",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Hermes to ADLS_historicalpaymentcardaccountentry_FL",
+								"dependencyConditions": [
+									"Failed"
+								]
 							}
 						],
 						"policy": {
@@ -1326,6 +1546,66 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "Hermes to ADLS_history_historicalschemeaccountentry_FL",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalschemeaccountentry_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoryHistoricalSchemeAccountEntry": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hermes to ADLS_historicalpaymentcardaccountentry_FL",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Hermes to ADLS_history_historicalpaymentcardaccountentry_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcHistoryHistoricalPaymentCardAccountEntry": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"annotations": []
@@ -1339,6 +1619,8 @@
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_scheme_schemeaccount_FullLoad')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalschemeaccount_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalschemeaccountentry_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalpaymentcardaccountentry_FullLoad')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes')]"
 			]
 		},
@@ -2127,6 +2409,322 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Load FactUserLC')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load UserLC fact table",
+				"activities": [
+					{
+						"name": "df_LoadFactUserLC",
+						"description": "Data Flow to load fact.UserLC",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadFactUserLC",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcHistoryHistoricalSchemeAccountEntry": {},
+									"srcSchemeSchemeAccount": {},
+									"srcDimUser": {},
+									"srcDimLC": {},
+									"snkFactUserLC": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserLC')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load FactUserLC_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load UserLC fact table",
+				"activities": [
+					{
+						"name": "df_LoadFactUserLC_FullLoad",
+						"description": "Data Flow to load fact.UserLC",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadFactUserLC_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcUbiquitySchemeAccountEntry": {},
+									"srcSchemeSchemeAccount": {},
+									"srcDimUser": {},
+									"srcDimLC": {},
+									"snkFactUserLC": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_LoadFactUserLC",
+						"description": "Data Flow to load fact.UserLC",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "df_LoadFactUserLC_FullLoad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadFactUserLC",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcHistoryHistoricalSchemeAccountEntry": {},
+									"srcSchemeSchemeAccount": {},
+									"srcDimUser": {},
+									"srcDimLC": {},
+									"snkFactUserLC": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserLC_FullLoad')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserLC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load FactUserPC')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load UserPC fact table",
+				"activities": [
+					{
+						"name": "df_LoadFactUserPC",
+						"description": "Data Flow to load fact.UserPC",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadFactUserPC",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcHistoryHistoricalPaymentCardAccountEntry": {},
+									"srcPaymentCardAccount": {},
+									"srcDimUser": {},
+									"srcDimPC": {},
+									"snkFactUserPC": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserPC')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load FactUserPC_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to load UserPC fact table",
+				"activities": [
+					{
+						"name": "df_LoadFactUserPC_FullLoad",
+						"description": "Data Flow to load fact.UserPC",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadFactUserPC_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcUbiquityPaymentCardAccountEntry": {},
+									"srcPaymentCardAccount": {},
+									"srcDimUser": {},
+									"srcDimPC": {},
+									"snkFactUserPC": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_LoadFactUserPC",
+						"description": "Data Flow to load fact.UserPC",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "df_LoadFactUserPC_FullLoad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadFactUserPC",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcHistoryHistoricalPaymentCardAccountEntry": {},
+									"srcPaymentCardAccount": {},
+									"srcDimUser": {},
+									"srcDimPC": {},
+									"snkFactUserPC": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserPC_FullLoad')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserPC')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Load Source data to ADLS')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
@@ -2904,6 +3502,124 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/ds_Syn_FactUserLC')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_Syn_DataWarehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "UserID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LoyaltyCardID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LCJoinDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "LCAddDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "IsCreated",
+						"type": "bit"
+					},
+					{
+						"name": "CreateDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ProcessDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "Fact",
+					"table": "UserLC"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_Syn_FactUserPC')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_Syn_DataWarehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "UserID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PaymentCardID",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "IsCreated",
+						"type": "bit"
+					},
+					{
+						"name": "CreateDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ProcessDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "Fact",
+					"table": "UserPC"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_Syn_DataWarehouse')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ds_Syn_DimPaymentCard')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -3157,6 +3873,35 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_history_historicalpaymentcardaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.history_historicalpaymentcardaccountentry table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_history_historicalpaymentcardaccountentry/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_history_historicalschemeaccount')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -3180,6 +3925,68 @@
 					"compressionCodec": "snappy"
 				},
 				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_history_historicalschemeaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.history_historicalschemeaccountentry table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_history_historicalschemeaccountentry/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "INT32"
+					},
+					{
+						"name": "created",
+						"type": "INT96"
+					},
+					{
+						"name": "change_type",
+						"type": "UTF8"
+					},
+					{
+						"name": "instance_id",
+						"type": "UTF8"
+					},
+					{
+						"name": "channel",
+						"type": "UTF8"
+					},
+					{
+						"name": "user_id",
+						"type": "INT32"
+					},
+					{
+						"name": "scheme_account_id",
+						"type": "INT32"
+					},
+					{
+						"name": "change_details",
+						"type": "UTF8"
+					}
+				]
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
@@ -3455,6 +4262,90 @@
 					"compressionCodec": "snappy"
 				},
 				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_ubiquity_paymentcardaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.ubiquity_paymentcardaccountentry table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_ubiquity_paymentcardaccountentry/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "INT32"
+					},
+					{
+						"name": "payment_card_account_id",
+						"type": "INT32"
+					},
+					{
+						"name": "user_id",
+						"type": "INT32"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_adls_hermes_ubiquity_schemeaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Landing/Data Lake Hermes public.ubiquity_schemeaccountentry table",
+				"linkedServiceName": {
+					"referenceName": "ls_adls_dwlanding",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "Hermes/public_ubiquity_schemeaccountentry/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "INT32"
+					},
+					{
+						"name": "scheme_account_id",
+						"type": "INT32"
+					},
+					{
+						"name": "user_id",
+						"type": "INT32"
+					}
+				]
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
@@ -3948,6 +4839,77 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_history_historicalpaymentcardaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes history_historicalpaymentcardaccountentry table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_type",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "instance_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "channel",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "user_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "payment_card_account_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_details",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "history_historicalpaymentcardaccountentry"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_history_historicalschemeaccount')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -4018,6 +4980,77 @@
 				"typeProperties": {
 					"schema": "public",
 					"table": "history_historicalschemeaccount"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_hermes')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_hermes_history_historicalschemeaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Hermes history_historicalschemeaccountentry table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_hermes",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_type",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "instance_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "channel",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "user_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "scheme_account_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "change_details",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "history_historicalschemeaccountentry"
 				}
 			},
 			"dependsOn": [
@@ -6103,6 +7136,84 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalpaymentcardaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalpaymentcardaccountentry table from hermes",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalpaymentcardaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoryHistoricalPaymentCardAccountEntry"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalpaymentcardaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalpaymentcardaccountentry')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalpaymentcardaccountentry_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalpaymentcardaccountentry table from hermes",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalpaymentcardaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoryHistoricalPaymentCardAccountEntry"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalpaymentcardaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalpaymentcardaccountentry')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalschemeaccount')]",
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
@@ -6178,6 +7289,84 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalschemeaccount')]",
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalschemeaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalschemeaccountentry')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalschemeaccountentry table from hermes",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalschemeaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoryHistoricalSchemeAccountEntry"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalschemeaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccountEntry\nSrcHistoryHistoricalSchemeAccountEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalschemeaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalschemeaccountentry')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Hermes to ADLS_history_historicalschemeaccountentry_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Copy history_historicalschemeaccountentry table from hermes",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_hermes_history_historicalschemeaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "SrcHistoryHistoricalSchemeAccountEntry"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalschemeaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccountEntry\nSrcHistoryHistoricalSchemeAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(input(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes_history_historicalschemeaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalschemeaccountentry')]"
 			]
 		},
 		{
@@ -7673,6 +8862,354 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadFactUserLC')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Load fact.UserLC",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalschemeaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "srcHistoryHistoricalSchemeAccountEntry"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_scheme_schemeaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcSchemeSchemeAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimLoyaltyCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimLC"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactUserLC",
+								"type": "DatasetReference"
+							},
+							"name": "snkFactUserLC"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SelectUSA"
+						},
+						{
+							"name": "SelectSA"
+						},
+						{
+							"name": "SelectUSR"
+						},
+						{
+							"name": "SelectLC"
+						},
+						{
+							"name": "JoinUsaSa"
+						},
+						{
+							"name": "JoinUsaSaUsr"
+						},
+						{
+							"name": "JoinUsaSaUsrLc"
+						},
+						{
+							"name": "GroupRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcHistoryHistoricalSchemeAccountEntry\nsource(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcSchemeSchemeAccount\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimUser\nsource(output(\n\t\tID as integer,\n\t\tCardNumber as string,\n\t\tPlanName as string,\n\t\tPlanDescription as string,\n\t\tLCStatus as string,\n\t\tMerchant as string,\n\t\tCategory as string,\n\t\tBonusName as string,\n\t\tBalanceValue as decimal(18,2),\n\t\tBalancePoints as decimal(18,2),\n\t\tBalance as decimal(18,2),\n\t\tBalanceIsStale as boolean,\n\t\tBalanceUpdateDate as timestamp,\n\t\tBalanceRewardTier as string,\n\t\tBalanceValueLabel as string,\n\t\tBalancePointsLabel as string,\n\t\tAddDate as timestamp,\n\t\tJoinDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourceLCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimLC\nsrcHistoryHistoricalSchemeAccountEntry select(mapColumn(\n\t\t{usa.id} = id,\n\t\t{usa.created} = created,\n\t\t{usa.change_type} = change_type,\n\t\t{usa.instance_id} = instance_id,\n\t\t{usa.channel} = channel,\n\t\t{usa.user_id} = user_id,\n\t\t{usa.scheme_account_id} = scheme_account_id,\n\t\t{usa.change_details} = change_details\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUSA\nsrcSchemeSchemeAccount select(mapColumn(\n\t\t{sa.id} = id,\n\t\t{sa.created} = created,\n\t\t{sa.updated} = updated,\n\t\t{sa.is_deleted} = is_deleted,\n\t\t{sa.link_date} = link_date,\n\t\t{sa.join_date} = join_date,\n\t\t{sa.pll_links} = pll_links\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectSA\nsrcDimUser select(mapColumn(\n\t\t{usr.ID} = ID,\n\t\t{usr.IsActive} = IsActive,\n\t\t{usr.DeleteToken} = DeleteToken,\n\t\t{usr.EffFromDate} = EffFromDate,\n\t\t{usr.EffToDate} = EffToDate,\n\t\t{usr.IsCurrent} = IsCurrent,\n\t\t{usr.SourceUserKey} = SourceUserKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUSR\nsrcDimLC select(mapColumn(\n\t\t{lc.ID} = ID,\n\t\t{lc.LCStatus} = LCStatus,\n\t\t{lc.AddDate} = AddDate,\n\t\t{lc.JoinDate} = JoinDate,\n\t\t{lc.EffFromDate} = EffFromDate,\n\t\t{lc.EffToDate} = EffToDate,\n\t\t{lc.ProcessDate} = ProcessDate,\n\t\t{lc.IsCurrent} = IsCurrent,\n\t\t{lc.SourceLCKey} = SourceLCKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectLC\nSelectUSA, SelectSA join({usa.scheme_account_id} == {sa.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUsaSa\nJoinUsaSa, SelectUSR join({usa.user_id} == {usr.SourceUserKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUsaSaUsr\nJoinUsaSaUsr, SelectLC join({usa.scheme_account_id} == {lc.SourceLCKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUsaSaUsrLc\nJoinUsaSaUsrLc aggregate(groupBy({usa.scheme_account_id},\n\t\t{lc.ID},\n\t\t{usa.user_id},\n\t\t{usr.ID},\n\t\t{sa.link_date},\n\t\t{sa.join_date},\n\t\t{usa.change_type},\n\t\t{usa.instance_id},\n\t\t{usa.created}),\n\tUserCount = count({usa.user_id})) ~> GroupRecords\nGroupRecords derive({new.IsCreated} = case({usa.change_type}=='create', 1, 0),\n\t\t{new.ProcessDate} = toUTC(currentUTC())) ~> AdditionalFields\nAdditionalFields sink(input(\n\t\tID as integer,\n\t\tUserID as integer,\n\t\tLoyaltyCardID as integer,\n\t\tLCJoinDate as timestamp,\n\t\tLCAddDate as timestamp,\n\t\tIsCreated as boolean,\n\t\tCreateDate as timestamp,\n\t\tProcessDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tUserID = {usr.ID},\n\t\tLoyaltyCardID = {lc.ID},\n\t\tLCJoinDate = {sa.join_date},\n\t\tLCAddDate = {sa.link_date},\n\t\tIsCreated = {new.IsCreated},\n\t\tCreateDate = {usa.created},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> snkFactUserLC"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalschemeaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_scheme_schemeaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimUser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimLoyaltyCard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_FactUserLC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadFactUserLC_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Load fact.UserLC",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_ubiquity_schemeaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "srcUbiquitySchemeAccountEntry"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_scheme_schemeaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcSchemeSchemeAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimLoyaltyCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimLC"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactUserLC",
+								"type": "DatasetReference"
+							},
+							"name": "snkFactUserLC"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SelectUSA"
+						},
+						{
+							"name": "SelectSA"
+						},
+						{
+							"name": "SelectUSR"
+						},
+						{
+							"name": "SelectLC"
+						},
+						{
+							"name": "JoinUsaSa"
+						},
+						{
+							"name": "JoinUsaSaUsr"
+						},
+						{
+							"name": "JoinUsaSaUsrLc"
+						},
+						{
+							"name": "GroupRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUbiquitySchemeAccountEntry\nsource(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcSchemeSchemeAccount\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimUser\nsource(output(\n\t\tID as integer,\n\t\tCardNumber as string,\n\t\tPlanName as string,\n\t\tPlanDescription as string,\n\t\tLCStatus as string,\n\t\tMerchant as string,\n\t\tCategory as string,\n\t\tBonusName as string,\n\t\tBalanceValue as decimal(18,2),\n\t\tBalancePoints as decimal(18,2),\n\t\tBalance as decimal(18,2),\n\t\tBalanceIsStale as boolean,\n\t\tBalanceUpdateDate as timestamp,\n\t\tBalanceRewardTier as string,\n\t\tBalanceValueLabel as string,\n\t\tBalancePointsLabel as string,\n\t\tAddDate as timestamp,\n\t\tJoinDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourceLCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimLC\nsrcUbiquitySchemeAccountEntry select(mapColumn(\n\t\t{usa.id} = id,\n\t\t{usa.scheme_account_id} = scheme_account_id,\n\t\t{usa.user_id} = user_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUSA\nsrcSchemeSchemeAccount select(mapColumn(\n\t\t{sa.id} = id,\n\t\t{sa.created} = created,\n\t\t{sa.updated} = updated,\n\t\t{sa.is_deleted} = is_deleted,\n\t\t{sa.link_date} = link_date,\n\t\t{sa.join_date} = join_date,\n\t\t{sa.pll_links} = pll_links\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectSA\nsrcDimUser select(mapColumn(\n\t\t{usr.ID} = ID,\n\t\t{usr.IsActive} = IsActive,\n\t\t{usr.DeleteToken} = DeleteToken,\n\t\t{usr.EffFromDate} = EffFromDate,\n\t\t{usr.EffToDate} = EffToDate,\n\t\t{usr.IsCurrent} = IsCurrent,\n\t\t{usr.SourceUserKey} = SourceUserKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUSR\nsrcDimLC select(mapColumn(\n\t\t{lc.ID} = ID,\n\t\t{lc.LCStatus} = LCStatus,\n\t\t{lc.AddDate} = AddDate,\n\t\t{lc.JoinDate} = JoinDate,\n\t\t{lc.EffFromDate} = EffFromDate,\n\t\t{lc.EffToDate} = EffToDate,\n\t\t{lc.ProcessDate} = ProcessDate,\n\t\t{lc.IsCurrent} = IsCurrent,\n\t\t{lc.SourceLCKey} = SourceLCKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectLC\nSelectUSA, SelectSA join({usa.scheme_account_id} == {sa.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUsaSa\nJoinUsaSa, SelectUSR join({usa.user_id} == {usr.SourceUserKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUsaSaUsr\nJoinUsaSaUsr, SelectLC join({usa.scheme_account_id} == {lc.SourceLCKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUsaSaUsrLc\nJoinUsaSaUsrLc aggregate(groupBy({usa.scheme_account_id},\n\t\t{lc.ID},\n\t\t{usa.user_id},\n\t\t{usr.ID},\n\t\t{sa.link_date},\n\t\t{sa.join_date}),\n\tUserCount = count({usa.user_id})) ~> GroupRecords\nGroupRecords derive({new.ProcessDate} = toUTC(currentUTC()),\n\t\t{new.IsCreated} = 1) ~> AdditionalFields\nAdditionalFields sink(input(\n\t\tID as integer,\n\t\tUserID as integer,\n\t\tLoyaltyCardID as integer,\n\t\tLCJoinDate as timestamp,\n\t\tLCAddDate as timestamp,\n\t\tIsCreated as boolean,\n\t\tCreateDate as timestamp,\n\t\tProcessDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tUserID = {usr.ID},\n\t\tLoyaltyCardID = {lc.ID},\n\t\tLCJoinDate = {sa.join_date},\n\t\tLCAddDate = {sa.link_date},\n\t\tIsCreated = {new.IsCreated},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> snkFactUserLC"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_ubiquity_schemeaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_scheme_schemeaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimUser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimLoyaltyCard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_FactUserLC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadFactUserPC')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Load fact.UserPC",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_history_historicalpaymentcardaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "srcHistoryHistoricalPaymentCardAccountEntry"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCardAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimPC"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactUserPC",
+								"type": "DatasetReference"
+							},
+							"name": "snkFactUserPC"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SelectUPA"
+						},
+						{
+							"name": "SelectPA"
+						},
+						{
+							"name": "SelectUSR"
+						},
+						{
+							"name": "SelectPC"
+						},
+						{
+							"name": "JoinUpaPa"
+						},
+						{
+							"name": "JoinUpaPaUsr"
+						},
+						{
+							"name": "JoinUpaPaUsrPc"
+						},
+						{
+							"name": "GroupRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcHistoryHistoricalPaymentCardAccountEntry\nsource(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCardAccount\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimUser\nsource(output(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimPC\nsrcHistoryHistoricalPaymentCardAccountEntry select(mapColumn(\n\t\t{upa.id} = id,\n\t\t{upa.created} = created,\n\t\t{upa.change_type} = change_type,\n\t\t{upa.instance_id} = instance_id,\n\t\t{upa.channel} = channel,\n\t\t{upa.user_id} = user_id,\n\t\t{upa.payment_card_account_id} = payment_card_account_id,\n\t\t{upa.change_details} = change_details\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUPA\nsrcPaymentCardAccount select(mapColumn(\n\t\t{pca.id} = id,\n\t\t{pca.status} = status,\n\t\t{pca.created} = created,\n\t\t{pca.updated} = updated,\n\t\t{pca.is_deleted} = is_deleted,\n\t\t{pca.pll_links} = pll_links\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPA\nsrcDimUser select(mapColumn(\n\t\t{usr.ID} = ID,\n\t\t{usr.IsActive} = IsActive,\n\t\t{usr.DeleteToken} = DeleteToken,\n\t\t{usr.EffFromDate} = EffFromDate,\n\t\t{usr.EffToDate} = EffToDate,\n\t\t{usr.IsCurrent} = IsCurrent,\n\t\t{usr.SourceUserKey} = SourceUserKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUSR\nsrcDimPC select(mapColumn(\n\t\t{dpc.ID} = ID,\n\t\t{dpc.Token} = Token,\n\t\t{dpc.Fingerprint} = Fingerprint,\n\t\t{dpc.CardStatus} = CardStatus,\n\t\t{dpc.IsDeleted} = IsDeleted,\n\t\t{dpc.CardCreateDate} = CardCreateDate,\n\t\t{dpc.CardUpdateDate} = CardUpdateDate,\n\t\t{dpc.EffFromDate} = EffFromDate,\n\t\t{dpc.EffToDate} = EffToDate,\n\t\t{dpc.ProcessDate} = ProcessDate,\n\t\t{dpc.IsCurrent} = IsCurrent,\n\t\t{dpc.SourcePCKey} = SourcePCKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPC\nSelectUPA, SelectPA join({upa.payment_card_account_id} == {pca.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUpaPa\nJoinUpaPa, SelectUSR join({upa.user_id} == {usr.SourceUserKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUpaPaUsr\nJoinUpaPaUsr, SelectPC join({upa.payment_card_account_id} == {dpc.SourcePCKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUpaPaUsrPc\nJoinUpaPaUsrPc aggregate(groupBy({upa.payment_card_account_id},\n\t\t{dpc.ID},\n\t\t{upa.user_id},\n\t\t{usr.ID},\n\t\t{upa.change_type},\n\t\t{upa.instance_id},\n\t\t{upa.created}),\n\tUserCount = count({upa.user_id})) ~> GroupRecords\nGroupRecords derive({new.ProcessDate} = toUTC(currentUTC()),\n\t\t{new.IsCreated} = case({upa.change_type}=='create', 1, 0)) ~> AdditionalFields\nAdditionalFields sink(input(\n\t\tID as integer,\n\t\tUserID as integer,\n\t\tPaymentCardID as long,\n\t\tIsCreated as boolean,\n\t\tCreateDate as timestamp,\n\t\tProcessDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tUserID = {usr.ID},\n\t\tPaymentCardID = {dpc.ID},\n\t\tIsCreated = {new.IsCreated},\n\t\tCreateDate = {upa.created},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> snkFactUserPC"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_history_historicalpaymentcardaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimUser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimPaymentCard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_FactUserPC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadFactUserPC_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Load fact.UserPC",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_ubiquity_paymentcardaccountentry",
+								"type": "DatasetReference"
+							},
+							"name": "srcUbiquityPaymentCardAccountEntry"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_hermes_paymentcardaccount",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentCardAccount"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimPaymentCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimPC"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactUserPC",
+								"type": "DatasetReference"
+							},
+							"name": "snkFactUserPC"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SelectUPA"
+						},
+						{
+							"name": "SelectPA"
+						},
+						{
+							"name": "SelectUSR"
+						},
+						{
+							"name": "SelectPC"
+						},
+						{
+							"name": "JoinUpaPa"
+						},
+						{
+							"name": "JoinUpaPaUsr"
+						},
+						{
+							"name": "JoinUpaPaUsrPc"
+						},
+						{
+							"name": "GroupRecords"
+						},
+						{
+							"name": "AdditionalFields"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tpayment_card_account_id as integer,\n\t\tuser_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUbiquityPaymentCardAccountEntry\nsource(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentCardAccount\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimUser\nsource(output(\n\t\tID as long,\n\t\tNameOnCard as string,\n\t\tPANTruncation as string,\n\t\tValidFrom as date,\n\t\tValidTo as date,\n\t\tToken as string,\n\t\tFingerprint as string,\n\t\tIssuer as string,\n\t\tCardProvider as string,\n\t\tSlug as string,\n\t\tCardType as string,\n\t\tCardStatus as string,\n\t\tIsDeleted as boolean,\n\t\tCountry as string,\n\t\tCCYCode as string,\n\t\tCardCreateDate as timestamp,\n\t\tCardUpdateDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourcePCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimPC\nsrcUbiquityPaymentCardAccountEntry select(mapColumn(\n\t\t{upa.id} = id,\n\t\t{upa.payment_card_account_id} = payment_card_account_id,\n\t\t{upa.user_id} = user_id\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUPA\nsrcPaymentCardAccount select(mapColumn(\n\t\t{pca.id} = id,\n\t\t{pca.status} = status,\n\t\t{pca.created} = created,\n\t\t{pca.updated} = updated,\n\t\t{pca.is_deleted} = is_deleted,\n\t\t{pca.pll_links} = pll_links\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPA\nsrcDimUser select(mapColumn(\n\t\t{usr.ID} = ID,\n\t\t{usr.IsActive} = IsActive,\n\t\t{usr.DeleteToken} = DeleteToken,\n\t\t{usr.EffFromDate} = EffFromDate,\n\t\t{usr.EffToDate} = EffToDate,\n\t\t{usr.IsCurrent} = IsCurrent,\n\t\t{usr.SourceUserKey} = SourceUserKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUSR\nsrcDimPC select(mapColumn(\n\t\t{dpc.ID} = ID,\n\t\t{dpc.Token} = Token,\n\t\t{dpc.Fingerprint} = Fingerprint,\n\t\t{dpc.CardStatus} = CardStatus,\n\t\t{dpc.IsDeleted} = IsDeleted,\n\t\t{dpc.CardCreateDate} = CardCreateDate,\n\t\t{dpc.CardUpdateDate} = CardUpdateDate,\n\t\t{dpc.EffFromDate} = EffFromDate,\n\t\t{dpc.EffToDate} = EffToDate,\n\t\t{dpc.ProcessDate} = ProcessDate,\n\t\t{dpc.IsCurrent} = IsCurrent,\n\t\t{dpc.SourcePCKey} = SourcePCKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPC\nSelectUPA, SelectPA join({upa.payment_card_account_id} == {pca.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUpaPa\nJoinUpaPa, SelectUSR join({upa.user_id} == {usr.SourceUserKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUpaPaUsr\nJoinUpaPaUsr, SelectPC join({upa.payment_card_account_id} == {dpc.SourcePCKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinUpaPaUsrPc\nJoinUpaPaUsrPc aggregate(groupBy({upa.payment_card_account_id},\n\t\t{dpc.ID},\n\t\t{upa.user_id},\n\t\t{usr.ID}),\n\tUserCount = count({upa.user_id})) ~> GroupRecords\nGroupRecords derive({new.ProcessDate} = toUTC(currentUTC()),\n\t\t{new.IsCreated} = 1) ~> AdditionalFields\nAdditionalFields sink(input(\n\t\tID as integer,\n\t\tUserID as integer,\n\t\tPaymentCardID as long,\n\t\tIsCreated as boolean,\n\t\tCreateDate as timestamp,\n\t\tProcessDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tmapColumn(\n\t\tUserID = {usr.ID},\n\t\tPaymentCardID = {dpc.ID},\n\t\tIsCreated = {new.IsCreated},\n\t\tProcessDate = {new.ProcessDate}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> snkFactUserPC"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_ubiquity_paymentcardaccountentry')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_hermes_paymentcardaccount')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimUser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimPaymentCard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_FactUserPC')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/df_LoadPaymentCard')]",
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
@@ -7970,7 +9507,7 @@
 					"name": "01 Payment Card"
 				},
 				"content": {
-					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
+					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
 					"metadata": {
 						"language": "sql"
 					},
@@ -8018,7 +9555,7 @@
 					"name": "01 Payment Card"
 				},
 				"content": {
-					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n--history_historicalpaymentcardaccount\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = ef_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthdevsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthdevsynapse'\nGO",
+					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n--history_historicalpaymentcardaccount\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = ef_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthprodsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthprodsynapse'\nGO",
 					"metadata": {
 						"language": "sql"
 					},
@@ -8081,6 +9618,96 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Create Date Dimension')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "-- Create external table with date dimension in it\nCREATE EXTERNAL DATA SOURCE [eds_reference] WITH \n(\tTYPE = HADOOP,\n\tLOCATION = N'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Reference/',\n\tCREDENTIAL = [SynapseIdentity]\n);\n\nCREATE EXTERNAL FILE FORMAT [ef_reference_date_dimension] \nWITH (\n\tFORMAT_TYPE = PARQUET, \n\tDATA_COMPRESSION = 'org.apache.hadoop.io.compress.SnappyCodec'\n)\n\nCREATE EXTERNAL TABLE [dbo].[ext_date_dimension]\n( \n\t[id] INT  NOT NULL,\n\t[date] DATE NOT NULL,\n    [day] INT NOT NULL,\n    [dayName] VARCHAR(9) NOT NULL,\n    [dayOfWeek] INT NOT NULL,\n    [dayOfYear] INT NOT NULL,\n    [weekNumber] INT NOT NULL,\n\t[month] INT NOT NULL,\n    [monthName] VARCHAR(9) NOT NULL,\n    [monthStart] DATE NOT NULL,\n    [monthEnd] DATE NOT NULL,\n    [monthYear] INT NOT NULL,\n    [quarter] INT NOT NULL,\n    [year] INT NOT NULL\n)\nWITH (DATA_SOURCE = [eds_reference], LOCATION = 'date_dimension_2020-01-01_2040-01-01_v1.snappy.parquet', FILE_FORMAT = [ef_reference_date_dimension])\n\nSELECT TOP 10 * FROM [dbo].[ext_date_dimension] ORDER BY Id\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE TABLE [Dim].[Date]\n( \n\t[id] INT  NOT NULL,\n\t[date] DATE NOT NULL,\n    [day] INT NOT NULL,\n    [dayName] VARCHAR(9) NOT NULL,\n    [dayOfWeek] INT NOT NULL,\n    [dayOfYear] INT NOT NULL,\n    [weekNumber] INT NOT NULL,\n\t[month] INT NOT NULL,\n    [monthName] VARCHAR(9) NOT NULL,\n    [monthStart] DATE NOT NULL,\n    [monthEnd] DATE NOT NULL,\n    [monthYear] INT NOT NULL,\n    [quarter] INT NOT NULL,\n    [year] INT NOT NULL\n)\nWITH\n(\n\tCLUSTERED COLUMNSTORE INDEX,  \n    DISTRIBUTION = REPLICATE\n)\n\nINSERT INTO [Dim].[Date] SELECT * FROM [dbo].[ext_date_dimension]\n\nSELECT TOP 10 * FROM [Dim].[Date] ORDER BY Id\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create ext table - RK')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "DROP EXTERNAL TABLE dbo.ext_payment_card_paymentcard\nGO\n\nCREATE EXTERNAL TABLE dbo.ext_payment_card_paymentcard \n(    \n\t[id] int,    \n\t[name] VARCHAR(200),    \n\t[slug] VARCHAR(50),    \n\t[url] VARCHAR(200),    \n\t[scan_message] VARCHAR(100),    \n\t[input_label] VARCHAR(150),    \n\t[is_active] bit,    \n\t[system] VARCHAR(40),    \n\t[type] VARCHAR(40),    \n\t[token_method] int,    \n\t[formatted_images] VARCHAR(4000)    \n)    \nWITH    \n(               \n\tLOCATION = '2021/202102/20210210/',            \n\tDATA_SOURCE = eds_payment_card_paymentcard,             \n\tFILE_FORMAT = ef_payment_card_paymentcard            \n)\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ExternalTableJsonIssue')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "--DROP EXTERNAL DATA SOURCE eds_scheme_schemeaccount_Test1\nCREATE EXTERNAL DATA SOURCE eds_scheme_schemeaccount_Test1\n    WITH    (   \n            LOCATION = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_scheme_schemeaccount/',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )\n\n--DROP EXTERNAL FILE FORMAT eff_scheme_schemeaccount_Test1\nCREATE EXTERNAL FILE FORMAT eff_scheme_schemeaccount_Test1\nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = 'org.apache.hadoop.io.compress.SnappyCodec'\n    )\n\n--DROP EXTERNAL TABLE dbo.ext_scheme_schemeaccount_Test1 \nCREATE EXTERNAL TABLE dbo.ext_scheme_schemeaccount_Test1 \n    (    [id]\t            INT,\n    [status]\t        INT,\n    [order]\t            INT,\n    [created]\t        DATETIME,\n    [updated]\t        DATETIME,\n    [scheme_id]\t        INT,\n    [is_deleted]\t    BIT,\n    [link_date]\t        DATETIME,\n    [join_date]\t        DATETIME,\n    [balances]\t        VARCHAR(4000),\n    [vouchers]\t        VARCHAR(MAX),\n    [barcode]\t        VARCHAR(250),\n    [card_number]\t    VARCHAR(250),\n    [transactions]\t    VARCHAR(4000),\n    [main_answer]\t    VARCHAR(250),\n    [pll_links]\t        VARCHAR(4000),\n    [formatted_images]  VARCHAR(4000))\n    WITH    (   \n            LOCATION = '2021/202105/20210516_real/',\n            DATA_SOURCE = eds_scheme_schemeaccount_Test1, \n            FILE_FORMAT = eff_scheme_schemeaccount_Test1\n            )\n\n--dwhpool\nSELECT TOP 10\n   ext.id         AS SAID,\n   ext.created    AS SACreated,\n   ext.updated    AS SAUpdated,\n\n   js.[VoucherCode],\n   \n   js.[BurnType],\n   js.[BurnValue],\n   js.[BurnPrefix],\n   js.[BurnSuffix],\n   js.[BurnCurrency],\n   \n   js.[EarnType],\n   js.[EarnValue],\n   js.[EarnPrefix],\n   js.[EarnSuffix],\n   js.[EarnCurrency],\n   js.[EarnTargetValue],\n   \n   js.[VoucherState],\n   js.[SubText],\n   js.[Headline],\n   js.[BodyText],\n   js.[IssueDate],\n   js.[ExpiryDate],\n   js.[BarcodeType],\n   js.TCUrl\nFROM dbo.ext_scheme_schemeaccount_Test1  ext\nOUTER APPLY OPENJSON (JSON_VALUE(vouchers, '$'))\n   WITH (\n        [VoucherCode]            VARCHAR(32) '$.code',\n\n        [BurnType]               VARCHAR(32) '$.burn.type',\n        [BurnValue]              VARCHAR(32) '$.burn.value',\n        [BurnPrefix]             VARCHAR(32) '$.burn.prefix',\n        [BurnSuffix]             VARCHAR(32) '$.burn.suffix',\n        [BurnCurrency]           VARCHAR(32) '$.burn.Currency',\n\n        [EarnType]               VARCHAR(32) '$.earn.type',\n        [EarnValue]              VARCHAR(32) '$.earn.value',\n        [EarnPrefix]             VARCHAR(32) '$.earn.prefix',\n        [EarnSuffix]             VARCHAR(32) '$.earn.suffix',\n        [EarnCurrency]           VARCHAR(32) '$.earn.Currency',\n        [EarnTargetValue]        VARCHAR(32) '$.earn.target_value',\n\n        [VoucherState]           VARCHAR(32) '$.state',\n        [SubText]                VARCHAR(32) '$.subtext',\n        [Headline]               VARCHAR(32) '$.headline',\n        [BodyText]               VARCHAR(32) '$.body_text',\n        [IssueDate]              VARCHAR(32) '$.date_issued',\n        [ExpiryDate]             VARCHAR(32) '$.expiry_date',\n        [BarcodeType]            VARCHAR(32) '$.barcode_type',\n        [TCUrl]                  VARCHAR(100) '$.terms_and_conditions_url'   \n         ) AS js\nWHERE ext.vouchers <> '{}'\n   AND js.[VoucherState] <> 'inprogress'\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Extract JSON - RK')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Sample query to extract json from ext_history_historicalpaymentcardaccount",
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "SELECT TOP 10\n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[user_id],\n    --ext.[body],\n    --ext.[change_details],\n    --ext.*,\n    jset.[id],\n    jset.[name_on_card],\n    jset.[start_month],\n    jset.[start_year],\n    jset.[expiry_month],\n    jset.[expiry_year],\n    jset.[status],\n    jset.[created],\n    jset.[updated],\n    jset.[issuer_id],\n    jset.[payment_card_id],\n    jset.[token],\n    jset.[country],\n    jset.[currency_code],\n    jset.[pan_end],\n    jset.[pan_start],\n    jset.[is_deleted],\n    jset.[fingerprint]\n FROM [dbo].[ext_history_historicalpaymentcardaccount] ext\n--CROSS APPLY OPENJSON (jsondata, '$.somelist') WITH (num int '$')\n--OUTER APPLY OPENJSON (JSON_VALUE(Body, '$'))\nOUTER APPLY OPENJSON (JSON_QUERY(Body, '$'))\n   WITH (\n        [id] int '$.id',\n        [name_on_card] varchar(150) '$.name_on_card',\n        [start_month] int '$.start_month',\n        [start_year] int '$.start_year',\n        [expiry_month] int '$.expiry_month',\n        [expiry_year] int '$.expiry_year',\n        [status] int '$.status',\n        [order] int '$.order',\n        [created] varchar(32) '$.created',\n        [updated] varchar(32) '$.updated',\n        [issuer_id] int '$.issuer',\n        [payment_card_id] int '$.payment_card',\n        [token] varchar(255) '$.token',\n        [country] varchar(40) '$.country',\n        [currency_code] varchar(3) '$.currency_code',\n        [pan_end] varchar(4) '$.pan_end',\n        [pan_start] varchar(4) '$.pan_start',\n        [is_deleted] bit '$.is_deleted',\n        [fingerprint] varchar(100) '$.fingerprint',\n        [psp_token] varchar(255) '$.psp_token',\n        [consents] varchar(4000) '$.consents',\n        [hash] varchar(255) '$.hash'\n   ) AS jset\n   WHERE ext.Id = 89\n\n/*\nSELECT TOP 10\n    ext.[id],\n    ext.[created],\n    ext.[change_type],\n    ext.[instance_id],\n    ext.[channel],\n    ext.[user_id],\n    ext.[body],\n    ext.[change_details],\n    JSON_VALUE(ext.body,'$.id') AS jsonid\nFROM [dbo].[ext_history_historicalpaymentcardaccount] ext\nWHERE ext.Id = 89\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/L01 Create Schemas')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -8089,13 +9716,13 @@
 					"name": "03 Loyalty Card"
 				},
 				"content": {
-					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
+					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8112,13 +9739,13 @@
 					"name": "03 Loyalty Card"
 				},
 				"content": {
-					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n/****************************************history_historicalpaymentcardaccount***************************************/\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalcustomuser****************************************/\nSET @tbl = 'history_historicalcustomuser'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [change_details] VARCHAR(255),\n    [body] VARCHAR(4000),\n    [email] VARCHAR(100),\n    [external_id] VARCHAR(100)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthdevsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthdevsynapse'\n\n/****************************************scheme_schemeaccount****************************************/\nSET @tbl = 'scheme_schemeaccount'\nSET @Col = \n    '\n    [id]\t            INT,\n    [status]\t        INT,\n    [order]\t            INT,\n    [created]\t        DATETIME,\n    [updated]\t        DATETIME,\n    [scheme_id]\t        INT,\n    [is_deleted]\t    BIT,\n    [link_date]\t        DATETIME,\n    [join_date]\t        DATETIME,\n    [balances]\t        VARCHAR(4000),\n    [vouchers]\t        VARCHAR(4000),\n    [barcode]\t        VARCHAR(250),\n    [card_number]\t    VARCHAR(250),\n    [transactions]\t    VARCHAR(4000),\n    [main_answer]\t    VARCHAR(250),\n    [pll_links]\t        VARCHAR(4000),\n    [formatted_images]  VARCHAR(4000)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalschemeaccount****************************************/\nSET @tbl = 'history_historicalschemeaccount'\nSET @Col = \n    '\n    [id]\t          INT,\n    [created]\t      DATETIME,\n    [change_type]     VARCHAR(6),\n    [instance_id]     VARCHAR(255),\n    [channel]         VARCHAR(255),\n    [user_id]         INT,\n    [body]            VARCHAR(4000),\n    [change_details]  VARCHAR(255),\n    [journey]         VARCHAR(8)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\nGO",
+					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n/****************************************history_historicalpaymentcardaccount****************************************/\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalcustomuser****************************************/\nSET @tbl = 'history_historicalcustomuser'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [change_details] VARCHAR(255),\n    [body] VARCHAR(4000),\n    [email] VARCHAR(100),\n    [external_id] VARCHAR(100)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthprodsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthprodsynapse'\n\n/****************************************scheme_schemeaccount****************************************/\nSET @tbl = 'scheme_schemeaccount'\nSET @Col = \n    '\n    [id]\t            INT,\n    [status]\t        INT,\n    [order]\t            INT,\n    [created]\t        DATETIME,\n    [updated]\t        DATETIME,\n    [scheme_id]\t        INT,\n    [is_deleted]\t    BIT,\n    [link_date]\t        DATETIME,\n    [join_date]\t        DATETIME,\n    [balances]\t        VARCHAR(4000),\n    [vouchers]\t        VARCHAR(4000),\n    [barcode]\t        VARCHAR(250),\n    [card_number]\t    VARCHAR(250),\n    [transactions]\t    VARCHAR(4000),\n    [main_answer]\t    VARCHAR(250),\n    [pll_links]\t        VARCHAR(4000),\n    [formatted_images]  VARCHAR(4000)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalschemeaccount****************************************/\nSET @tbl = 'history_historicalschemeaccount'\nSET @Col = \n    '\n    [id]\t          INT,\n    [created]\t      DATETIME,\n    [change_type]     VARCHAR(6),\n    [instance_id]     VARCHAR(255),\n    [channel]         VARCHAR(255),\n    [user_id]         INT,\n    [body]            VARCHAR(4000),\n    [change_details]  VARCHAR(255),\n    [journey]         VARCHAR(8)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\nGO",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8140,8 +9767,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8163,8 +9790,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8209,8 +9836,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8232,8 +9859,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8255,8 +9882,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8278,8 +9905,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8324,8 +9951,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8347,8 +9974,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8370,8 +9997,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8393,8 +10020,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8416,8 +10043,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
 				},
@@ -8439,10 +10066,54 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"poolName": "Built-in",
+						"databaseName": "master"
 					},
 					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Recreate eds_payment_card_paymentcard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "DROP EXTERNAL DATA SOURCE [eds_payment_card_paymentcard]\nGO\n\nCREATE EXTERNAL DATA SOURCE [eds_payment_card_paymentcard] WITH \n(\tTYPE = HADOOP,\n\tLOCATION = N'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_payment_card_paymentcard/',\n\tCREDENTIAL = [SynapseIdentity]\n);\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Run usp_CreateExternalObjects')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "DECLARE @Yr varchar(4)\nDECLARE @Mt varchar(2)\nDECLARE @Dy varchar(2)\n\nSET @yr = '2021'\nSET\t@Mt = '02'\nSET\t@Dy = '25'\n\n EXECUTE [dbo].[usp_CreateExternalObjects]\n\t@Yr,\n\t@Mt,\n\t@Dy\n\n\tDROP EXTERNAL TABLE ",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "dwhpool",
+						"databaseName": "dwhpool"
+					}
 				},
 				"type": "SqlQuery"
 			},
@@ -8469,6 +10140,28 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "-- CREATE DATABASE test1;\n\n-- CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'test1234!atasergr'\n-- CREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\n-- WITH IDENTITY = 'Managed Identity'\n\n-- CREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] WITH ( FORMAT_TYPE = PARQUET)\n\n-- CREATE EXTERNAL DATA SOURCE mysample\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthdev-datalake/testparquet/20210101/', CREDENTIAL = WorkspaceIdentity)\n\n-- CREATE EXTERNAL TABLE dbo.db1 ([id] int, [first_name] varchar(8000), [last_name] varchar(8000), [numsold] int)\n-- WITH (LOCATION = '*.parquet', DATA_SOURCE = [mysample], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT TOP 10 * FROM dbo.db1;\n-- SELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'mysample', FORMAT='PARQUET') as rows;\n\n\n\n---- bundle\n\n-- CREATE EXTERNAL DATA SOURCE mysample2\n-- WITH (LOCATION = 'https://binkuksouthproddwh.dfs.core.windows.net/binkuksouthdev-datalake/testparquetbundle/', CREDENTIAL = WorkspaceIdentity)\n\n-- CREATE EXTERNAL TABLE dbo.db2 ([id] int, [first_name] varchar(8000), [last_name] varchar(8000), [numsold] int)\n-- WITH (LOCATION = '*.parquet', DATA_SOURCE = [mysample2], FILE_FORMAT = [SynapseParquetFormat]);\n\n-- SELECT TOP 10 * FROM dbo.db2;\nSELECT TOP 10 * FROM OPENROWSET(BULK '*.parquet', DATA_SOURCE = 'mysample2', FORMAT='PARQUET') as rows;\n\n\n\n-- CREATE LOGIN TerryTest1 WITH PASSWORD = 'VeryHard1!';",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "test1"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Scratch')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -8482,6 +10175,464 @@
 						"poolName": "dwhpool",
 						"databaseName": "dwhpool"
 					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Serverless Parquet JSON flatten')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "-- SELECT * FROM dbo.db1;\n\nSELECT *\nFROM dbo.db1\nCROSS APPLY OPENJSON (jsondata, '$.somelist') WITH (num int '$')",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "temp_serverless"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Tableau Synapse User')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Archive"
+				},
+				"content": {
+					"query": "-- in master db\n-- CREATE LOGIN TerryTest1 WITH PASSWORD = 'VeryHard1!';\n\n-- in dwhpool\n-- CREATE USER TerryTest1 FROM LOGIN TerryTest1;\n-- EXEC sp_addrolemember 'db_owner', 'TerryTest1';\n--GRANT CONTROL ON DATABASE::dwhpool to TerryTest1;\n\n-- so the laadmin user and its randompw also works but shouldn't be used :/\n\n\n\n\n\n\n-- Serverless\n-- CREATE LOGIN TerryTest1 WITH PASSWORD = 'VeryHard1!';\n-- CREATE USER TerryTest1 FROM LOGIN TerryTest1;\n-- ALTER ROLE db_owner ADD MEMBER TerryTest1;\n-- GRANT CONTROL ON DATABASE::test1 to TerryTest1\n\n-- Tableau cant connect, think its using wrong freetds version param\n-- freetds.conf -- this works\n--   [binkuksouthprodsynapse-ondemand.sql.azuresynapse.net]\n--   tds version = 7.1\n--   host = binkuksouthprodsynapse-ondemand.sql.azuresynapse.net\n--   database = test1\n--   port = 1433\n--   user = laadmin\n--   password = laaaa\n\n-- tsql -S binkuksouthprodsynapse-ondemand.sql.azuresynapse.net -p 1433 -U laadmin -P laaaaa\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "test1"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS01 Create Schemas')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS02 usp_CreateExternalObjects')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n/****************************************history_historicalpaymentcardaccount****************************************/\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalcustomuser****************************************/\nSET @tbl = 'history_historicalcustomuser'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [change_details] VARCHAR(255),\n    [body] VARCHAR(4000),\n    [email] VARCHAR(100),\n    [external_id] VARCHAR(100)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthprodsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthprodsynapse'\n\n/****************************************scheme_schemeaccount****************************************/\nSET @tbl = 'scheme_schemeaccount'\nSET @Col = \n    '\n    [id]\t            INT,\n    [status]\t        INT,\n    [order]\t            INT,\n    [created]\t        DATETIME,\n    [updated]\t        DATETIME,\n    [scheme_id]\t        INT,\n    [is_deleted]\t    BIT,\n    [link_date]\t        DATETIME,\n    [join_date]\t        DATETIME,\n    [balances]\t        VARCHAR(4000),\n    [vouchers]\t        VARCHAR(8000),\n    [barcode]\t        VARCHAR(250),\n    [card_number]\t    VARCHAR(250),\n    [transactions]\t    VARCHAR(4000),\n    [main_answer]\t    VARCHAR(250),\n    [pll_links]\t        VARCHAR(4000),\n    [formatted_images]  VARCHAR(4000)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalschemeaccount****************************************/\nSET @tbl = 'history_historicalschemeaccount'\nSET @Col = \n    '\n    [id]\t          INT,\n    [created]\t      DATETIME,\n    [change_type]     VARCHAR(6),\n    [instance_id]     VARCHAR(255),\n    [channel]         VARCHAR(255),\n    [user_id]         INT,\n    [body]            VARCHAR(4000),\n    [change_details]  VARCHAR(255),\n    [journey]         VARCHAR(8)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS03 Create DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "--SurrogateKey: ID\n--Busniess/Natural Key: Fingerprint, ValidTo (with Is_deleted=0 in only 1 instance?)\n  \n--OR\n\n--Busniess Key: ID\n--SurrogqteKey: Hash of Fingerprint & ValidTo - toString(crc32(Fingerprint, ValidTo))\n\n--EmpId, SurrogateKey, ......IsCurrent, ProcessDate\n--EmpId exists in source and is the business key. EmpID used in LookUp\n--Surrogate key created for each employee. Surrogate key added as derived col in Iscurrent task. toString(crc32(EmpID, EmpFunction))\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[PaymentCard]') AND type in (N'U'))\nDROP TABLE [Dim].[PaymentCard];\n\nCREATE TABLE Dim.PaymentCard\n  (  \n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CardCreateDate  DATETIME NULL,--20210301NOT NULL,\n  CardUpdateDate  DATETIME NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL,\n  RestrictionKey  INT NULL\n  --PLLLinks      VARCHAR(4000) NULL\n  --PSPToken      VARCHAR(100),\n  --EventID       SMALLINT\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n/*202103081422\n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CreateDate      DATETIME NULL,--20210301NOT NULL,\n  UpdateDate      DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL\n  --PLLLinks        VARCHAR(4000) NULL\n  --PSPToken        VARCHAR(100),\n  --EventID         SMALLINT\n*/\n\n/*20210305:0947\n  ID              INT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CreateDate      DATETIME NULL,--20210301NOT NULL,\n  UpdateDate      DATETIME NULL,\n  --IsCurrent       BIT NOT NULL,-- DEFAULT 1,\n  SourcePCKey     INT NOT NULL\n  --PLLLinks        VARCHAR(4000) NULL\n  --PSPToken        VARCHAR(100),\n  --EventID         SMALLINT\n*/\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS04 Create DimUser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "--Change of Columns used for SCD: Status\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[User]') AND type in (N'U'))\nDROP TABLE [Dim].[User];\n\nCREATE TABLE Dim.[User]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  FirstName       VARCHAR(255) NULL,\n  LastName        VARCHAR(255) NULL,\n  Phone           VARCHAR(100) NULL,--VARCHAR(100) MASKED WITH (FUNCTION = 'default()') NULL,\n  Email           VARCHAR(255) NULL,--VARCHAR(255) MASKED WITH (FUNCTION = 'email()') NULL,\n  Facebook        VARCHAR(255) NULL,\n  Twitter         VARCHAR(255) NULL,\n  AddressLine1    VARCHAR(255) NULL,\n  AddressLine2    VARCHAR(255) NULL,\n  City            VARCHAR(100) NULL,\n  Region          VARCHAR(100) NULL,\n  Postcode        VARCHAR(20) NULL,\n  Country         VARCHAR(100) NULL,\n  Gender          VARCHAR(16) NULL,\n  DateOfBirth     DATE NULL,\n  Channel         VARCHAR(100) NULL,\n  Organisation    VARCHAR(100) NOT NULL,\n  Client          VARCHAR(100) NOT NULL,\n  ExternalID      VARCHAR(255) NOT NULL,\n  UserCreateDate  DATETIME NULL,\n  UserUpdateDate  DATETIME NULL,\n  IsActive        BIT NOT NULL DEFAULT 1,\n  DeleteToken     VARCHAR(255) NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NULL,\n  IsStaff         BIT NULL,\n  IsTester        BIT NOT NULL,\n  IsCurrent       BIT NOT NULL,\n  SourceUserKey   INT NULL,\n  RestrictionID   INT NULL,\n  IsRTBF          BIT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS05 Create DimLoyaltyCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "--SurrogateKey: ID\n--Busniess/Natural Key: a, b (with Is_deleted=0 in only 1 instance?)\n  \n--OR\n\n--Busniess Key: ID\n--SurrogqteKey: Hash of a & b - toString(crc32(a, b))\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[LoyaltyCard]') AND type in (N'U'))\nDROP TABLE [Dim].[LoyaltyCard];\n\nCREATE TABLE Dim.LoyaltyCard\n  (  \n  ID                  INT IDENTITY(1,1) NOT NULL,\n  CardNumber          VARCHAR(256) NOT NULL,\n  PlanName            VARCHAR(400) NULL,\n  PlanDescription     VARCHAR(4000) NULL,\n  LCStatus            VARCHAR(200) NOT NULL,\n  Merchant            VARCHAR(200) NULL,\n  Category            VARCHAR(200) NULL,\n  BonusName           VARCHAR(10) NULL,\n  BalanceValue        NUMERIC(18,2) NULL,\n  BalancePoints       NUMERIC(18,2) NULL,\n  Balance             NUMERIC(18,2) NULL,\n  BalanceIsStale      BIT NULL,\n  --BalanceUserSet      INT NULL,\n  --BalanceSchemeID     INT NULL,\n  --BalanceSAID         INT NULL,\n  BalanceUpdateDate   DATETIME NULL,\n  BalanceRewardTier   VARCHAR(50) NULL,\n  BalanceValueLabel   VARCHAR(50) NULL,\n  BalancePointsLabel  VARCHAR(50) NULL,\n\n\t--BalancePrefix       VARCHAR(32) NOT NULL,\n\t--BalanceSuffix       VARCHAR(32) NOT NULL,\n\t--BalanceCurrency     VARCHAR(32) NOT NULL,\n\t--BalanceCreateTime   DATETIME NOT NULL,\n\t--BalanceUpdateTime   DATETIME NOT NULL,\n\t--BalanceDescription  VARCHAR(100) NOT NULL,\n\t--BalanceRewardTeir   VARCHAR(32) NOT NULL,\n  --Vouchers        VARCHAR(4000) NULL,\n  --Transactions    VARCHAR(4000) NULL,\n  --PLLLinks        VARCHAR(4000) NULL,\n  AddDate             DATETIME NULL,\n  JoinDate            DATETIME NULL,\n  EffFromDate         DATETIME NULL,\n  EffToDate           DATETIME NULL,\n  ProcessDate         DATETIME NOT NULL,\n  IsCurrent           BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourceLCKey         INT NOT NULL,\n  RestrictionKey      INT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n/*\nCREATE TABLE Dim.LoyaltyCard_json\n  (  \n  ID                  INT IDENTITY(1,1) NOT NULL,\n  CardNumber          VARCHAR(200) NOT NULL,\n  PlanName            VARCHAR(400) NOT NULL,\n  PlanDescription     VARCHAR(4000) NOT NULL,\n  LCStatus            VARCHAR(200) NOT NULL,\n  Merchant            VARCHAR(200) NOT NULL,\n  Category            VARCHAR(200) NOT NULL,\n  BonusName           VARCHAR(10) NOT NULL,\n  BalanceValue        INT NULL,\n  BalancePrefix       VARCHAR(32) NOT NULL,\n  BalanceSuffix       VARCHAR(32) NOT NULL,\n  BalanceCurrency     VARCHAR(32) NOT NULL,\n  BalanceCreateTime   DATETIME NOT NULL,\n  BalanceUpdateTime   DATETIME NOT NULL,\n  BalanceDescription  VARCHAR(100) NOT NULL,\n  BalanceRewardTeir   VARCHAR(32) NOT NULL,\n  Vouchers            VARCHAR(4000) NULL,\n  --Transactions      VARCHAR(4000) NULL,\n  --PLLLinks          VARCHAR(4000) NULL,\n  AddDate             DATETIME NULL,\n  JoinDate            DATETIME NULL,\n  CreateDate          DATETIME NOT NULL,\n  UpdateDate          DATETIME NOT NULL,\n  IsActive            BIT NOT NULL  DEFAULT 1\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS06 Create DimLCVoucher')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[LCVoucher]') AND type in (N'U'))\nDROP TABLE [Dim].[LCVoucher];\n\nCREATE TABLE Dim.LCVoucher\n  (  \n  ID                INT IDENTITY(1,1) NOT NULL,\n  LoyaltyCardID     INT NULL,--Check\n  VoucherCode       VARCHAR(32) NOT NULL,\n  --VoucherValue      NUMERIC(8,2) NULL,\n  --Prefix            VARCHAR(32) NULL,\n  --Suffix            VARCHAR(32) NULL,\n  --Currency          VARCHAR(3) NULL,\n  --VoucherDesc       VARCHAR(100) NULL,\n  --RewardTier        VARCHAR(10) NULL,\n  BurnType          VARCHAR(32) NULL,\n  BurnValue         NUMERIC(8,2) NULL,\n  BurnPrefix        VARCHAR(32) NULL,\n  BurnSuffix        VARCHAR(32) NULL,\n  BurnCurrency      VARCHAR(32) NULL, \n  EarnType          VARCHAR(32) NULL,\n  EarnValue         NUMERIC(8,2) NULL,\n  EarnPrefix        VARCHAR(32) NULL,\n  EarnSuffix        VARCHAR(32) NULL,\n  EarnCurrency      VARCHAR(32) NULL, \n  EarnTargetValue   NUMERIC(8,2) NULL,\n  VoucherState      VARCHAR(32) NULL,\n  Subtext           VARCHAR(32) NULL,\n  Headline          VARCHAR(32) NULL,\n  BodyText          VARCHAR(32) NULL,\n  IssueDate         DATETIME NULL,\n  ExpiryDate        DATETIME NULL,\n  BarcodeType       VARCHAR(32) NULL,\n  TCUrl             VARCHAR(100) NULL,\n  EffFromDate       DATETIME NOT NULL,\n  EffToDate         DATETIME NULL,\n  ProcessDate       DATETIME NOT NULL,\n  IsCurrent         BIT NOT NULL  DEFAULT 1\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS07 Create FactUserPC')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[UserPC]') AND type in (N'U'))\nDROP TABLE [Fact].[UserPC];\n\nCREATE TABLE [Fact].[UserPC]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  UserID          INT NULL,\n  PaymentCardID   BIGINT NULL,\n  IsCreated       BIT NULL,\n  CreateDate      DATETIME NULL,\n  ProcessDate     DATETIME NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS08 Create FactUserLC')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[UserLC]') AND type in (N'U'))\nDROP TABLE [Fact].[UserLC];\n\nCREATE TABLE [Fact].[UserLC]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  UserID          INT NULL,\n  LoyaltyCardID   INT NULL,\n  LCJoinDate      DATETIME NULL,\n  LCAddDate       DATETIME NULL,\n  IsCreated       BIT NULL,\n  CreateDate      DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS09 Create view vw_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalpaymentcardaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalpaymentcardaccount\nAS\nSELECT DISTINCT\n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[user_id],\n    --ext.[body],\n    --ext.[change_details],\n    --ext.*,\n    js.[id],\n    js.[name_on_card],\n    js.[start_month],\n    js.[start_year],\n    js.[expiry_month],\n    js.[expiry_year],\n    js.[status],\n    js.[created],\n    js.[updated],\n    js.[issuer_id],\n    js.[payment_card_id],\n    js.[token],\n    js.[country],\n    js.[currency_code],\n    js.[pan_end],\n    js.[pan_start],\n    js.[is_deleted],\n    js.[fingerprint]\n FROM [dbo].[ext_history_historicalpaymentcardaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(Body, '$'))\n   WITH (\n        [id] int '$.id',\n        [name_on_card] varchar(150) '$.name_on_card',\n        [start_month] int '$.start_month',\n        [start_year] int '$.start_year',\n        [expiry_month] int '$.expiry_month',\n        [expiry_year] int '$.expiry_year',\n        [status] int '$.status',\n        [order] int '$.order',\n        [created] varchar(32) '$.created',\n        [updated] varchar(32) '$.updated',\n        [issuer_id] int '$.issuer',\n        [payment_card_id] int '$.payment_card',\n        [token] varchar(255) '$.token',\n        [country] varchar(40) '$.country',\n        [currency_code] varchar(3) '$.currency_code',\n        [pan_end] varchar(4) '$.pan_end',\n        [pan_start] varchar(4) '$.pan_start',\n        [is_deleted] bit '$.is_deleted',\n        [fingerprint] varchar(100) '$.fingerprint',\n        [psp_token] varchar(255) '$.psp_token',\n        [consents] varchar(4000) '$.consents',\n        [hash] varchar(255) '$.hash'\n   ) AS js\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS10 Create view vw_history_historicalcustomuser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalcustomuser\nGO\n\nCREATE VIEW dbo.vw_history_historicalcustomuser\nAS\nSELECT DISTINCT \n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[change_details],\n    --ext.[body],\n    --ext.[email],\n    --ext.external_id,\n    --ext.*\n   js.[id],\n   js.[email],\n   js.[client_id],\n   js.[twitter],\n   js.[facebook],\n   js.[is_staff],\n   js.[is_active],\n   js.[is_tester],\n   js.[date_joined],\n   js.[external_id],\n   js.[delete_token]\nFROM [dbo].[ext_history_historicalcustomuser] ext\nOUTER APPLY OPENJSON (JSON_QUERY(body, '$'))\n   WITH (\n        [id]            INT '$.id',\n        [email]         VARCHAR(255) '$.email',\n        [client_id]     VARCHAR(100) '$.client',\n        [twitter]       VARCHAR(100) '$.twitter',\n        [facebook]      VARCHAR(100) '$.facebook',\n        [is_staff]      bit '$.is_staff',\n        [is_active]     bit '$.is_active',\n        [is_tester]     bit '$.is_tester',\n        [date_joined]   VARCHAR(50) '$.date_joined',\n        [external_id]   VARCHAR(255) '$.external_id',\n        [delete_token]  VARCHAR(255) '$.delete_token'\n   ) AS js\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS11 Create view vw_history_historicalschemeaccount')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalschemeaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalschemeaccount\nAS\nSELECT\n   ext.instance_id   AS SAID,\n   ext.change_type   AS ChangeType,\n   ext.created       AS SACreated,\n\n   js.Status,\n   js.CreateDate,\n   js.UpdateDate,\n   js.JoinDate,\n   js.LinkDate,\n   js.IsDeleted\nFROM [dbo].[ext_history_historicalschemeaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(body, '$'))\n   WITH (\n         [Status]       INT '$.status',\n         [CreateDate]   VARCHAR(16) '$.created',\n         [UpdateDate]   VARCHAR(16) '$.updated',\n         [JoinDate]     VARCHAR(16) '$.created',\n         [LinkDate]     VARCHAR(16) '$.created',\n         [IsDeleted]    BIT '$.is_deleted'\n         ) AS js\n--WHERE vouchers <> '{}' and ext.id = 40000\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS12 Create view vw_scheme_schemeaccount_Balance')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_scheme_schemeaccount_balance\nGO\n\nCREATE VIEW dbo.vw_scheme_schemeaccount_balance\nAS\nSELECT\n   ext.id         AS SAID,\n   ext.created    AS SACreated,\n   ext.updated    AS SAUpdated,\n\n   js.BalanceValue,\n   js.BalancePoints,\n   js.Balance,\n   js.BalanceIsStale,\n   js.BalanceUserSet,\n   js.BalanceSchemeID,\n   js.BalanceUpdateDate,\n   js.BalanceRewardTeir,\n   js.BalanceValueLabel,\n   js.BalancePointsLabel,\n   js.BalanceSAID\nFROM [dbo].[ext_scheme_schemeaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(balances, '$'))\n   WITH (\n         [BalanceValue]       NUMERIC(18,2) '$.value',\n         [BalancePoints]      NUMERIC(18,2) '$.points',\n         [Balance]            NUMERIC(18,2) '$.balance',\n         [BalanceIsStale]     BIT '$.is_stale',\n         [BalanceUserSet]     VARCHAR(50) '$.user_set',\n         [BalanceSchemeID]    INT '$.scheme_id',\n         [BalanceUpdateDate]  VARCHAR(50) '$.updated_at',\n         [BalanceRewardTeir]  VARCHAR(50) '$.reward_tier',\n         [BalanceValueLabel]  VARCHAR(50) '$.value_label',\n         [BalancePointsLabel] VARCHAR(50) '$.points_label',\n         [BalanceSAID]        [INT] '$.scheme_account_id'\n         ) AS js\n--WHERE vouchers <> '{}' and ext.id = 40000\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS13 Create view vw_scheme_schemeaccount_Voucher')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_scheme_schemeaccount_voucher\nGO\n\nCREATE VIEW dbo.vw_scheme_schemeaccount_voucher\nAS\nSELECT DISTINCT\n   ext.id         AS SAID,\n   ext.created    AS SACreated,\n   ext.updated    AS SAUpdated,\n\n   js.[VoucherCode],\n   \n   js.[BurnType],\n   js.[BurnValue],\n   js.[BurnPrefix],\n   js.[BurnSuffix],\n   js.[BurnCurrency],\n   \n   js.[EarnType],\n   js.[EarnValue],\n   js.[EarnPrefix],\n   js.[EarnSuffix],\n   js.[EarnCurrency],\n   js.[EarnTargetValue],\n   \n   js.[VoucherState],\n   js.[SubText],\n   js.[Headline],\n   js.[BodyText],\n   js.[IssueDate],\n   js.[ExpiryDate],\n   js.[BarcodeType],\n   js.TCUrl\nFROM [dbo].[ext_scheme_schemeaccount] ext\nOUTER APPLY OPENJSON (vouchers, '$')\n   WITH (\n        [VoucherCode]            VARCHAR(32) '$.code',\n\n        [BurnType]               VARCHAR(32) '$.burn.type',\n        [BurnValue]              VARCHAR(32) '$.burn.value',\n        [BurnPrefix]             VARCHAR(32) '$.burn.prefix',\n        [BurnSuffix]             VARCHAR(32) '$.burn.suffix',\n        [BurnCurrency]           VARCHAR(32) '$.burn.Currency',\n\n        [EarnType]               VARCHAR(32) '$.earn.type',\n        [EarnValue]              VARCHAR(32) '$.earn.value',\n        [EarnPrefix]             VARCHAR(32) '$.earn.prefix',\n        [EarnSuffix]             VARCHAR(32) '$.earn.suffix',\n        [EarnCurrency]           VARCHAR(32) '$.earn.Currency',\n        [EarnTargetValue]        VARCHAR(32) '$.earn.target_value',\n\n        [VoucherState]           VARCHAR(32) '$.state',\n        [SubText]                VARCHAR(32) '$.subtext',\n        [Headline]               VARCHAR(32) '$.headline',\n        [BodyText]               VARCHAR(32) '$.body_text',\n        [IssueDate]              VARCHAR(32) '$.date_issued',\n        [ExpiryDate]             VARCHAR(32) '$.expiry_date',\n        [BarcodeType]            VARCHAR(32) '$.barcode_type',\n        [TCUrl]                  VARCHAR(100) '$.terms_and_conditions_url'   \n         ) AS js\nWHERE ext.vouchers <> '{}'\n   AND js.[VoucherState] <> 'inprogress'\n   --and js.VoucherCode = 'WHS000054'\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS14 Update DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimPaymentCard', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimPaymentCard]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimPaymentCard] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n  --dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.PaymentCard dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EventID,\n    ValidTo,\n    Fingerprint,\n    CardCreateDate,\n    CardCreateDate AS EffFromDate,\n    LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourcePCKey\n  FROM Dim.PaymentCard\n) updt\nON updt.ID = dim.ID\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS15 Update DimUser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimUser', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimUser]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimUser] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n -- dim.ProcessDate = GETDATE()\n--SELECT *\nFROM [Dim].[User] dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EventID,\n    Email, \n    Client, \n    ExternalID,\n    IsActive,\n    UserCreateDate,\n    UserCreateDate AS EffFromDate,\n    LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourceUserKey\n  FROM [Dim].[User]\n) updt\nON updt.ID = dim.ID\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS16 Update DimLoyaltyCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimLoyaltyCard', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimLoyaltyCard]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimLoyaltyCard] \nAS\n\n/*\nUPDATE dim\nSET\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n  --dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.LoyaltyCard dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY SourceLCKey ORDER BY EffFromDate) EventID,\n    LEAD(EffFromdate) OVER(PARTITION BY SourceLCKey ORDER BY EffFromDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN (LEAD(EffFromdate) OVER(PARTITION BY SourceLCKey ORDER BY EffFromDate)) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourceLCKey\n  FROM Dim.LoyaltyCard\n) updt\nON updt.ID = dim.ID\n*/\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS17 Update DimLCVoucher')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimLCVoucher', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimLCVoucher]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimLCVoucher] \nAS\n\nUPDATE dim\nSET\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n  --dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.LCVoucher dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY VoucherCode ORDER BY EffFromDate) EventID,\n    LEAD(EffFromDate) OVER(PARTITION BY VoucherCode ORDER BY EffFromDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN (LEAD(EffFromdate) OVER(PARTITION BY VoucherCode,VoucherState ORDER BY EffFromDate)) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    LoyaltyCardID\n  FROM Dim.LCVoucher\n) updt\nON updt.ID = dim.ID\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/UPS18 Create usp_TruncateTable')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "04 UserLCPC"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_TruncateTable', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_TruncateTable]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_TruncateTable] \nAS\n\nTRUNCATE TABLE [dim].[PaymentCard];\n\nTRUNCATE TABLE [dim].[User];\n\nTRUNCATE TABLE [dim].[LoyaltyCard];\n\nTRUNCATE TABLE [dim].[LCVoucher];\n\nTRUNCATE TABLE [fact].[UserLC];\n\nTRUNCATE TABLE [fact].[UserPC];",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
 				},
 				"type": "SqlQuery"
 			},
@@ -8515,7 +10666,7 @@
 					"name": "02 User"
 				},
 				"content": {
-					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
+					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthprodsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
 					"metadata": {
 						"language": "sql"
 					},
@@ -8538,7 +10689,7 @@
 					"name": "02 User"
 				},
 				"content": {
-					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n/****************************************history_historicalpaymentcardaccount****************************************/\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalcustomuser****************************************/\nSET @tbl = 'history_historicalcustomuser'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [change_details] VARCHAR(255),\n    [body] VARCHAR(4000),\n    [email] VARCHAR(100),\n    [external_id] VARCHAR(100)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthdevsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthdevsynapse'\nGO",
+					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n/****************************************history_historicalpaymentcardaccount****************************************/\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalcustomuser****************************************/\nSET @tbl = 'history_historicalcustomuser'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [change_details] VARCHAR(255),\n    [body] VARCHAR(4000),\n    [email] VARCHAR(100),\n    [external_id] VARCHAR(100)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthproddwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthproddwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthprodsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthprodsynapse'\nGO",
 					"metadata": {
 						"language": "sql"
 					},
