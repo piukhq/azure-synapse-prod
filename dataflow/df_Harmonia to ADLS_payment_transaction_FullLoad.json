@@ -1,0 +1,33 @@
+{
+	"name": "df_Harmonia to ADLS_payment_transaction_FullLoad",
+	"properties": {
+		"description": "Payment Transaction table from Harmonia to ADLS",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_pg_Harmonia_payment_transaction",
+						"type": "DatasetReference"
+					},
+					"name": "SrcPaymentTransaction"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adls_harmonia_payment_transaction",
+						"type": "DatasetReference"
+					},
+					"name": "DstDataLake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterRecords"
+				}
+			],
+			"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentTransaction\nSrcPaymentTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+		}
+	}
+}

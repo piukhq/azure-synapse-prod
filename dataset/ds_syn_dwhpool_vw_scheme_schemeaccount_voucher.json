@@ -98,6 +98,10 @@
 				"type": "varchar"
 			},
 			{
+				"name": "RedeemDate",
+				"type": "varchar"
+			},
+			{
 				"name": "BarcodeType",
 				"type": "varchar"
 			},

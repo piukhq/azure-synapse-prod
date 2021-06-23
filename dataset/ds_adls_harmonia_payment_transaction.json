@@ -1,0 +1,24 @@
+{
+	"name": "ds_adls_harmonia_payment_transaction",
+	"properties": {
+		"description": "Data Set (Integration) for Landing/Data Lake Harmonia public.payment_transaction table",
+		"linkedServiceName": {
+			"referenceName": "ls_adls_dwlanding",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "Harmonia/public_payment_transaction/@{formatDateTime(adddays(utcnow(),-1), 'yyyy')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMM')}/@{formatDateTime(adddays(utcnow(),-1), 'yyyyMMdd')}",
+					"type": "Expression"
+				},
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

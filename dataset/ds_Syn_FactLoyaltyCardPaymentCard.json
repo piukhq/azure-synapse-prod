@@ -1,0 +1,52 @@
+{
+	"name": "ds_Syn_FactLoyaltyCardPaymentCard",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LoyaltyCardID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PaymentCardID",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "IsActiveLink",
+				"type": "bit"
+			},
+			{
+				"name": "Change",
+				"type": "char"
+			},
+			{
+				"name": "CreateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ProcessDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "Fact",
+			"table": "LoyaltyCardPaymentCard"
+		}
+	}
+}

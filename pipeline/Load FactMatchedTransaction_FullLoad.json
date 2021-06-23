@@ -1,0 +1,33 @@
+{
+	"name": "Load FactMatchedTransaction_FullLoad",
+	"properties": {
+		"description": "Load FactMatchedTransaction_FullLoad",
+		"activities": [
+			{
+				"name": "df_LoadFactMatchedTransaction_FullLoad",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_LoadFactMatchedTransaction",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

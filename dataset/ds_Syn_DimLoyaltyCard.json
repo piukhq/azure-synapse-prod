@@ -83,6 +83,16 @@
 				"type": "varchar"
 			},
 			{
+				"name": "IsActive",
+				"type": "bit"
+			},
+			{
+				"name": "LCCreateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
 				"name": "AddDate",
 				"type": "datetime",
 				"precision": 23,

@@ -96,6 +96,12 @@
 				"scale": 3
 			},
 			{
+				"name": "RedeemDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
 				"name": "ExpiryDate",
 				"type": "datetime",
 				"precision": 23,
