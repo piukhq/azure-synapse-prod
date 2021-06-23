@@ -1,7 +1,7 @@
 {
-	"name": "ds_csv_LoyaltyCardStatus",
+	"name": "ds_csv_PaymentCardType",
 	"properties": {
-		"description": "Data Set (Integration) for Landing/Data Lake Reference Loyalty Card Status.csv",
+		"description": "Data Set (Integration) for Landing/Data Lake Reference Payment Card Type.csv",
 		"linkedServiceName": {
 			"referenceName": "ls_adls_dwlanding",
 			"type": "LinkedServiceReference"
@@ -11,7 +11,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Loyalty Card Status.csv",
+				"fileName": "Payment Card Type.csv",
 				"folderPath": "Reference",
 				"fileSystem": "datalake"
 			},
@@ -22,11 +22,11 @@
 		},
 		"schema": [
 			{
-				"name": "Code",
+				"name": "BIN",
 				"type": "String"
 			},
 			{
-				"name": "Status",
+				"name": "CardType",
 				"type": "String"
 			}
 		]

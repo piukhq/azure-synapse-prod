@@ -27,7 +27,7 @@
 					"name": "FilterRecords"
 				}
 			],
-			"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+			"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 		}
 	}
 }

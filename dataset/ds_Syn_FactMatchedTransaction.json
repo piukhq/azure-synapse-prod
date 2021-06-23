@@ -1,0 +1,102 @@
+{
+	"name": "ds_Syn_FactMatchedTransaction",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_Syn_DataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MerchantIdentifierID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TransactionID",
+				"type": "char"
+			},
+			{
+				"name": "PaymentTransactionID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SchemeTransactionID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "spend_amount",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "spend_multiplier",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "spend_currency",
+				"type": "char"
+			},
+			{
+				"name": "card_token",
+				"type": "varchar"
+			},
+			{
+				"name": "MatchingType",
+				"type": "char"
+			},
+			{
+				"name": "TransactionDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "CreateDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ExportDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "IsMTExported",
+				"type": "bit"
+			},
+			{
+				"name": "SourceMTKey",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "DimUserID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimLoyaltyCardID",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "Fact",
+			"table": "MatchedTransaction"
+		}
+	}
+}

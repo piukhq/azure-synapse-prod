@@ -16,6 +16,20 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "Harmonia",
+				"description": "Execute Harmonia to ADLS pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Harmonia to ADLS",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"annotations": []

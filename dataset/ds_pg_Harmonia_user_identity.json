@@ -1,0 +1,72 @@
+{
+	"name": "ds_pg_Harmonia_user_identity",
+	"properties": {
+		"description": "Data Set (Integration) for Source/PostgreSQL Harmonia user_identity table",
+		"linkedServiceName": {
+			"referenceName": "ls_pg_harmonia",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "created_at",
+				"type": "timestamp without time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "updated_at",
+				"type": "timestamp without time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "loyalty_id",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "scheme_account_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "user_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "credentials",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "first_six",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "last_four",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "public",
+			"table": "user_identity"
+		}
+	}
+}
