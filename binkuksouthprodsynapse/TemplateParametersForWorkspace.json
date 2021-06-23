@@ -17,6 +17,9 @@
 		"ls_Syn_DataWarehouse_connectionString": {
 			"value": ""
 		},
+		"ls_pg_harmonia_connectionString": {
+			"value": ""
+		},
 		"ls_pg_hermes_connectionString": {
 			"value": ""
 		},
