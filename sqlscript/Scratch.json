@@ -2,14 +2,15 @@
 	"name": "Scratch",
 	"properties": {
 		"content": {
-			"query": "-- GRANT CONTROL ON SCHEMA ::harmonia TO binkuksouthprodsynapse;\n\nSELECT * FROM harmonia.merchant_identifier\n--DELETE FROM harmonia.payment_provider\n\n-- SELECT * from sys.tables\n",
+			"query": "-- GRANT CONTROL ON SCHEMA ::harmonia TO binkuksouthprodsynapse;\n\nSELECT * FROM harmonia.merchant_identifier\n--DELETE FROM harmonia.payment_provider\n\n-- SELECT * from sys.tables\n--test",
 			"metadata": {
 				"language": "sql"
 			},
 			"currentConnection": {
 				"poolName": "dwhpool",
 				"databaseName": "dwhpool"
-			}
+			},
+			"resultLimit": 5000
 		},
 		"type": "SqlQuery"
 	}
