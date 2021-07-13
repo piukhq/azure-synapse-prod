@@ -537,6 +537,20 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Execute Load FactMatchedTransaction",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load FactMatchedTransaction",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"annotations": []
@@ -544,7 +558,8 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/Load FactUserLC')]",
 				"[concat(variables('workspaceId'), '/pipelines/Load FactUserPC')]",
-				"[concat(variables('workspaceId'), '/pipelines/Load FactLoyaltyCardPaymentCard')]"
+				"[concat(variables('workspaceId'), '/pipelines/Load FactLoyaltyCardPaymentCard')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load FactMatchedTransaction')]"
 			]
 		},
 		{
@@ -582,6 +597,20 @@
 						}
 					},
 					{
+						"name": "Execute Load FactMatchedTransaction_FullLoad",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Load FactMatchedTransaction_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
 						"name": "Execute Load FactLoyaltyCardPaymentCard_FullLoad",
 						"type": "ExecutePipeline",
 						"dependsOn": [],
@@ -601,6 +630,7 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/Load FactUserLC_FullLoad')]",
 				"[concat(variables('workspaceId'), '/pipelines/Load FactUserPC_FullLoad')]",
+				"[concat(variables('workspaceId'), '/pipelines/Load FactMatchedTransaction_FullLoad')]",
 				"[concat(variables('workspaceId'), '/pipelines/Load FactLoyaltyCardPaymentCard_FullLoad')]"
 			]
 		},
@@ -706,6 +736,645 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]",
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Harmonia to ADLS')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to move data from all tables in Harmonia to Synapse data lake in Parquet files. Hermes/tablename/year=YYYY/month=MM/day=DD/somerandomeid.parquet",
+				"activities": [
+					{
+						"name": "GetTableList",
+						"description": "Get the list of tables",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": {
+									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' AND 1=2",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_pg_harmonia",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachTable",
+						"description": "Perform activity for each of the table",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetTableList",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetTableList').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "ExportToParquet",
+									"description": "Export Harmonia data to parquet files",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzurePostgreSqlSource",
+											"query": {
+												"value": "@concat('select * from ',item().table_schema,'.',item().table_name)",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_pg_harmonia",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_harmonia",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@concat(item().Table_Schema,'_',item().Table_Name)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "ForEachTable",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_matched_transaction_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_payment_transaction_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_scheme_transaction_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_user_identity_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@@type": "MessageCard",
+								"@@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Data Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Load Harmonia data to ADLS"
+									}
+								]
+							}
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_matched_transaction_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_matched_transaction_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcMatchedTransaction": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_payment_transaction_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_matched_transaction_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcMatchedTransaction": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_scheme_transaction_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_scheme_transaction",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcSchemeTransaction": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_user_identity_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_user_identity",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcUserIdentity": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_harmonia')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_matched_transaction_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_scheme_transaction')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_user_identity')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Harmonia to ADLS_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Pipeline to move data from all tables in Harmonia to Synapse data lake in Parquet files. Hermes/tablename/year=YYYY/month=MM/day=DD/somerandomeid.parquet",
+				"activities": [
+					{
+						"name": "GetTableList",
+						"description": "Get the list of tables",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": {
+									"value": "SELECT DISTINCT table_schema, table_name\nFROM information_schema.columns\nWHERE table_schema = 'public' AND 1=2",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_pg_harmonia",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachTable",
+						"description": "Perform activity for each of the table",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetTableList",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetTableList').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "ExportToParquet",
+									"description": "Export Harmonia data to parquet files",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzurePostgreSqlSource",
+											"query": {
+												"value": "@concat('select * from ',item().table_schema,'.',item().table_name)",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_pg_harmonia",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_harmonia",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@concat(item().Table_Schema,'_',item().Table_Name)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "FailureNotification",
+						"description": "Any failure is notified in Teams",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "ForEachTable",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_matched_transaction_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_payment_transaction_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_scheme_transaction_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Harmonia to ADLS_user_identity_FullLoad",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "https://hellobink.webhook.office.com/webhookb2/bf220ac8-d509-474f-a568-148982784d19@a6e2367a-92ea-4e5a-b565-723830bcc095/IncomingWebhook/620d8f69096e4967b9826ca4ea07b42e/f7c46488-2054-46de-9673-e0c6e94b232c",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"@@type": "MessageCard",
+								"@@context": "http://schema.org/extensions",
+								"themeColor": "d70000",
+								"summary": "Data Pipeline failed",
+								"sections": [
+									{
+										"activityTitle": "Pipeline failed",
+										"activitySubtitle": "Load Harmonia data to ADLS"
+									}
+								]
+							}
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_matched_transaction_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_matched_transaction_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcMatchedTransaction": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_payment_transaction_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_payment_transaction_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcPaymentTransaction": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_scheme_transaction_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_scheme_transaction_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcSchemeTransaction": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Harmonia to ADLS_user_identity_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Harmonia to ADLS_user_identity_FullLoad",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SrcUserIdentity": {},
+									"DstDataLake": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_harmonia')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_matched_transaction_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_payment_transaction_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_scheme_transaction_FullLoad')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_user_identity_FullLoad')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia')]"
 			]
 		},
 		{
@@ -2675,6 +3344,175 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Load FactMatchedTransaction')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Load FactMatchedTransaction",
+				"activities": [
+					{
+						"name": "CheckFileExists",
+						"description": "",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_matched_transaction",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"exists"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "IfFileExists",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "CheckFileExists",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('CheckFileExists').output.exists,'True')",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "df_LoadFactMatchedTransaction",
+									"type": "ExecuteDataFlow",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "1.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataflow": {
+											"referenceName": "df_LoadFactMatchedTransaction",
+											"type": "DataFlowReference",
+											"parameters": {},
+											"datasetParameters": {
+												"srcMatchedTransaction": {},
+												"srcPaymentTransaction": {},
+												"srcSchemeTransaction": {},
+												"srcUserIdentity": {},
+												"srcDimUser": {},
+												"srcDimLoyaltyCard": {},
+												"srcFactMatchedTransaction": {},
+												"srcMaxID": {},
+												"snkMatchedTransaction": {},
+												"snkMatchedTransactionE": {}
+											}
+										},
+										"staging": {
+											"linkedService": {
+												"referenceName": "ls_adls_dwlanding",
+												"type": "LinkedServiceReference"
+											},
+											"folderPath": "staging/PolyBase"
+										},
+										"compute": {
+											"coreCount": 8,
+											"computeType": "General"
+										},
+										"traceLevel": "Fine"
+									}
+								}
+							]
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_matched_transaction')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactMatchedTransaction')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Load FactMatchedTransaction_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Load FactMatchedTransaction_FullLoad",
+				"activities": [
+					{
+						"name": "df_LoadFactMatchedTransaction_FullLoad",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_LoadFactMatchedTransaction",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcMatchedTransaction": {},
+									"srcPaymentTransaction": {},
+									"srcSchemeTransaction": {},
+									"srcUserIdentity": {},
+									"srcDimUser": {},
+									"srcDimLoyaltyCard": {},
+									"srcFactMatchedTransaction": {},
+									"srcMaxID": {},
+									"snkMatchedTransaction": {},
+									"snkMatchedTransactionE": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "ls_adls_dwlanding",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "staging/PolyBase"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactMatchedTransaction')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Load FactUserLC')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
@@ -3011,12 +3849,28 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Harmonia",
+						"description": "Execute Harmonia to ADLS pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Harmonia to ADLS",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS')]"
+				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS')]",
+				"[concat(variables('workspaceId'), '/pipelines/Harmonia to ADLS')]"
 			]
 		},
 		{
@@ -3040,12 +3894,28 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Harmonia_FullLoad",
+						"description": "Execute Harmonia to ADLS pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Harmonia to ADLS_FullLoad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS_FullLoad')]"
+				"[concat(variables('workspaceId'), '/pipelines/Hermes to ADLS_FullLoad')]",
+				"[concat(variables('workspaceId'), '/pipelines/Harmonia to ADLS_FullLoad')]"
 			]
 		},
 		{
@@ -3936,6 +4806,12 @@
 						"name": "DimLoyaltyCardID",
 						"type": "int",
 						"precision": 10
+					},
+					{
+						"name": "ProcessDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
 					}
 				],
 				"typeProperties": {
@@ -5424,6 +6300,489 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_Harmonia_matched_transaction')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Harmonia matched_transaction table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "merchant_identifier_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "transaction_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "transaction_date",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_amount",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_multiplier",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_currency",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "card_token",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "matching_type",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "payment_transaction_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "scheme_transaction_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "extra_fields",
+						"type": "json",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "matched_transaction"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_harmonia')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_Harmonia_payment_transaction')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Harmonia payment_transaction table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "merchant_identifier_ids",
+						"type": "ARRAY",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "transaction_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "transaction_date",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_amount",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_multiplier",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_currency",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "card_token",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "user_identity_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "extra_fields",
+						"type": "json",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "settlement_key",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "provider_slug",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "auth_code",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "has_time",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "match_group",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "first_six",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_four",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "payment_transaction"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_harmonia')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_Harmonia_scheme_transaction')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Harmonia scheme_transaction table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "merchant_identifier_ids",
+						"type": "ARRAY",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "transaction_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "transaction_date",
+						"type": "timestamp with time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_amount",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_multiplier",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "spend_currency",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "extra_fields",
+						"type": "json",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "provider_slug",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "payment_provider_slug",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "auth_code",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "has_time",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "match_group",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "first_six",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_four",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "scheme_transaction"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_harmonia')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_Harmonia_user_identity')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Harmonia user_identity table",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "created_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "updated_at",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "loyalty_id",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "scheme_account_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "user_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "credentials",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "first_six",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_four",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "user_identity"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_harmonia')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_pg_harmonia')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Set (Integration) for Source/PostgreSQL Harmonia",
+				"linkedServiceName": {
+					"referenceName": "ls_pg_harmonia",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/ls_pg_harmonia')]"
 			]
 		},
 		{
@@ -7835,7 +9194,7 @@
 							"name": "AlterRow4"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaPaymentProvider\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nDLHarmoniaLoyaltyScheme alterRow(upsertIf(true())) ~> AlterRow3\nDLHarmoniaPaymentProvider alterRow(upsertIf(true())) ~> AlterRow4\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t)) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHMerchantIdentifier\nAlterRow3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHLoyaltyScheme\nAlterRow4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHPaymentProvider"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaPaymentProvider\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nDLHarmoniaLoyaltyScheme alterRow(upsertIf(true())) ~> AlterRow3\nDLHarmoniaPaymentProvider alterRow(upsertIf(true())) ~> AlterRow4\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t)) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHMerchantIdentifier\nAlterRow3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHLoyaltyScheme\nAlterRow4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHPaymentProvider"
 				}
 			},
 			"dependsOn": [
@@ -7847,6 +9206,318 @@
 				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__merchant_identifier')]",
 				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__loyalty_scheme')]",
 				"[concat(variables('workspaceId'), '/datasets/dwhsql_harmonia__payment_provider')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_matched_transaction')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Matched Transaction table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_matched_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "SrcMatchedTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_matched_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_id as integer,\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tmatching_type as string,\n\t\tstatus as string,\n\t\tpayment_transaction_id as integer,\n\t\tscheme_transaction_id as integer,\n\t\textra_fields as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcMatchedTransaction\nSrcMatchedTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_matched_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_matched_transaction')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_matched_transaction_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Matched Transaction table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_matched_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "SrcMatchedTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_matched_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_id as integer,\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tmatching_type as string,\n\t\tstatus as string,\n\t\tpayment_transaction_id as integer,\n\t\tscheme_transaction_id as integer,\n\t\textra_fields as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcMatchedTransaction\nSrcMatchedTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_matched_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_matched_transaction')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_payment_transaction')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Payment Transaction table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_payment_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "SrcPaymentTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_payment_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentTransaction\nSrcPaymentTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_payment_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_payment_transaction')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_payment_transaction_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Payment Transaction table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_payment_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "SrcPaymentTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_payment_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentTransaction\nSrcPaymentTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_payment_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_payment_transaction')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_scheme_transaction')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "scheme_transaction table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_scheme_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "SrcSchemeTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_scheme_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tstatus as string,\n\t\textra_fields as string,\n\t\tprovider_slug as string,\n\t\tpayment_provider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcSchemeTransaction\nSrcSchemeTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_scheme_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_scheme_transaction')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_scheme_transaction_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "scheme_transaction table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_scheme_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "SrcSchemeTransaction"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_scheme_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tstatus as string,\n\t\textra_fields as string,\n\t\tprovider_slug as string,\n\t\tpayment_provider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcSchemeTransaction\nSrcSchemeTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_scheme_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_scheme_transaction')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_user_identity')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "user_identity table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_user_identity",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUserIdentity"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_user_identity",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tloyalty_id as string,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer,\n\t\tcredentials as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserIdentity\nSrcUserIdentity filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_user_identity')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_user_identity')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_Harmonia to ADLS_user_identity_FullLoad')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "user_identity table from Harmonia to ADLS",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_pg_Harmonia_user_identity",
+								"type": "DatasetReference"
+							},
+							"name": "SrcUserIdentity"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_user_identity",
+								"type": "DatasetReference"
+							},
+							"name": "DstDataLake"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tloyalty_id as string,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer,\n\t\tcredentials as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserIdentity\nSrcUserIdentity filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_pg_Harmonia_user_identity')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_user_identity')]"
 			]
 		},
 		{
@@ -9990,6 +11661,160 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/df_LoadFactMatchedTransaction')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Data Pipeline to load fact.MatchedTransaction",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_matched_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "srcMatchedTransaction"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_payment_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "srcPaymentTransaction"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_scheme_transaction",
+								"type": "DatasetReference"
+							},
+							"name": "srcSchemeTransaction"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_adls_harmonia_user_identity",
+								"type": "DatasetReference"
+							},
+							"name": "srcUserIdentity"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimUser",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimUser"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_DimLoyaltyCard",
+								"type": "DatasetReference"
+							},
+							"name": "srcDimLoyaltyCard"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactMatchedTransaction",
+								"type": "DatasetReference"
+							},
+							"name": "srcFactMatchedTransaction"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactMatchedTransaction",
+								"type": "DatasetReference"
+							},
+							"name": "srcMaxID"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactMatchedTransaction",
+								"type": "DatasetReference"
+							},
+							"name": "snkMatchedTransaction"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_Syn_FactMatchedTransaction",
+								"type": "DatasetReference"
+							},
+							"name": "snkMatchedTransactionE"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SelectMT"
+						},
+						{
+							"name": "SelectPT"
+						},
+						{
+							"name": "SelectST"
+						},
+						{
+							"name": "SelectUI"
+						},
+						{
+							"name": "JoinMtPt"
+						},
+						{
+							"name": "JoinMtPtSt"
+						},
+						{
+							"name": "JoinMtPtStUi"
+						},
+						{
+							"name": "SelectDu"
+						},
+						{
+							"name": "SelectDl"
+						},
+						{
+							"name": "JoinMtPtStUiDu"
+						},
+						{
+							"name": "JoinMtPtStUiDuDl"
+						},
+						{
+							"name": "IsExportedColumn"
+						},
+						{
+							"name": "SelectFmt"
+						},
+						{
+							"name": "LookupExistingRecords"
+						},
+						{
+							"name": "NewExistingSplit"
+						},
+						{
+							"name": "IsExportedCol"
+						},
+						{
+							"name": "AdditionalColumn"
+						},
+						{
+							"name": "JoinMaxID"
+						},
+						{
+							"name": "UpdateExistingRecords"
+						}
+					],
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_id as integer,\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tmatching_type as string,\n\t\tstatus as string,\n\t\tpayment_transaction_id as integer,\n\t\tscheme_transaction_id as integer,\n\t\textra_fields as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcMatchedTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcPaymentTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tstatus as string,\n\t\textra_fields as string,\n\t\tprovider_slug as string,\n\t\tpayment_provider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcSchemeTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tloyalty_id as string,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer,\n\t\tcredentials as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> srcUserIdentity\nsource(output(\n\t\tID as integer,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tPhone as string,\n\t\tEmail as string,\n\t\tFacebook as string,\n\t\tTwitter as string,\n\t\tAddressLine1 as string,\n\t\tAddressLine2 as string,\n\t\tCity as string,\n\t\tRegion as string,\n\t\tPostcode as string,\n\t\tCountry as string,\n\t\tGender as string,\n\t\tDateOfBirth as date,\n\t\tChannel as string,\n\t\tOrganisation as string,\n\t\tClient as string,\n\t\tExternalID as string,\n\t\tUserCreateDate as timestamp,\n\t\tUserUpdateDate as timestamp,\n\t\tIsActive as boolean,\n\t\tDeleteToken as string,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsStaff as boolean,\n\t\tIsTester as boolean,\n\t\tIsCurrent as boolean,\n\t\tSourceUserKey as integer,\n\t\tRestrictionID as integer,\n\t\tIsRTBF as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimUser\nsource(output(\n\t\tID as integer,\n\t\tCardNumber as string,\n\t\tPlanName as string,\n\t\tPlanDescription as string,\n\t\tLCStatus as string,\n\t\tMerchant as string,\n\t\tCategory as string,\n\t\tBonusName as string,\n\t\tBalanceValue as decimal(18,2),\n\t\tBalancePoints as decimal(18,2),\n\t\tBalance as decimal(18,2),\n\t\tBalanceIsStale as boolean,\n\t\tBalanceUpdateDate as timestamp,\n\t\tBalanceRewardTier as string,\n\t\tBalanceValueLabel as string,\n\t\tBalancePointsLabel as string,\n\t\tIsActive as boolean,\n\t\tLCCreateDate as timestamp,\n\t\tAddDate as timestamp,\n\t\tJoinDate as timestamp,\n\t\tEffFromDate as timestamp,\n\t\tEffToDate as timestamp,\n\t\tProcessDate as timestamp,\n\t\tIsCurrent as boolean,\n\t\tSourceLCKey as integer,\n\t\tRestrictionKey as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcDimLoyaltyCard\nsource(output(\n\t\tID as integer,\n\t\tMerchantIdentifierID as integer,\n\t\tTransactionID as string,\n\t\tPaymentTransactionID as integer,\n\t\tSchemeTransactionID as integer,\n\t\tspend_amount as decimal(18,4),\n\t\tspend_multiplier as decimal(18,4),\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tMatchingType as string,\n\t\tTransactionDate as timestamp,\n\t\tCreateDate as timestamp,\n\t\tExportDate as timestamp,\n\t\tIsMTExported as boolean,\n\t\tSourceMTKey as long,\n\t\tDimUserID as integer,\n\t\tDimLoyaltyCardID as integer,\n\t\tProcessDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> srcFactMatchedTransaction\nsource(output(\n\t\tMaxFactMTID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'SELECT ISNULL(MAX(ID), 0) MaxFactMTID FROM Fact.MatchedTransaction',\n\tformat: 'query',\n\tstaged: false) ~> srcMaxID\nsrcMatchedTransaction select(mapColumn(\n\t\t{mt.id} = id,\n\t\t{mt.created_at} = created_at,\n\t\t{mt.updated_at} = updated_at,\n\t\t{mt.merchant_identifier_id} = merchant_identifier_id,\n\t\t{mt.transaction_id} = transaction_id,\n\t\t{mt.transaction_date} = transaction_date,\n\t\t{mt.spend_amount} = spend_amount,\n\t\t{mt.spend_multiplier} = spend_multiplier,\n\t\t{mt.spend_currency} = spend_currency,\n\t\t{mt.card_token} = card_token,\n\t\t{mt.matching_type} = matching_type,\n\t\t{mt.status} = status,\n\t\t{mt.payment_transaction_id} = payment_transaction_id,\n\t\t{mt.scheme_transaction_id} = scheme_transaction_id,\n\t\t{mt.extra_fields} = extra_fields\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectMT\nsrcPaymentTransaction select(mapColumn(\n\t\t{pt.id} = id,\n\t\t{pt.created_at} = created_at,\n\t\t{pt.updated_at} = updated_at,\n\t\t{pt.merchant_identifier_ids} = merchant_identifier_ids,\n\t\t{pt.transaction_id} = transaction_id,\n\t\t{pt.transaction_date} = transaction_date,\n\t\t{pt.spend_amount} = spend_amount,\n\t\t{pt.spend_multiplier} = spend_multiplier,\n\t\t{pt.spend_currency} = spend_currency,\n\t\t{pt.card_token} = card_token,\n\t\t{pt.status} = status,\n\t\t{pt.user_identity_id} = user_identity_id,\n\t\t{pt.extra_fields} = extra_fields,\n\t\t{pt.settlement_key} = settlement_key,\n\t\t{pt.provider_slug} = provider_slug,\n\t\t{pt.auth_code} = auth_code,\n\t\t{pt.has_time} = has_time,\n\t\t{pt.match_group} = match_group,\n\t\t{pt.first_six} = first_six,\n\t\t{pt.last_four} = last_four\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectPT\nsrcSchemeTransaction select(mapColumn(\n\t\t{st.id} = id,\n\t\t{st.created_at} = created_at,\n\t\t{st.updated_at} = updated_at,\n\t\t{st.merchant_identifier_ids} = merchant_identifier_ids,\n\t\t{st.transaction_id} = transaction_id,\n\t\t{st.transaction_date} = transaction_date,\n\t\t{st.spend_amount} = spend_amount,\n\t\t{st.spend_multiplier} = spend_multiplier,\n\t\t{st.spend_currency} = spend_currency,\n\t\t{st.status} = status,\n\t\t{st.extra_fields} = extra_fields,\n\t\t{st.provider_slug} = provider_slug,\n\t\t{st.payment_provider_slug} = payment_provider_slug,\n\t\t{st.auth_code} = auth_code,\n\t\t{st.has_time} = has_time,\n\t\t{st.match_group} = match_group,\n\t\t{st.first_six} = first_six,\n\t\t{st.last_four} = last_four\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectST\nsrcUserIdentity select(mapColumn(\n\t\t{ui.id} = id,\n\t\t{ui.created_at} = created_at,\n\t\t{ui.updated_at} = updated_at,\n\t\t{ui.loyalty_id} = loyalty_id,\n\t\t{ui.scheme_account_id} = scheme_account_id,\n\t\t{ui.user_id} = user_id,\n\t\t{ui.credentials} = credentials,\n\t\t{ui.first_six} = first_six,\n\t\t{ui.last_four} = last_four\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUI\nSelectMT, SelectPT join({mt.payment_transaction_id} == {pt.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinMtPt\nJoinMtPt, SelectST join({mt.scheme_transaction_id} == {st.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinMtPtSt\nJoinMtPtSt, SelectUI join({pt.user_identity_id} == {ui.id},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinMtPtStUi\nsrcDimUser select(mapColumn(\n\t\t{du.ID} = ID,\n\t\t{du.Channel} = Channel,\n\t\t{du.Organisation} = Organisation,\n\t\t{du.Client} = Client,\n\t\t{du.ExternalID} = ExternalID,\n\t\t{du.IsActive} = IsActive,\n\t\t{du.IsCurrent} = IsCurrent,\n\t\t{du.SourceUserKey} = SourceUserKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDu\nsrcDimLoyaltyCard select(mapColumn(\n\t\t{dl.ID} = ID,\n\t\t{dl.Merchant} = Merchant,\n\t\t{dl.Category} = Category,\n\t\t{dl.IsActive} = IsActive,\n\t\t{dl.IsCurrent} = IsCurrent,\n\t\t{dl.SourceLCKey} = SourceLCKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectDl\nJoinMtPtStUi, SelectDu join({ui.user_id} == {du.SourceUserKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinMtPtStUiDu\nJoinMtPtStUiDu, SelectDl join({ui.scheme_account_id} == {dl.SourceLCKey},\n\tjoinType:'left',\n\tbroadcast: 'auto')~> JoinMtPtStUiDuDl\nNewExistingSplit@NewRecord derive({new.IsExported} = case({mt.status} == 'EXPORTED', 1, 0)) ~> IsExportedColumn\nsrcFactMatchedTransaction select(mapColumn(\n\t\t{fmt.ID} = ID,\n\t\t{fmt.SourceMTKey} = SourceMTKey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectFmt\nJoinMaxID, SelectFmt lookup({mt.id} == {fmt.SourceMTKey},\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> LookupExistingRecords\nAdditionalColumn split(isNull({fmt.SourceMTKey}),\n\tdisjoint: false) ~> NewExistingSplit@(NewRecord, ExistingRecord)\nNewExistingSplit@ExistingRecord derive({new.IsExported} = case({mt.status} == 'EXPORTED', 1, 0)) ~> IsExportedCol\nLookupExistingRecords derive({new.ProcessDate} = fromUTC(currentUTC())) ~> AdditionalColumn\nJoinMtPtStUiDuDl, srcMaxID join(1==1,\n\tjoinType:'cross',\n\tbroadcast: 'auto')~> JoinMaxID\nIsExportedCol alterRow(updateIf({fmt.ID}<=MaxFactMTID)) ~> UpdateExistingRecords\nIsExportedColumn sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tID as integer,\n\t\tMerchantIdentifierID as integer,\n\t\tTransactionID as string,\n\t\tPaymentTransactionID as integer,\n\t\tSchemeTransactionID as integer,\n\t\tspend_amount as decimal(18,4),\n\t\tspend_multiplier as decimal(18,4),\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tMatchingType as string,\n\t\tTransactionDate as timestamp,\n\t\tCreateDate as timestamp,\n\t\tExportDate as timestamp,\n\t\tIsMTExported as boolean,\n\t\tSourceMTKey as long,\n\t\tDimUserID as integer,\n\t\tDimLoyaltyCardID as integer,\n\t\tProcessDate as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tMerchantIdentifierID = {mt.merchant_identifier_id},\n\t\tTransactionID = {mt.transaction_id},\n\t\tPaymentTransactionID = {mt.payment_transaction_id},\n\t\tSchemeTransactionID = {mt.scheme_transaction_id},\n\t\tspend_amount = {mt.spend_amount},\n\t\tspend_multiplier = {mt.spend_multiplier},\n\t\tspend_currency = {mt.spend_currency},\n\t\tcard_token = {mt.card_token},\n\t\tMatchingType = {mt.matching_type},\n\t\tTransactionDate = {mt.transaction_date},\n\t\tCreateDate = {mt.created_at},\n\t\tExportDate = {mt.updated_at},\n\t\tIsMTExported = {new.IsExported},\n\t\tSourceMTKey = {mt.id},\n\t\tDimUserID = {du.ID},\n\t\tDimLoyaltyCardID = {dl.ID},\n\t\tProcessDate = {new.ProcessDate}\n\t)) ~> snkMatchedTransaction\nUpdateExistingRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tID as integer,\n\t\tMerchantIdentifierID as integer,\n\t\tTransactionID as string,\n\t\tPaymentTransactionID as integer,\n\t\tSchemeTransactionID as integer,\n\t\tspend_amount as decimal(18,4),\n\t\tspend_multiplier as decimal(18,4),\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tMatchingType as string,\n\t\tTransactionDate as timestamp,\n\t\tCreateDate as timestamp,\n\t\tExportDate as timestamp,\n\t\tIsMTExported as boolean,\n\t\tSourceMTKey as long,\n\t\tDimUserID as integer,\n\t\tDimLoyaltyCardID as integer,\n\t\tProcessDate as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ID'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tpreSQLs:['SET IDENTITY_INSERT Fact.MatchedTransaction ON;'],\n\tpostSQLs:['SET IDENTITY_INSERT Fact.MatchedTransaction OFF;'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tID = {fmt.ID},\n\t\tExportDate = {mt.updated_at},\n\t\tProcessDate = {new.ProcessDate}\n\t)) ~> snkMatchedTransactionE"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_matched_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_payment_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_scheme_transaction')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_user_identity')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimUser')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_DimLoyaltyCard')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_Syn_FactMatchedTransaction')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/df_LoadFactUserLC')]",
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
@@ -10830,6 +12655,466 @@
 						"poolName": "dwhpool",
 						"databaseName": "dwhpool"
 					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT01 Create Schemas')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Dim' )\n    EXEC('CREATE SCHEMA [Dim]');\nGO\n--GRANT CONTROL ON SCHEMA :: Dim TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Fact' )\n    EXEC('CREATE SCHEMA [Fact]');\nGO\n--GRANT CONTROL ON SCHEMA :: Fact TO binkuksouthdevsynapse;\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Ctl' )\n    EXEC('CREATE SCHEMA [Ctl]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Err' )\n    EXEC('CREATE SCHEMA [Err]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Rpt' )\n    EXEC('CREATE SCHEMA [Rpt]');\nGO\n\nIF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'Mdm' )\n    EXEC('CREATE SCHEMA [Mdm]');\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT02 Create usp_CreateExternalObjects')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_CreateExternalObjects', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_CreateExternalObjects]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_CreateExternalObjects] \n    @Yr     VARCHAR(4),\n    @Mt     VARCHAR(2),\n    @Dy     VARCHAR(2)\nAS\n\n--CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'YourPasswordHere@&'\n--CREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\n--WITH IDENTITY = 'Managed Identity';\n--GO\n\nDECLARE \n    @tbl VARCHAR(50),\n    @col VARCHAR(1000),\n    @loc VARCHAR(1000),\n    @sql VARCHAR(1000)\n\n/****************************************history_historicalpaymentcardaccount****************************************/\nSET @tbl = 'history_historicalpaymentcardaccount'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [user_id] INT,\n    [body] VARCHAR(4000),\n    [change_details] VARCHAR(255)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalcustomuser****************************************/\nSET @tbl = 'history_historicalcustomuser'\nSET @Col = \n    '\n    [id] INT,\n    [created] DATETIME,\n    [change_type] VARCHAR(6),\n    [instance_id] VARCHAR(255),\n    [channel] VARCHAR(255),\n    [change_details] VARCHAR(255),\n    [body] VARCHAR(4000),\n    [email] VARCHAR(100),\n    [external_id] VARCHAR(100)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n--GRANT db_owner ON OBJECT::dbo.usp_CreateExternalObjects TO binkuksouthdevsynapse;\n--EXEC sp_addrolemember N'db_owner', N'binkuksouthdevsynapse'\n\n/****************************************scheme_schemeaccount****************************************/\nSET @tbl = 'scheme_schemeaccount'\nSET @Col = \n    '\n    [id]\t            INT,\n    [status]\t        INT,\n    [order]\t            INT,\n    [created]\t        DATETIME,\n    [updated]\t        DATETIME,\n    [scheme_id]\t        INT,\n    [is_deleted]\t    BIT,\n    [link_date]\t        DATETIME,\n    [join_date]\t        DATETIME,\n    [balances]\t        VARCHAR(4000),\n    [vouchers]\t        VARCHAR(8000),\n    [barcode]\t        VARCHAR(250),\n    [card_number]\t    VARCHAR(250),\n    [transactions]\t    VARCHAR(4000),\n    [main_answer]\t    VARCHAR(250),\n    [pll_links]\t        VARCHAR(4000),\n    [formatted_images]  VARCHAR(4000)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\n/****************************************history_historicalschemeaccount****************************************/\nSET @tbl = 'history_historicalschemeaccount'\nSET @Col = \n    '\n    [id]\t          INT,\n    [created]\t      DATETIME,\n    [change_type]     VARCHAR(6),\n    [instance_id]     VARCHAR(255),\n    [channel]         VARCHAR(255),\n    [user_id]         INT,\n    [body]            VARCHAR(4000),\n    [change_details]  VARCHAR(255),\n    [journey]         VARCHAR(8)\n    '\n--Drop external tables, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_tables WHERE object_id = OBJECT_ID(''dbo.ext_' + @tbl + ''') )\n    DROP EXTERNAL TABLE dbo.ext_' + @tbl\nEXEC(@sql)\n--Drop external file format, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_file_formats WHERE name = ''eff_' + @tbl + ''')\n    DROP EXTERNAL FILE FORMAT eff_' + @tbl\nEXEC(@sql)\n--Drop external data sources, if exists\nSET @sql = 'IF EXISTS (SELECT * FROM sys.external_data_sources WHERE name = ''eds_' + @tbl + ''')\n    DROP EXTERNAL DATA SOURCE eds_' + @tbl\nEXEC(@sql)\n\n--CREATE EXTERNAL DATA SOURCE\nSET @loc = 'abfss://datalake@binkuksouthdevdwh.dfs.core.windows.net/Hermes/public_' + @tbl + '/'\nSET @sql = \n    'CREATE EXTERNAL DATA SOURCE eds_' + @tbl + '\n    WITH    (   \n            LOCATION = ''' + @loc + ''',\n            CREDENTIAL = SynapseIdentity,\n            TYPE = HADOOP\n            )'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL FILE FORMAT FOR PARQUET FILES  \nSET @sql = 'CREATE EXTERNAL FILE FORMAT eff_' + @tbl + '  \nWITH (  \n         FORMAT_TYPE = PARQUET, \n         DATA_COMPRESSION = ''org.apache.hadoop.io.compress.SnappyCodec''\n    );'\nEXEC(@sql);\n\n--CREATE AN EXTERNAL TABLE TO STAGE THE DATA\nSET @loc = 'https://binkuksouthdevdwh.dfs.core.windows.net/datalake/Hermes/public_' + @tbl + '/' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'\nSET @sql = \n    'CREATE EXTERNAL TABLE dbo.ext_' + @tbl + ' (' + @Col + ')\n    WITH    (   \n            LOCATION = ''' + @Yr + '/' + @Yr+@Mt + '/' + @Yr+@Mt+@Dy + '/'',\n            DATA_SOURCE = eds_' + @tbl + ', \n            FILE_FORMAT = eff_' + @tbl + '\n            )'\n\nEXEC(@sql);\n\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT03 Create DimLCVoucher')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[LCVoucher]') AND type in (N'U'))\nDROP TABLE [Dim].[LCVoucher];\n\nCREATE TABLE Dim.LCVoucher\n  (  \n  ID                INT IDENTITY(1,1) NOT NULL,\n  LoyaltyCardID     INT NULL,--Check\n  VoucherCode       VARCHAR(32) NOT NULL,\n  --VoucherValue      NUMERIC(8,2) NULL,\n  --Prefix            VARCHAR(32) NULL,\n  --Suffix            VARCHAR(32) NULL,\n  --Currency          VARCHAR(3) NULL,\n  --VoucherDesc       VARCHAR(100) NULL,\n  --RewardTier        VARCHAR(10) NULL,\n  BurnType          VARCHAR(32) NULL,\n  BurnValue         NUMERIC(8,2) NULL,\n  BurnPrefix        VARCHAR(32) NULL,\n  BurnSuffix        VARCHAR(32) NULL,\n  BurnCurrency      VARCHAR(32) NULL, \n  EarnType          VARCHAR(32) NULL,\n  EarnValue         NUMERIC(8,2) NULL,\n  EarnPrefix        VARCHAR(32) NULL,\n  EarnSuffix        VARCHAR(32) NULL,\n  EarnCurrency      VARCHAR(32) NULL, \n  EarnTargetValue   NUMERIC(8,2) NULL,\n  VoucherState      VARCHAR(32) NULL,\n  Subtext           VARCHAR(32) NULL,\n  Headline          VARCHAR(32) NULL,\n  BodyText          VARCHAR(32) NULL,\n  IssueDate         DATETIME NULL,\n  RedeemDate        DATETIME NULL,\n  ExpiryDate        DATETIME NULL,\n  BarcodeType       VARCHAR(32) NULL,\n  TCUrl             VARCHAR(100) NULL,\n  EffFromDate       DATETIME NOT NULL,\n  EffToDate         DATETIME NULL,\n  ProcessDate       DATETIME NOT NULL,\n  IsCurrent         BIT NOT NULL  DEFAULT 1\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT04 Create DimLoyaltyCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "--SurrogateKey: ID\n--Busniess/Natural Key: a, b (with Is_deleted=0 in only 1 instance?)\n  \n--OR\n\n--Busniess Key: ID\n--SurrogqteKey: Hash of a & b - toString(crc32(a, b))\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[LoyaltyCard]') AND type in (N'U'))\nDROP TABLE [Dim].[LoyaltyCard];\n\nCREATE TABLE Dim.LoyaltyCard\n  (  \n  ID                  INT IDENTITY(1,1) NOT NULL,\n  CardNumber          VARCHAR(256) NOT NULL,\n  PlanName            VARCHAR(400) NULL,\n  PlanDescription     VARCHAR(4000) NULL,\n  LCStatus            VARCHAR(200) NOT NULL,\n  Merchant            VARCHAR(200) NULL,\n  Category            VARCHAR(200) NULL,\n  BonusName           VARCHAR(10) NULL,\n  BalanceValue        NUMERIC(18,2) NULL,\n  BalancePoints       NUMERIC(18,2) NULL,\n  Balance             NUMERIC(18,2) NULL,\n  BalanceIsStale      BIT NULL,\n  --BalanceUserSet      INT NULL,\n  --BalanceSchemeID     INT NULL,\n  --BalanceSAID         INT NULL,\n  BalanceUpdateDate   DATETIME NULL,\n  BalanceRewardTier   VARCHAR(50) NULL,\n  BalanceValueLabel   VARCHAR(50) NULL,\n  BalancePointsLabel  VARCHAR(50) NULL,\n\n\t--BalancePrefix       VARCHAR(32) NOT NULL,\n\t--BalanceSuffix       VARCHAR(32) NOT NULL,\n\t--BalanceCurrency     VARCHAR(32) NOT NULL,\n\t--BalanceCreateTime   DATETIME NOT NULL,\n\t--BalanceUpdateTime   DATETIME NOT NULL,\n\t--BalanceDescription  VARCHAR(100) NOT NULL,\n\t--BalanceRewardTeir   VARCHAR(32) NOT NULL,\n  --Vouchers        VARCHAR(4000) NULL,\n  --Transactions    VARCHAR(4000) NULL,\n  --PLLLinks        VARCHAR(4000) NULL,\n  IsActive            BIT NULL,\n  LCCreateDate        DATETIME NULL,\n  AddDate             DATETIME NULL,\n  JoinDate            DATETIME NULL,\n  EffFromDate         DATETIME NULL,\n  EffToDate           DATETIME NULL,\n  ProcessDate         DATETIME NOT NULL,\n  IsCurrent           BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourceLCKey         INT NOT NULL,\n  RestrictionKey      INT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n/*\nCREATE TABLE Dim.LoyaltyCard_json\n  (  \n  ID                  INT IDENTITY(1,1) NOT NULL,\n  CardNumber          VARCHAR(200) NOT NULL,\n  PlanName            VARCHAR(400) NOT NULL,\n  PlanDescription     VARCHAR(4000) NOT NULL,\n  LCStatus            VARCHAR(200) NOT NULL,\n  Merchant            VARCHAR(200) NOT NULL,\n  Category            VARCHAR(200) NOT NULL,\n  BonusName           VARCHAR(10) NOT NULL,\n  BalanceValue        INT NULL,\n  BalancePrefix       VARCHAR(32) NOT NULL,\n  BalanceSuffix       VARCHAR(32) NOT NULL,\n  BalanceCurrency     VARCHAR(32) NOT NULL,\n  BalanceCreateTime   DATETIME NOT NULL,\n  BalanceUpdateTime   DATETIME NOT NULL,\n  BalanceDescription  VARCHAR(100) NOT NULL,\n  BalanceRewardTeir   VARCHAR(32) NOT NULL,\n  Vouchers            VARCHAR(4000) NULL,\n  --Transactions      VARCHAR(4000) NULL,\n  --PLLLinks          VARCHAR(4000) NULL,\n  AddDate             DATETIME NULL,\n  JoinDate            DATETIME NULL,\n  CreateDate          DATETIME NOT NULL,\n  UpdateDate          DATETIME NOT NULL,\n  IsActive            BIT NOT NULL  DEFAULT 1\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT05 Create DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "--SurrogateKey: ID\n--Busniess/Natural Key: Fingerprint, ValidTo (with Is_deleted=0 in only 1 instance?)\n  \n--OR\n\n--Busniess Key: ID\n--SurrogqteKey: Hash of Fingerprint & ValidTo - toString(crc32(Fingerprint, ValidTo))\n\n--EmpId, SurrogateKey, ......IsCurrent, ProcessDate\n--EmpId exists in source and is the business key. EmpID used in LookUp\n--Surrogate key created for each employee. Surrogate key added as derived col in Iscurrent task. toString(crc32(EmpID, EmpFunction))\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[PaymentCard]') AND type in (N'U'))\nDROP TABLE [Dim].[PaymentCard];\n\nCREATE TABLE Dim.PaymentCard\n  (  \n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NULL,--NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CardCreateDate  DATETIME NULL,--20210301NOT NULL,\n  CardUpdateDate  DATETIME NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL,\n  RestrictionKey  INT NULL\n  --PLLLinks      VARCHAR(4000) NULL\n  --PSPToken      VARCHAR(100),\n  --EventID       SMALLINT\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n/*202103081422\n  ID              BIGINT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CreateDate      DATETIME NULL,--20210301NOT NULL,\n  UpdateDate      DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL,\n  IsCurrent       BIT NOT NULL,-- DEFAULT 1, --IsDeleted look very similar. Do we need both IsDeleted & IsCurrent?\n  SourcePCKey     INT NOT NULL\n  --PLLLinks        VARCHAR(4000) NULL\n  --PSPToken        VARCHAR(100),\n  --EventID         SMALLINT\n*/\n\n/*20210305:0947\n  ID              INT IDENTITY(1,1) NOT NULL,\n  NameOnCard      VARCHAR(150) NOT NULL,\n  PANTruncation   VARCHAR(16) NOT NULL,\n  ValidFrom       DATE NULL,\n  ValidTo         DATE NULL,--NOT NULL,\n  Token           VARCHAR(255) NOT NULL,\n  Fingerprint     VARCHAR(100) NOT NULL,\n  Issuer          VARCHAR(200) NOT NULL,\n  CardProvider    VARCHAR(200) NOT NULL,\n  Slug            VARCHAR(50) NULL,--NOT NULL,\n  CardType        VARCHAR(40) NOT NULL,\n  CardStatus      VARCHAR(32) NOT NULL,\n  IsDeleted       BIT NOT NULL,\n  Country         VARCHAR(32) NOT NULL,\n  CCYCode         VARCHAR(3) NOT NULL,\n  CreateDate      DATETIME NULL,--20210301NOT NULL,\n  UpdateDate      DATETIME NULL,\n  --IsCurrent       BIT NOT NULL,-- DEFAULT 1,\n  SourcePCKey     INT NOT NULL\n  --PLLLinks        VARCHAR(4000) NULL\n  --PSPToken        VARCHAR(100),\n  --EventID         SMALLINT\n*/\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT06 Create DimUser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "--Change of Columns used for SCD: Status\n\nIF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[User]') AND type in (N'U'))\nDROP TABLE [Dim].[User];\n\nCREATE TABLE Dim.[User]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  FirstName       VARCHAR(255) NULL,\n  LastName        VARCHAR(255) NULL,\n  Phone           VARCHAR(100) NULL,--VARCHAR(100) MASKED WITH (FUNCTION = 'default()') NULL,\n  Email           VARCHAR(255) NULL,--VARCHAR(255) MASKED WITH (FUNCTION = 'email()') NULL,\n  Facebook        VARCHAR(255) NULL,\n  Twitter         VARCHAR(255) NULL,\n  AddressLine1    VARCHAR(255) NULL,\n  AddressLine2    VARCHAR(255) NULL,\n  City            VARCHAR(100) NULL,\n  Region          VARCHAR(100) NULL,\n  Postcode        VARCHAR(20) NULL,\n  Country         VARCHAR(100) NULL,\n  Gender          VARCHAR(16) NULL,\n  DateOfBirth     DATE NULL,\n  Channel         VARCHAR(100) NULL,\n  Organisation    VARCHAR(100) NOT NULL,\n  Client          VARCHAR(100) NOT NULL,\n  ExternalID      VARCHAR(255) NOT NULL,\n  UserCreateDate  DATETIME NULL,\n  UserUpdateDate  DATETIME NULL,\n  IsActive        BIT NOT NULL DEFAULT 1,\n  DeleteToken     VARCHAR(255) NULL,\n  EffFromDate     DATETIME NULL,\n  EffToDate       DATETIME NULL,\n  ProcessDate     DATETIME NULL,\n  IsStaff         BIT NULL,\n  IsTester        BIT NOT NULL,\n  IsCurrent       BIT NOT NULL,\n  SourceUserKey   INT NULL,\n  RestrictionID   INT NULL,\n  IsRTBF          BIT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT07 Create FactLCPC')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[LoyaltyCardPaymentCard]') AND type in (N'U'))\nDROP TABLE [Fact].[LoyaltyCardPaymentCard];\n\nCREATE TABLE [Fact].[LoyaltyCardPaymentCard]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  LoyaltyCardID   INT,\n  PaymentCardID   BIGINT,\n  IsActiveLink    BIT,\n  Change          CHAR(6),\n  CreateDate      DATETIME,\n  ProcessDate     DATETIME\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT08 Create FactMatchedTransaction')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[MatchedTransaction]') AND type in (N'U'))\nDROP TABLE [Fact].[MatchedTransaction];\n\nCREATE TABLE [Fact].[MatchedTransaction]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  MerchantIdentifierID  INT,\n  TransactionID         CHAR(50),\n  PaymentTransactionID  INT,\n  SchemeTransactionID   INT,\n  spend_amount          DECIMAL(18,4),\n  spend_multiplier      DECIMAL(18,4),\n  spend_currency        CHAR(3),\n  card_token            VARCHAR(100),\n  MatchingType          CHAR(7),\n  TransactionDate       DATETIME,\n  CreateDate            DATETIME, --created_at\n  ExportDate            DATETIME, --updated_at\n  IsMTExported          BIT, --WHEN Status=Exported THEN 1 ELSE 0\n  SourceMTKey           BIGINT,\n  DimUserID             INT NULL,\n  DimLoyaltyCardID      INT NULL,\n  --DimPaymentCardID      BIGINT NOT NULL,\n  ProcessDate     DATETIME\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT09 Create FactUserLC')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[UserLC]') AND type in (N'U'))\nDROP TABLE [Fact].[UserLC];\n\nCREATE TABLE [Fact].[UserLC]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  UserID          INT NULL,\n  LoyaltyCardID   INT NULL,\n  LCJoinDate      DATETIME NULL,\n  LCAddDate       DATETIME NULL,\n  IsCreated       BIT NULL,\n  CreateDate      DATETIME NULL,\n  ProcessDate     DATETIME NOT NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT10 Create FactUserPC')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[UserPC]') AND type in (N'U'))\nDROP TABLE [Fact].[UserPC];\n\nCREATE TABLE [Fact].[UserPC]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  UserID          INT NULL,\n  PaymentCardID   BIGINT NULL,\n  IsCreated       BIT NULL,\n  CreateDate      DATETIME NULL,\n  ProcessDate     DATETIME NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT11 Create view vw_history_historicalcustomuser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalcustomuser\nGO\n\nCREATE VIEW dbo.vw_history_historicalcustomuser\nAS\nSELECT DISTINCT \n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[change_details],\n    --ext.[body],\n    --ext.[email],\n    --ext.external_id,\n    --ext.*\n   js.[id],\n   js.[email],\n   js.[client_id],\n   js.[twitter],\n   js.[facebook],\n   js.[is_staff],\n   js.[is_active],\n   js.[is_tester],\n   js.[date_joined],\n   js.[external_id],\n   js.[delete_token]\nFROM [dbo].[ext_history_historicalcustomuser] ext\nOUTER APPLY OPENJSON (JSON_QUERY(body, '$'))\n   WITH (\n        [id]            INT '$.id',\n        [email]         VARCHAR(255) '$.email',\n        [client_id]     VARCHAR(100) '$.client',\n        [twitter]       VARCHAR(100) '$.twitter',\n        [facebook]      VARCHAR(100) '$.facebook',\n        [is_staff]      bit '$.is_staff',\n        [is_active]     bit '$.is_active',\n        [is_tester]     bit '$.is_tester',\n        [date_joined]   VARCHAR(50) '$.date_joined',\n        [external_id]   VARCHAR(255) '$.external_id',\n        [delete_token]  VARCHAR(255) '$.delete_token'\n   ) AS js\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT12 Create view vw_history_historicalpaymentcardaccount')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalpaymentcardaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalpaymentcardaccount\nAS\nSELECT DISTINCT\n    --ext.[id],\n    --ext.[created],\n    --ext.[change_type],\n    --ext.[instance_id],\n    --ext.[channel],\n    --ext.[user_id],\n    --ext.[body],\n    --ext.[change_details],\n    --ext.*,\n    js.[id],\n    js.[name_on_card],\n    js.[start_month],\n    js.[start_year],\n    js.[expiry_month],\n    js.[expiry_year],\n    js.[status],\n    js.[created],\n    js.[updated],\n    js.[issuer_id],\n    js.[payment_card_id],\n    js.[token],\n    js.[country],\n    js.[currency_code],\n    js.[pan_end],\n    js.[pan_start],\n    js.[is_deleted],\n    js.[fingerprint]\n FROM [dbo].[ext_history_historicalpaymentcardaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(Body, '$'))\n   WITH (\n        [id] int '$.id',\n        [name_on_card] varchar(150) '$.name_on_card',\n        [start_month] int '$.start_month',\n        [start_year] int '$.start_year',\n        [expiry_month] int '$.expiry_month',\n        [expiry_year] int '$.expiry_year',\n        [status] int '$.status',\n        [order] int '$.order',\n        [created] varchar(32) '$.created',\n        [updated] varchar(32) '$.updated',\n        [issuer_id] int '$.issuer',\n        [payment_card_id] int '$.payment_card',\n        [token] varchar(255) '$.token',\n        [country] varchar(40) '$.country',\n        [currency_code] varchar(3) '$.currency_code',\n        [pan_end] varchar(4) '$.pan_end',\n        [pan_start] varchar(6) '$.pan_start',\n        [is_deleted] bit '$.is_deleted',\n        [fingerprint] varchar(100) '$.fingerprint',\n        [psp_token] varchar(255) '$.psp_token',\n        [consents] varchar(4000) '$.consents',\n        [hash] varchar(255) '$.hash'\n   ) AS js\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT13 Create view vw_history_historicalschemeaccount')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_history_historicalschemeaccount\nGO\n\nCREATE VIEW dbo.vw_history_historicalschemeaccount\nAS\nSELECT\n   ext.instance_id   AS SAID,\n   ext.change_type   AS ChangeType,\n   ext.created       AS SACreated,\n\n   js.Status,\n   js.CreateDate,\n   js.UpdateDate,\n   js.JoinDate,\n   js.LinkDate,\n   js.IsDeleted\nFROM [dbo].[ext_history_historicalschemeaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(body, '$'))\n   WITH (\n         [Status]       INT '$.status',\n         [CreateDate]   VARCHAR(16) '$.created',\n         [UpdateDate]   VARCHAR(16) '$.updated',\n         [JoinDate]     VARCHAR(16) '$.created',\n         [LinkDate]     VARCHAR(16) '$.created',\n         [IsDeleted]    BIT '$.is_deleted'\n         ) AS js\n--WHERE vouchers <> '{}' and ext.id = 40000\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT14 Create view vw_scheme_schemeaccount_Balance')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_scheme_schemeaccount_balance\nGO\n\nCREATE VIEW dbo.vw_scheme_schemeaccount_balance\nAS\nSELECT\n   ext.id         AS SAID,\n   ext.created    AS SACreated,\n   ext.updated    AS SAUpdated,\n\n   js.BalanceValue,\n   js.BalancePoints,\n   js.Balance,\n   js.BalanceIsStale,\n   js.BalanceUserSet,\n   js.BalanceSchemeID,\n   js.BalanceUpdateDate,\n   js.BalanceRewardTeir,\n   js.BalanceValueLabel,\n   js.BalancePointsLabel,\n   js.BalanceSAID\nFROM [dbo].[ext_scheme_schemeaccount] ext\nOUTER APPLY OPENJSON (JSON_QUERY(balances, '$'))\n   WITH (\n         [BalanceValue]       NUMERIC(18,2) '$.value',\n         [BalancePoints]      NUMERIC(18,2) '$.points',\n         [Balance]            NUMERIC(18,2) '$.balance',\n         [BalanceIsStale]     BIT '$.is_stale',\n         [BalanceUserSet]     VARCHAR(50) '$.user_set',\n         [BalanceSchemeID]    INT '$.scheme_id',\n         [BalanceUpdateDate]  VARCHAR(50) '$.updated_at',\n         [BalanceRewardTeir]  VARCHAR(50) '$.reward_tier',\n         [BalanceValueLabel]  VARCHAR(50) '$.value_label',\n         [BalancePointsLabel] VARCHAR(50) '$.points_label',\n         [BalanceSAID]        [INT] '$.scheme_account_id'\n         ) AS js\n--WHERE vouchers <> '{}' and ext.id = 40000\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT15 Create view vw_scheme_schemeaccount_Voucher')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "DROP VIEW IF EXISTS dbo.vw_scheme_schemeaccount_voucher\nGO\n\nCREATE VIEW dbo.vw_scheme_schemeaccount_voucher\nAS\nSELECT DISTINCT\n   ext.id         AS SAID,\n   ext.created    AS SACreated,\n   ext.updated    AS SAUpdated,\n\n   js.[VoucherCode],\n   \n   js.[BurnType],\n   js.[BurnValue],\n   js.[BurnPrefix],\n   js.[BurnSuffix],\n   js.[BurnCurrency],\n   \n   js.[EarnType],\n   js.[EarnValue],\n   js.[EarnPrefix],\n   js.[EarnSuffix],\n   js.[EarnCurrency],\n   js.[EarnTargetValue],\n   \n   js.[VoucherState],\n   js.[SubText],\n   js.[Headline],\n   js.[BodyText],\n   js.[IssueDate],\n   js.[ExpiryDate],\n   js.[RedeemDate],\n   js.[BarcodeType],\n   js.TCUrl\nFROM [dbo].[ext_scheme_schemeaccount] ext\nOUTER APPLY OPENJSON (vouchers, '$')\n   WITH (\n        [VoucherCode]            VARCHAR(32) '$.code',\n\n        [BurnType]               VARCHAR(32) '$.burn.type',\n        [BurnValue]              VARCHAR(32) '$.burn.value',\n        [BurnPrefix]             VARCHAR(32) '$.burn.prefix',\n        [BurnSuffix]             VARCHAR(32) '$.burn.suffix',\n        [BurnCurrency]           VARCHAR(32) '$.burn.Currency',\n\n        [EarnType]               VARCHAR(32) '$.earn.type',\n        [EarnValue]              VARCHAR(32) '$.earn.value',\n        [EarnPrefix]             VARCHAR(32) '$.earn.prefix',\n        [EarnSuffix]             VARCHAR(32) '$.earn.suffix',\n        [EarnCurrency]           VARCHAR(32) '$.earn.Currency',\n        [EarnTargetValue]        VARCHAR(32) '$.earn.target_value',\n\n        [VoucherState]           VARCHAR(32) '$.state',\n        [SubText]                VARCHAR(32) '$.subtext',\n        [Headline]               VARCHAR(32) '$.headline',\n        [BodyText]               VARCHAR(32) '$.body_text',\n        [IssueDate]              VARCHAR(32) '$.date_issued',\n        [ExpiryDate]             VARCHAR(32) '$.expiry_date',\n        [RedeemDate]             VARCHAR(32) '$.date_redeemed',\n        [BarcodeType]            VARCHAR(32) '$.barcode_type',\n        [TCUrl]                  VARCHAR(100) '$.terms_and_conditions_url'   \n         ) AS js\nWHERE ext.vouchers <> '{}'\n   AND js.[VoucherState] <> 'inprogress'\n   --and js.VoucherCode = 'WHS000054'\n--WHERE ext.[created] >= dateadd(day,datediff(day,1,GETDATE()),0)\n--   AND ext.[created] < dateadd(day,datediff(day,0,GETDATE()),0)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT16 Update DimLCVoucher')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimLCVoucher', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimLCVoucher]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimLCVoucher] \nAS\n\nUPDATE dim\nSET\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n  --dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.LCVoucher dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY VoucherCode ORDER BY EffFromDate) EventID,\n    LEAD(EffFromDate) OVER(PARTITION BY VoucherCode ORDER BY EffFromDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN (LEAD(EffFromdate) OVER(PARTITION BY VoucherCode,VoucherState ORDER BY EffFromDate)) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    LoyaltyCardID\n  FROM Dim.LCVoucher\n) updt\nON updt.ID = dim.ID\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT17 Update DimLoyaltyCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimLoyaltyCard', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimLoyaltyCard]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimLoyaltyCard] \nAS\n\n/*\nUPDATE dim\nSET\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n  --dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.LoyaltyCard dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    DENSE_RANK()  OVER(PARTITION BY SourceLCKey ORDER BY EffFromDate) EventID,\n    LEAD(EffFromdate) OVER(PARTITION BY SourceLCKey ORDER BY EffFromDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN (LEAD(EffFromdate) OVER(PARTITION BY SourceLCKey ORDER BY EffFromDate)) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourceLCKey\n  FROM Dim.LoyaltyCard\n) updt\nON updt.ID = dim.ID\n*/\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT18 Update DimPaymentCard')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimPaymentCard', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimPaymentCard]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimPaymentCard] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n  --dim.ProcessDate = GETDATE()\n--SELECT *\nFROM Dim.PaymentCard dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    --DENSE_RANK()  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EventID,\n    ROW_NUMBER()  OVER(PARTITION BY SourcePCKey ORDER BY CardCreateDate, CardStatus DESC, IsDeleted DESC) EventID,\n    ValidTo,\n    Fingerprint,\n    CardCreateDate,\n    CardCreateDate AS EffFromDate,\n    --LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) EffToDate,\n    LEAD(CardCreateDate)  OVER(PARTITION BY SourcePCKey ORDER BY CardCreateDate, CardStatus DESC, IsDeleted DESC) EffToDate,\n    GETDATE() AS ProcessDate,\n    --CASE \n    --  WHEN LEAD(CardCreateDate)  OVER(PARTITION BY Fingerprint ORDER BY CardCreateDate) IS NULL THEN 1\n    --  ELSE 0\n    --  END AS IsCurrent,\n    CASE \n      WHEN LEAD(CardCreateDate)  OVER(PARTITION BY SourcePCKey ORDER BY CardCreateDate, CardStatus DESC, IsDeleted DESC) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourcePCKey\n  FROM Dim.PaymentCard\n) updt\nON updt.ID = dim.ID\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT19 Update DimUser')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_UpdateDimUser', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_UpdateDimUser]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_UpdateDimUser] \nAS\n\nUPDATE dim\nSET\n  dim.EffFromDate = updt.EffFromDate,\n  dim.EffToDate = updt.EffToDate,\n  dim.IsCurrent = updt.IsCurrent\n -- dim.ProcessDate = GETDATE()\n--SELECT *\nFROM [Dim].[User] dim\nINNER JOIN \n(\n  SELECT\n    ID,\n    --DENSE_RANK()  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EventID,\n    ROW_NUMBER() OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EventID,\n    Email, \n    Client, \n    ExternalID,\n    IsActive,\n    UserCreateDate,\n    UserCreateDate AS EffFromDate,\n    LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) EffToDate,\n    GETDATE() AS ProcessDate,\n    CASE \n      WHEN LEAD(UserCreateDate)  OVER(PARTITION BY Email, Client, ExternalID ORDER BY UserCreateDate) IS NULL THEN 1\n      ELSE 0\n      END AS IsCurrent,\n    SourceUserKey\n  FROM [Dim].[User]\n) updt\nON updt.ID = dim.ID\n/*Uncomment after the first run and add WHERE clause to update the records with current Fingerprint\nWHERE\n  ISNULL(dim.EffFromDate, GETDATE()) <> ISNULL(updt.EffFromDate, GETDATE()) OR\n  ISNULL(dim.EffToDate, GETDATE()) <> ISNULL(updt.EffToDate, GETDATE()) OR\n  dim.IsCurrent <> updt.IsCurrent\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/FT20 Create usp_TruncateTable')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "06 Fact Tables"
+				},
+				"content": {
+					"query": "IF OBJECT_ID('usp_TruncateTable', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_TruncateTable]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_TruncateTable] \nAS\n\nTRUNCATE TABLE [dim].[PaymentCard];\n\nTRUNCATE TABLE [dim].[User];\n\nTRUNCATE TABLE [dim].[LoyaltyCard];\n\nTRUNCATE TABLE [dim].[LCVoucher];\n\nTRUNCATE TABLE [fact].[UserLC];\n\nTRUNCATE TABLE [fact].[UserPC];\n\nTRUNCATE TABLE [Fact].[LoyaltyCardPaymentCard];\n\nTRUNCATE TABLE [Fact].[MatchedTransaction];",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "master"
+					},
+					"resultLimit": 5000
 				},
 				"type": "SqlQuery"
 			},
