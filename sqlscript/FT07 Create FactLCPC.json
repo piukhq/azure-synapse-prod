@@ -1,0 +1,20 @@
+{
+	"name": "FT07 Create FactLCPC",
+	"properties": {
+		"folder": {
+			"name": "06 Fact Tables"
+		},
+		"content": {
+			"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[LoyaltyCardPaymentCard]') AND type in (N'U'))\nDROP TABLE [Fact].[LoyaltyCardPaymentCard];\n\nCREATE TABLE [Fact].[LoyaltyCardPaymentCard]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  LoyaltyCardID   INT,\n  PaymentCardID   BIGINT,\n  IsActiveLink    BIT,\n  Change          CHAR(6),\n  CreateDate      DATETIME,\n  ProcessDate     DATETIME\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

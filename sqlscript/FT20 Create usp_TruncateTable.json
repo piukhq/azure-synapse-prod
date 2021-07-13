@@ -1,0 +1,20 @@
+{
+	"name": "FT20 Create usp_TruncateTable",
+	"properties": {
+		"folder": {
+			"name": "06 Fact Tables"
+		},
+		"content": {
+			"query": "IF OBJECT_ID('usp_TruncateTable', 'P') IS NOT NULL\nDROP PROCEDURE [dbo].[usp_TruncateTable]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\nCREATE PROC [dbo].[usp_TruncateTable] \nAS\n\nTRUNCATE TABLE [dim].[PaymentCard];\n\nTRUNCATE TABLE [dim].[User];\n\nTRUNCATE TABLE [dim].[LoyaltyCard];\n\nTRUNCATE TABLE [dim].[LCVoucher];\n\nTRUNCATE TABLE [fact].[UserLC];\n\nTRUNCATE TABLE [fact].[UserPC];\n\nTRUNCATE TABLE [Fact].[LoyaltyCardPaymentCard];\n\nTRUNCATE TABLE [Fact].[MatchedTransaction];",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

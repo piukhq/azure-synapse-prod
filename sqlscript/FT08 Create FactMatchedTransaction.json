@@ -1,0 +1,20 @@
+{
+	"name": "FT08 Create FactMatchedTransaction",
+	"properties": {
+		"folder": {
+			"name": "06 Fact Tables"
+		},
+		"content": {
+			"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[MatchedTransaction]') AND type in (N'U'))\nDROP TABLE [Fact].[MatchedTransaction];\n\nCREATE TABLE [Fact].[MatchedTransaction]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  MerchantIdentifierID  INT,\n  TransactionID         CHAR(50),\n  PaymentTransactionID  INT,\n  SchemeTransactionID   INT,\n  spend_amount          DECIMAL(18,4),\n  spend_multiplier      DECIMAL(18,4),\n  spend_currency        CHAR(3),\n  card_token            VARCHAR(100),\n  MatchingType          CHAR(7),\n  TransactionDate       DATETIME,\n  CreateDate            DATETIME, --created_at\n  ExportDate            DATETIME, --updated_at\n  IsMTExported          BIT, --WHEN Status=Exported THEN 1 ELSE 0\n  SourceMTKey           BIGINT,\n  DimUserID             INT NULL,\n  DimLoyaltyCardID      INT NULL,\n  --DimPaymentCardID      BIGINT NOT NULL,\n  ProcessDate     DATETIME\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

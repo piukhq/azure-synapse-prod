@@ -1,0 +1,20 @@
+{
+	"name": "FT03 Create DimLCVoucher",
+	"properties": {
+		"folder": {
+			"name": "06 Fact Tables"
+		},
+		"content": {
+			"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Dim].[LCVoucher]') AND type in (N'U'))\nDROP TABLE [Dim].[LCVoucher];\n\nCREATE TABLE Dim.LCVoucher\n  (  \n  ID                INT IDENTITY(1,1) NOT NULL,\n  LoyaltyCardID     INT NULL,--Check\n  VoucherCode       VARCHAR(32) NOT NULL,\n  --VoucherValue      NUMERIC(8,2) NULL,\n  --Prefix            VARCHAR(32) NULL,\n  --Suffix            VARCHAR(32) NULL,\n  --Currency          VARCHAR(3) NULL,\n  --VoucherDesc       VARCHAR(100) NULL,\n  --RewardTier        VARCHAR(10) NULL,\n  BurnType          VARCHAR(32) NULL,\n  BurnValue         NUMERIC(8,2) NULL,\n  BurnPrefix        VARCHAR(32) NULL,\n  BurnSuffix        VARCHAR(32) NULL,\n  BurnCurrency      VARCHAR(32) NULL, \n  EarnType          VARCHAR(32) NULL,\n  EarnValue         NUMERIC(8,2) NULL,\n  EarnPrefix        VARCHAR(32) NULL,\n  EarnSuffix        VARCHAR(32) NULL,\n  EarnCurrency      VARCHAR(32) NULL, \n  EarnTargetValue   NUMERIC(8,2) NULL,\n  VoucherState      VARCHAR(32) NULL,\n  Subtext           VARCHAR(32) NULL,\n  Headline          VARCHAR(32) NULL,\n  BodyText          VARCHAR(32) NULL,\n  IssueDate         DATETIME NULL,\n  RedeemDate        DATETIME NULL,\n  ExpiryDate        DATETIME NULL,\n  BarcodeType       VARCHAR(32) NULL,\n  TCUrl             VARCHAR(100) NULL,\n  EffFromDate       DATETIME NOT NULL,\n  EffToDate         DATETIME NULL,\n  ProcessDate       DATETIME NOT NULL,\n  IsCurrent         BIT NOT NULL  DEFAULT 1\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

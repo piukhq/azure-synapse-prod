@@ -1,0 +1,20 @@
+{
+	"name": "FT10 Create FactUserPC",
+	"properties": {
+		"folder": {
+			"name": "06 Fact Tables"
+		},
+		"content": {
+			"query": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Fact].[UserPC]') AND type in (N'U'))\nDROP TABLE [Fact].[UserPC];\n\nCREATE TABLE [Fact].[UserPC]\n  (  \n  ID              INT IDENTITY(1,1) NOT NULL,\n  UserID          INT NULL,\n  PaymentCardID   BIGINT NULL,\n  IsCreated       BIT NULL,\n  CreateDate      DATETIME NULL,\n  ProcessDate     DATETIME NULL\n  )  \nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "master"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

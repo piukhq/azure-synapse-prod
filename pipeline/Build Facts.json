@@ -40,6 +40,19 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "Execute Load FactMatchedTransaction",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load FactMatchedTransaction",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"annotations": []

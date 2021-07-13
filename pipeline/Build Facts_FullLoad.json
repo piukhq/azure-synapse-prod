@@ -29,6 +29,19 @@
 				}
 			},
 			{
+				"name": "Execute Load FactMatchedTransaction_FullLoad",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load FactMatchedTransaction_FullLoad",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
 				"name": "Execute Load FactLoyaltyCardPaymentCard_FullLoad",
 				"type": "ExecutePipeline",
 				"dependsOn": [],

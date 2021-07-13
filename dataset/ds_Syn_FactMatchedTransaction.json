@@ -92,6 +92,12 @@
 				"name": "DimLoyaltyCardID",
 				"type": "int",
 				"precision": 10
+			},
+			{
+				"name": "ProcessDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
 			}
 		],
 		"typeProperties": {
