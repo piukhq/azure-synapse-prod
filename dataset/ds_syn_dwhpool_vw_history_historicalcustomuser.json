@@ -9,6 +9,16 @@
 		"type": "AzureSqlDWTable",
 		"schema": [
 			{
+				"name": "created",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "instance_id",
+				"type": "varchar"
+			},
+			{
 				"name": "id",
 				"type": "int",
 				"precision": 10
@@ -18,7 +28,7 @@
 				"type": "varchar"
 			},
 			{
-				"name": "client",
+				"name": "client_id",
 				"type": "varchar"
 			},
 			{
