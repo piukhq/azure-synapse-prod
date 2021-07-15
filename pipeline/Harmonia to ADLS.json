@@ -194,7 +194,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_Harmonia to ADLS_matched_transaction_FullLoad",
+						"referenceName": "df_Harmonia to ADLS_matched_transaction",
 						"type": "DataFlowReference"
 					},
 					"compute": {
