@@ -939,7 +939,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "df_Harmonia to ADLS_matched_transaction_FullLoad",
+								"referenceName": "df_Harmonia to ADLS_matched_transaction",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
@@ -1051,6 +1051,7 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/ds_pg_harmonia')]",
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_matched_transaction')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_matched_transaction_FullLoad')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_scheme_transaction')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Harmonia to ADLS_user_identity')]",
@@ -3239,7 +3240,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactLoyaltyCardPaymentCard')]",
-				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
@@ -3450,7 +3452,8 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_matched_transaction')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactMatchedTransaction')]",
-				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
