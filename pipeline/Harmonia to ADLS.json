@@ -124,25 +124,25 @@
 						]
 					},
 					{
-						"activity": "Harmonia to ADLS_matched_transaction_FullLoad",
+						"activity": "Harmonia to ADLS_matched_transaction",
 						"dependencyConditions": [
 							"Failed"
 						]
 					},
 					{
-						"activity": "Harmonia to ADLS_payment_transaction_FullLoad",
+						"activity": "Harmonia to ADLS_payment_transaction",
 						"dependencyConditions": [
 							"Failed"
 						]
 					},
 					{
-						"activity": "Harmonia to ADLS_scheme_transaction_FullLoad",
+						"activity": "Harmonia to ADLS_scheme_transaction",
 						"dependencyConditions": [
 							"Failed"
 						]
 					},
 					{
-						"activity": "Harmonia to ADLS_user_identity_FullLoad",
+						"activity": "Harmonia to ADLS_user_identity",
 						"dependencyConditions": [
 							"Failed"
 						]
@@ -181,7 +181,7 @@
 				}
 			},
 			{
-				"name": "Harmonia to ADLS_matched_transaction_FullLoad",
+				"name": "Harmonia to ADLS_matched_transaction",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -205,7 +205,7 @@
 				}
 			},
 			{
-				"name": "Harmonia to ADLS_payment_transaction_FullLoad",
+				"name": "Harmonia to ADLS_payment_transaction",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -218,7 +218,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_Harmonia to ADLS_matched_transaction_FullLoad",
+						"referenceName": "df_Harmonia to ADLS_matched_transaction",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -229,7 +229,7 @@
 				}
 			},
 			{
-				"name": "Harmonia to ADLS_scheme_transaction_FullLoad",
+				"name": "Harmonia to ADLS_scheme_transaction",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -253,7 +253,7 @@
 				}
 			},
 			{
-				"name": "Harmonia to ADLS_user_identity_FullLoad",
+				"name": "Harmonia to ADLS_user_identity",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
