@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "To load the source data daily",
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {
