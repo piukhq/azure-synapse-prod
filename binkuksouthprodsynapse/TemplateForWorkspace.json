@@ -53,15 +53,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/dwhpool')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/Build Data Warehouse')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
@@ -201,6 +192,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -323,6 +318,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -407,6 +406,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -490,6 +493,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -562,6 +569,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -634,6 +645,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -740,6 +755,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -1055,6 +1074,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -1375,6 +1398,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -1882,6 +1909,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -2395,15 +2426,19 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/ds_pg_hermes')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_payment_card_paymentcardaccount_FullLoad')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalpaymentcardaccount_FullLoad')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_user_FullLoad')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalcustomuser_FullLoad')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_scheme_schemeaccount_FullLoad')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalschemeaccount_FullLoad')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_Hermes to ADLS_history_historicalschemeaccountentry_FullLoad')]",
@@ -2536,6 +2571,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -2624,6 +2663,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -2684,12 +2727,15 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimLoyaltyCard')]",
-				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
 			]
 		},
 		{
@@ -2744,12 +2790,15 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimLoyaltyCard_FullLoad')]",
-				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
 			]
 		},
 		{
@@ -2884,6 +2933,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -2968,6 +3021,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -3108,13 +3165,17 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimUser')]",
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
-				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]"
+				"[concat(variables('workspaceId'), '/sqlPools/dwhpool')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
@@ -3192,12 +3253,15 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadDimUser_FullLoad')]",
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/pipelines/Load DimUser')]"
 			]
 		},
@@ -3248,6 +3312,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -3348,12 +3416,15 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactLoyaltyCardPaymentCard_FullLoad')]",
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactLoyaltyCardPaymentCard')]"
 			]
 		},
@@ -3459,13 +3530,16 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/ds_adls_harmonia_matched_transaction')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactMatchedTransaction')]",
-				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
 			]
 		},
 		{
@@ -3520,12 +3594,15 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactMatchedTransaction')]",
-				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]"
 			]
 		},
 		{
@@ -3576,6 +3653,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -3678,12 +3759,15 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserLC_FullLoad')]",
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserLC')]"
 			]
 		},
@@ -3735,6 +3819,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -3837,12 +3925,15 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserPC_FullLoad')]",
 				"[concat(variables('workspaceId'), '/linkedServices/ls_adls_dwlanding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/df_LoadFactUserPC')]"
 			]
 		},
@@ -3884,6 +3975,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -3929,6 +4024,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -4081,6 +4180,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"folder": {
 					"name": "Harmonia"
 				},
@@ -8821,7 +8924,7 @@
 			"properties": {
 				"description": "To load the source data daily",
 				"annotations": [],
-				"runtimeState": "Started",
+				"runtimeState": "Stopped",
 				"pipelines": [
 					{
 						"pipelineReference": {
@@ -8971,7 +9074,7 @@
 						}
 					],
 					"transformations": [],
-					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> PGHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 5000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaPaymentProvider\nPGHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyImportTransaction\nPGHarmoniaMerchantIdentifier sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyMerchantIdentifier\nPGHarmoniaLoyaltyScheme sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyLoyaltyScheme\nPGHarmoniaPaymentProvider sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyPaymentProvider"
+					"script": "parameters{\n\trecordsBefore as string\n}\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_COMMITTED',\n\tquery: (concat(\"SELECT * FROM import_transaction WHERE (created_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"') OR (updated_at IS NOT NULL AND updated_at BETWEEN '\", toString(subDays(currentDate(), 1)), \"' AND '\", toString(currentDate()), \"')\")),\n\tformat: 'query') ~> PGHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 5000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PGHarmoniaPaymentProvider\nPGHarmoniaImportTransaction sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyImportTransaction\nPGHarmoniaMerchantIdentifier sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyMerchantIdentifier\nPGHarmoniaLoyaltyScheme sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyLoyaltyScheme\nPGHarmoniaPaymentProvider sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\ttruncate: true,\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DLHarmoniaDailyPaymentProvider"
 				}
 			},
 			"dependsOn": [
@@ -9016,7 +9119,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9055,7 +9158,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9094,7 +9197,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9133,7 +9236,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9222,7 +9325,7 @@
 							"name": "AlterRow4"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaPaymentProvider\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nDLHarmoniaLoyaltyScheme alterRow(upsertIf(true())) ~> AlterRow3\nDLHarmoniaPaymentProvider alterRow(upsertIf(true())) ~> AlterRow4\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t)) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHMerchantIdentifier\nAlterRow3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHLoyaltyScheme\nAlterRow4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHPaymentProvider"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\ttransaction_id as string,\n\t\tprovider_slug as string,\n\t\tidentified as boolean,\n\t\tsource as string,\n\t\tdata as string,\n\t\tmatch_group as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaImportTransaction\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmid as string,\n\t\tloyalty_scheme_id as integer,\n\t\tpayment_provider_id as integer,\n\t\tlocation as string,\n\t\tpostcode as string,\n\t\tstore_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaMerchantIdentifier\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaLoyaltyScheme\nsource(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tformat: 'parquet') ~> DLHarmoniaPaymentProvider\nDLHarmoniaImportTransaction alterRow(upsertIf(not(isNull(updated_at)))) ~> AlterRow1\nDLHarmoniaMerchantIdentifier alterRow(upsertIf(true())) ~> AlterRow2\nDLHarmoniaLoyaltyScheme alterRow(upsertIf(true())) ~> AlterRow3\nDLHarmoniaPaymentProvider alterRow(upsertIf(true())) ~> AlterRow4\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tid,\n\t\tcreated_at,\n\t\tupdated_at,\n\t\ttransaction_id,\n\t\tprovider_slug,\n\t\tidentified,\n\t\tsource,\n\t\tdata,\n\t\tmatch_group\n\t)) ~> DWHImportTransaction\nAlterRow2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHMerchantIdentifier\nAlterRow3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHLoyaltyScheme\nAlterRow4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tslug as string\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['id'],\n\tformat: 'table',\n\tstaged: true,\n\tbatchSize: 2000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DWHPaymentProvider"
 				}
 			},
 			"dependsOn": [
@@ -9267,7 +9370,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_id as integer,\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tmatching_type as string,\n\t\tstatus as string,\n\t\tpayment_transaction_id as integer,\n\t\tscheme_transaction_id as integer,\n\t\textra_fields as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcMatchedTransaction\nSrcMatchedTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_id as integer,\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tmatching_type as string,\n\t\tstatus as string,\n\t\tpayment_transaction_id as integer,\n\t\tscheme_transaction_id as integer,\n\t\textra_fields as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcMatchedTransaction\nSrcMatchedTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9306,7 +9409,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_id as integer,\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tmatching_type as string,\n\t\tstatus as string,\n\t\tpayment_transaction_id as integer,\n\t\tscheme_transaction_id as integer,\n\t\textra_fields as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcMatchedTransaction\nSrcMatchedTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_id as integer,\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tmatching_type as string,\n\t\tstatus as string,\n\t\tpayment_transaction_id as integer,\n\t\tscheme_transaction_id as integer,\n\t\textra_fields as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcMatchedTransaction\nSrcMatchedTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9345,7 +9448,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentTransaction\nSrcPaymentTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentTransaction\nSrcPaymentTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9384,7 +9487,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentTransaction\nSrcPaymentTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tcard_token as string,\n\t\tstatus as string,\n\t\tuser_identity_id as integer,\n\t\textra_fields as string,\n\t\tsettlement_key as string,\n\t\tprovider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentTransaction\nSrcPaymentTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9423,7 +9526,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tstatus as string,\n\t\textra_fields as string,\n\t\tprovider_slug as string,\n\t\tpayment_provider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcSchemeTransaction\nSrcSchemeTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tstatus as string,\n\t\textra_fields as string,\n\t\tprovider_slug as string,\n\t\tpayment_provider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcSchemeTransaction\nSrcSchemeTransaction filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9462,7 +9565,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tstatus as string,\n\t\textra_fields as string,\n\t\tprovider_slug as string,\n\t\tpayment_provider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcSchemeTransaction\nSrcSchemeTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tmerchant_identifier_ids as string[],\n\t\ttransaction_id as string,\n\t\ttransaction_date as timestamp,\n\t\tspend_amount as integer,\n\t\tspend_multiplier as integer,\n\t\tspend_currency as string,\n\t\tstatus as string,\n\t\textra_fields as string,\n\t\tprovider_slug as string,\n\t\tpayment_provider_slug as string,\n\t\tauth_code as string,\n\t\thas_time as boolean,\n\t\tmatch_group as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcSchemeTransaction\nSrcSchemeTransaction filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9501,7 +9604,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tloyalty_id as string,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer,\n\t\tcredentials as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserIdentity\nSrcUserIdentity filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tloyalty_id as string,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer,\n\t\tcredentials as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserIdentity\nSrcUserIdentity filter(or(and(toDate(created_at) >= toDate(subDays(currentUTC(),1)), toDate(created_at) < toDate(currentUTC())),and(toDate(updated_at) >= toDate(subDays(currentUTC(),1)), toDate(updated_at) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9540,7 +9643,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tloyalty_id as string,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer,\n\t\tcredentials as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserIdentity\nSrcUserIdentity filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated_at as timestamp,\n\t\tupdated_at as timestamp,\n\t\tloyalty_id as string,\n\t\tscheme_account_id as integer,\n\t\tuser_id as integer,\n\t\tcredentials as string,\n\t\tfirst_six as string,\n\t\tlast_four as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserIdentity\nSrcUserIdentity filter(or(\n    toDate(created_at) < toDate(currentUTC()),\n    toDate(updated_at) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9579,7 +9682,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tbody as string,\n\t\temail as string,\n\t\texternal_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalCustomUser\nSrcHistoryHistoricalCustomUser filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tbody as string,\n\t\temail as string,\n\t\texternal_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalCustomUser\nSrcHistoryHistoricalCustomUser filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9618,7 +9721,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tbody as string,\n\t\temail as string,\n\t\texternal_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalCustomUser\nSrcHistoryHistoricalCustomUser filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tbody as string,\n\t\temail as string,\n\t\texternal_id as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalCustomUser\nSrcHistoryHistoricalCustomUser filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9657,7 +9760,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9696,7 +9799,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoricalPaymentCardAccount\nSrcHistoricalPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9735,7 +9838,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9774,7 +9877,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentCardAccountEntry\nSrcHistoryHistoricalPaymentCardAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9813,7 +9916,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentcardSchemeEntry\nSrcHistoryHistoricalPaymentcardSchemeEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentcardSchemeEntry\nSrcHistoryHistoricalPaymentcardSchemeEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9852,7 +9955,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentcardSchemeEntry\nSrcHistoryHistoricalPaymentcardSchemeEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalPaymentcardSchemeEntry\nSrcHistoryHistoricalPaymentcardSchemeEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tchange_details as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tpayment_card_account_id as integer,\n\t\tactive_link as boolean\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9891,7 +9994,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string,\n\t\tjourney as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccount\nSrcHistoryHistoricalSchemeAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string,\n\t\tjourney as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccount\nSrcHistoryHistoricalSchemeAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9930,7 +10033,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string,\n\t\tjourney as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccount\nSrcHistoryHistoricalSchemeAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tbody as string,\n\t\tchange_details as string,\n\t\tjourney as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccount\nSrcHistoryHistoricalSchemeAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -9969,7 +10072,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccountEntry\nSrcHistoryHistoricalSchemeAccountEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccountEntry\nSrcHistoryHistoricalSchemeAccountEntry filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10008,7 +10111,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccountEntry\nSrcHistoryHistoricalSchemeAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcHistoryHistoricalSchemeAccountEntry\nSrcHistoryHistoricalSchemeAccountEntry filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tcreated as timestamp,\n\t\tchange_type as string,\n\t\tinstance_id as string,\n\t\tchannel as string,\n\t\tuser_id as integer,\n\t\tscheme_account_id as integer,\n\t\tchange_details as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10047,7 +10150,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(and(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10086,7 +10189,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcPaymentCardAccount\nSrcPaymentCardAccount filter(toDate(created) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tid as integer,\n\t\tname_on_card as string,\n\t\tstart_month as integer,\n\t\tstart_year as integer,\n\t\texpiry_month as integer,\n\t\texpiry_year as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tissuer_id as integer,\n\t\tpayment_card_id as integer,\n\t\ttoken as string,\n\t\tcountry as string,\n\t\tcurrency_code as string,\n\t\tpan_end as string,\n\t\tpan_start as string,\n\t\tis_deleted as boolean,\n\t\tfingerprint as string,\n\t\tpsp_token as string,\n\t\tconsents as string,\n\t\thash as string,\n\t\tformatted_images as string,\n\t\tpll_links as string,\n\t\tagent_data as string\n\t),\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10125,7 +10228,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcLoyaltyCardAccount\nSrcLoyaltyCardAccount filter(or(\nand(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC())),\nand(toDate(updated) >= toDate(subDays(currentUTC(),1)), toDate(updated) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcLoyaltyCardAccount\nSrcLoyaltyCardAccount filter(or(\nand(toDate(created) >= toDate(subDays(currentUTC(),1)), toDate(created) < toDate(currentUTC())),\nand(toDate(updated) >= toDate(subDays(currentUTC(),1)), toDate(updated) < toDate(currentUTC())))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10164,7 +10267,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcLoyaltyCardAccount\nSrcLoyaltyCardAccount filter(or(\n    toDate(created) < toDate(currentUTC()),\n    toDate(updated) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tstatus as integer,\n\t\torder as integer,\n\t\tcreated as timestamp,\n\t\tupdated as timestamp,\n\t\tscheme_id as integer,\n\t\tis_deleted as boolean,\n\t\tlink_date as timestamp,\n\t\tjoin_date as timestamp,\n\t\tbalances as string,\n\t\tvouchers as string,\n\t\tbarcode as string,\n\t\tcard_number as string,\n\t\ttransactions as string,\n\t\tmain_answer as string,\n\t\tpll_links as string,\n\t\tformatted_images as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcLoyaltyCardAccount\nSrcLoyaltyCardAccount filter(or(\n    toDate(created) < toDate(currentUTC()),\n    toDate(updated) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10203,7 +10306,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nSrcUser filter(and(toDate(date_joined) >= toDate(subDays(currentUTC(),1)), toDate(date_joined) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nSrcUser filter(and(toDate(date_joined) >= toDate(subDays(currentUTC(),1)), toDate(date_joined) < toDate(currentUTC()))) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10242,7 +10345,7 @@
 							"name": "FilterRecords"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nSrcUser filter(toDate(date_joined) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nSrcUser filter(toDate(date_joined) < toDate(currentUTC())) ~> FilterRecords\nFilterRecords sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10300,7 +10403,7 @@
 							"name": "SelectUserDetail"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as date,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserUserDetail\nsource(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nJoinUdU filter(and(toDate({u.date_joined}) >= toDate(subDays(currentUTC(),1)), toDate({u.date_joined}) < toDate(currentUTC()))) ~> FilterRecords\nSrcUser select(mapColumn(\n\t\t{u.id} = id,\n\t\t{u.date_joined} = date_joined\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectU\nSrcUserUserDetail select(mapColumn(\n\t\t{ud.id} = id,\n\t\t{ud.first_name} = first_name,\n\t\t{ud.last_name} = last_name,\n\t\t{ud.date_of_birth} = date_of_birth,\n\t\t{ud.phone} = phone,\n\t\t{ud.address_line_1} = address_line_1,\n\t\t{ud.address_line_2} = address_line_2,\n\t\t{ud.city} = city,\n\t\t{ud.region} = region,\n\t\t{ud.postcode} = postcode,\n\t\t{ud.country} = country,\n\t\t{ud.notifications} = notifications,\n\t\t{ud.pass_code} = pass_code,\n\t\t{ud.currency} = currency,\n\t\t{ud.user_id} = user_id,\n\t\t{ud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUD\nSelectUD, SelectU join({ud.user_id} == {u.id},\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinUdU\nFilterRecords select(mapColumn(\n\t\tid = {ud.id},\n\t\tfirst_name = {ud.first_name},\n\t\tlast_name = {ud.last_name},\n\t\tdate_of_birth = {ud.date_of_birth},\n\t\tphone = {ud.phone},\n\t\taddress_line_1 = {ud.address_line_1},\n\t\taddress_line_2 = {ud.address_line_2},\n\t\tcity = {ud.city},\n\t\tregion = {ud.region},\n\t\tpostcode = {ud.postcode},\n\t\tcountry = {ud.country},\n\t\tnotifications = {ud.notifications},\n\t\tpass_code = {ud.pass_code},\n\t\tcurrency = {ud.currency},\n\t\tuser_id = {ud.user_id},\n\t\tgender = {ud.gender}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserDetail\nSelectUserDetail sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as date,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserUserDetail\nsource(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nJoinUdU filter(and(toDate({u.date_joined}) >= toDate(subDays(currentUTC(),1)), toDate({u.date_joined}) < toDate(currentUTC()))) ~> FilterRecords\nSrcUser select(mapColumn(\n\t\t{u.id} = id,\n\t\t{u.date_joined} = date_joined\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectU\nSrcUserUserDetail select(mapColumn(\n\t\t{ud.id} = id,\n\t\t{ud.first_name} = first_name,\n\t\t{ud.last_name} = last_name,\n\t\t{ud.date_of_birth} = date_of_birth,\n\t\t{ud.phone} = phone,\n\t\t{ud.address_line_1} = address_line_1,\n\t\t{ud.address_line_2} = address_line_2,\n\t\t{ud.city} = city,\n\t\t{ud.region} = region,\n\t\t{ud.postcode} = postcode,\n\t\t{ud.country} = country,\n\t\t{ud.notifications} = notifications,\n\t\t{ud.pass_code} = pass_code,\n\t\t{ud.currency} = currency,\n\t\t{ud.user_id} = user_id,\n\t\t{ud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUD\nSelectUD, SelectU join({ud.user_id} == {u.id},\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinUdU\nFilterRecords select(mapColumn(\n\t\tid = {ud.id},\n\t\tfirst_name = {ud.first_name},\n\t\tlast_name = {ud.last_name},\n\t\tdate_of_birth = {ud.date_of_birth},\n\t\tphone = {ud.phone},\n\t\taddress_line_1 = {ud.address_line_1},\n\t\taddress_line_2 = {ud.address_line_2},\n\t\tcity = {ud.city},\n\t\tregion = {ud.region},\n\t\tpostcode = {ud.postcode},\n\t\tcountry = {ud.country},\n\t\tnotifications = {ud.notifications},\n\t\tpass_code = {ud.pass_code},\n\t\tcurrency = {ud.currency},\n\t\tuser_id = {ud.user_id},\n\t\tgender = {ud.gender}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserDetail\nSelectUserDetail sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -10359,7 +10462,7 @@
 							"name": "SelectUserDetail"
 						}
 					],
-					"script": "source(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as date,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserUserDetail\nsource(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nJoinUdU filter(toDate({u.date_joined}) < toDate(currentUTC())) ~> FilterRecords\nSrcUser select(mapColumn(\n\t\t{u.id} = id,\n\t\t{u.date_joined} = date_joined\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectU\nSrcUserUserDetail select(mapColumn(\n\t\t{ud.id} = id,\n\t\t{ud.first_name} = first_name,\n\t\t{ud.last_name} = last_name,\n\t\t{ud.date_of_birth} = date_of_birth,\n\t\t{ud.phone} = phone,\n\t\t{ud.address_line_1} = address_line_1,\n\t\t{ud.address_line_2} = address_line_2,\n\t\t{ud.city} = city,\n\t\t{ud.region} = region,\n\t\t{ud.postcode} = postcode,\n\t\t{ud.country} = country,\n\t\t{ud.notifications} = notifications,\n\t\t{ud.pass_code} = pass_code,\n\t\t{ud.currency} = currency,\n\t\t{ud.user_id} = user_id,\n\t\t{ud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUD\nSelectUD, SelectU join({ud.user_id} == {u.id},\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinUdU\nFilterRecords select(mapColumn(\n\t\tid = {ud.id},\n\t\tfirst_name = {ud.first_name},\n\t\tlast_name = {ud.last_name},\n\t\tdate_of_birth = {ud.date_of_birth},\n\t\tphone = {ud.phone},\n\t\taddress_line_1 = {ud.address_line_1},\n\t\taddress_line_2 = {ud.address_line_2},\n\t\tcity = {ud.city},\n\t\tregion = {ud.region},\n\t\tpostcode = {ud.postcode},\n\t\tcountry = {ud.country},\n\t\tnotifications = {ud.notifications},\n\t\tpass_code = {ud.pass_code},\n\t\tcurrency = {ud.currency},\n\t\tuser_id = {ud.user_id},\n\t\tgender = {ud.gender}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserDetail\nSelectUserDetail sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
+					"script": "source(output(\n\t\tid as integer,\n\t\tfirst_name as string,\n\t\tlast_name as string,\n\t\tdate_of_birth as date,\n\t\tphone as string,\n\t\taddress_line_1 as string,\n\t\taddress_line_2 as string,\n\t\tcity as string,\n\t\tregion as string,\n\t\tpostcode as string,\n\t\tcountry as string,\n\t\tnotifications as integer,\n\t\tpass_code as string,\n\t\tcurrency as string,\n\t\tuser_id as integer,\n\t\tgender as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tbatchSize: 10000,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUserUserDetail\nsource(output(\n\t\tid as integer,\n\t\tpassword as string,\n\t\tlast_login as timestamp,\n\t\tis_superuser as boolean,\n\t\temail as string,\n\t\tis_active as boolean,\n\t\tdate_joined as timestamp,\n\t\tis_staff as boolean,\n\t\tuid as string,\n\t\tfacebook as string,\n\t\ttwitter as string,\n\t\treset_token as string,\n\t\tmarketing_code_id as integer,\n\t\tclient_id as string,\n\t\tsalt as string,\n\t\texternal_id as string,\n\t\tis_tester as boolean,\n\t\tapple as string,\n\t\tdelete_token as string,\n\t\tmagic_link_verified as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> SrcUser\nJoinUdU filter(toDate({u.date_joined}) < toDate(currentUTC())) ~> FilterRecords\nSrcUser select(mapColumn(\n\t\t{u.id} = id,\n\t\t{u.date_joined} = date_joined\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectU\nSrcUserUserDetail select(mapColumn(\n\t\t{ud.id} = id,\n\t\t{ud.first_name} = first_name,\n\t\t{ud.last_name} = last_name,\n\t\t{ud.date_of_birth} = date_of_birth,\n\t\t{ud.phone} = phone,\n\t\t{ud.address_line_1} = address_line_1,\n\t\t{ud.address_line_2} = address_line_2,\n\t\t{ud.city} = city,\n\t\t{ud.region} = region,\n\t\t{ud.postcode} = postcode,\n\t\t{ud.country} = country,\n\t\t{ud.notifications} = notifications,\n\t\t{ud.pass_code} = pass_code,\n\t\t{ud.currency} = currency,\n\t\t{ud.user_id} = user_id,\n\t\t{ud.gender} = gender\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUD\nSelectUD, SelectU join({ud.user_id} == {u.id},\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinUdU\nFilterRecords select(mapColumn(\n\t\tid = {ud.id},\n\t\tfirst_name = {ud.first_name},\n\t\tlast_name = {ud.last_name},\n\t\tdate_of_birth = {ud.date_of_birth},\n\t\tphone = {ud.phone},\n\t\taddress_line_1 = {ud.address_line_1},\n\t\taddress_line_2 = {ud.address_line_2},\n\t\tcity = {ud.city},\n\t\tregion = {ud.region},\n\t\tpostcode = {ud.postcode},\n\t\tcountry = {ud.country},\n\t\tnotifications = {ud.notifications},\n\t\tpass_code = {ud.pass_code},\n\t\tcurrency = {ud.currency},\n\t\tuser_id = {ud.user_id},\n\t\tgender = {ud.gender}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectUserDetail\nSelectUserDetail sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DstDataLake"
 				}
 			},
 			"dependsOn": [
@@ -12550,8 +12653,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12574,8 +12677,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -12598,8 +12701,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -12622,8 +12725,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -12646,8 +12749,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -12669,8 +12772,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					}
 				},
 				"type": "SqlQuery"
@@ -12691,8 +12794,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					}
 				},
 				"type": "SqlQuery"
@@ -12713,8 +12816,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12737,8 +12840,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					}
 				},
 				"type": "SqlQuery"
@@ -12759,8 +12862,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12782,8 +12885,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12805,8 +12908,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12828,8 +12931,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12851,8 +12954,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12874,8 +12977,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12897,8 +13000,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12920,8 +13023,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12943,8 +13046,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12966,8 +13069,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -12989,8 +13092,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13012,8 +13115,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13035,8 +13138,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13058,8 +13161,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13081,8 +13184,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13104,8 +13207,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13127,8 +13230,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13150,8 +13253,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13173,8 +13276,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13196,8 +13299,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13219,8 +13322,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13242,8 +13345,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13265,8 +13368,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13288,8 +13391,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13311,8 +13414,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13334,8 +13437,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13357,8 +13460,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13380,8 +13483,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13403,8 +13506,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13426,8 +13529,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13449,8 +13552,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13472,8 +13575,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13495,8 +13598,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13518,8 +13621,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13541,8 +13644,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13564,8 +13667,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13587,8 +13690,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13610,8 +13713,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13633,8 +13736,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13656,8 +13759,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13679,8 +13782,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -13702,8 +13805,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					}
 				},
 				"type": "SqlQuery"
@@ -13724,8 +13827,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					}
 				},
 				"type": "SqlQuery"
@@ -13743,8 +13846,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13766,8 +13869,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "test1"
+						"databaseName": "test1",
+						"poolName": "Built-in"
 					}
 				},
 				"type": "SqlQuery"
@@ -13785,8 +13888,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13808,8 +13911,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "temp_serverless"
+						"databaseName": "temp_serverless",
+						"poolName": "Built-in"
 					}
 				},
 				"type": "SqlQuery"
@@ -13830,8 +13933,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "test1"
+						"databaseName": "test1",
+						"poolName": "Built-in"
 					}
 				},
 				"type": "SqlQuery"
@@ -13852,8 +13955,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13875,8 +13978,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13898,8 +14001,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13921,8 +14024,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13944,8 +14047,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13967,8 +14070,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -13990,8 +14093,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14013,8 +14116,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14036,8 +14139,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14059,8 +14162,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14082,8 +14185,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14105,8 +14208,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14128,8 +14231,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14151,8 +14254,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14174,8 +14277,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14197,8 +14300,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14220,8 +14323,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14243,8 +14346,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "dwhpool",
-						"databaseName": "dwhpool"
+						"databaseName": "dwhpool",
+						"poolName": "dwhpool"
 					},
 					"resultLimit": 5000
 				},
@@ -14263,8 +14366,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "temp"
+						"databaseName": "temp",
+						"poolName": "Built-in"
 					}
 				},
 				"type": "SqlQuery"
@@ -14285,8 +14388,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -14308,8 +14411,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -14331,8 +14434,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -14354,8 +14457,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -14377,8 +14480,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -14400,8 +14503,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -14423,8 +14526,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -14446,8 +14549,8 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"poolName": "Built-in",
-						"databaseName": "master"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
